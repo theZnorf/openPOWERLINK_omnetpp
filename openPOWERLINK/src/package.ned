@@ -1,0 +1,3 @@
+package openpowerlink;
+
+@license(LGPL);
