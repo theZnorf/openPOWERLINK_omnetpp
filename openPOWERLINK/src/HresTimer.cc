@@ -18,22 +18,24 @@
 
 Define_Module(HresTimer);
 
-
 struct HresTimerInfo
 {
         HresTimerHandle handle;
-    simtime_t time;
-    HresTimer::TimerCallback callback;
-    HresTimer::ArgumentType argument;
-    bool cont;
-    HresTimer::TimerEventArgs eventArgs;
+        simtime_t time;
+        HresTimer::TimerCallback callback;
+        HresTimer::ArgumentType argument;
+        bool cont;
+        HresTimer::TimerEventArgs eventArgs;
 };
 
 void HresTimer::initialize()
 {
+    // initialze dispatcher for this module
+    interface::OplkHresTimer::getInstance().initHresTimer(this);
 }
 
-bool HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallback callback, ArgumentType arg, bool cont)
+bool HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallback callback, ArgumentType arg,
+        bool cont)
 {
     // check handle
     if (handle == nullptr)

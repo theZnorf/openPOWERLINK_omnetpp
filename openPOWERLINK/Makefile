@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for openPOWERLINK
 #
 # This file was generated with the command:
-#  opp_makemake -f --deep -O out -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/sim -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/stack/include -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/stack/proj/linux/liboplkmn-sim
+#  opp_makemake -f --deep -O out -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/stack/include -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/stack/proj/linux/liboplkmn-sim -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/sim/include
 #
 
 # Name of target to be created (-o option)
@@ -15,9 +15,9 @@ USERIF_LIBS = $(ALL_ENV_LIBS) # that is, $(TKENV_LIBS) $(CMDENV_LIBS)
 
 # C++ include paths (with -I)
 INCLUDE_PATH = \
-    -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/sim \
     -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/stack/include \
     -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/stack/proj/linux/liboplkmn-sim \
+    -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/sim/include \
     -I. \
     -Isimulations \
     -Isrc \
@@ -35,7 +35,13 @@ PROJECTRELATIVE_PATH =
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc and .msg files
-OBJS = $O/src/Timer.o $O/src/HresTimer.o $O/src/interface/SharedLibraryHelper.o $O/src/TimerMsg_m.o
+OBJS = \
+    $O/src/Timer.o \
+    $O/src/HresTimer.o \
+    $O/src/interface/OplkHresTimer.o \
+    $O/src/interface/SharedLibraryHelper.o \
+    $O/src/interface/OplkException.o \
+    $O/src/TimerMsg_m.o
 
 # Message files
 MSGFILES = \
@@ -129,7 +135,10 @@ $O/src/HresTimer.o: src/HresTimer.cc \
 	src/HresTimer.h \
 	src/MsgPtr.h \
 	src/TimerBase.h \
-	src/TimerMsg_m.h
+	src/TimerMsg_m.h \
+	src/interface/OplkHresTimer.h \
+	src/interface/SharedLibraryHelper.h \
+	src/interface/oplkinc.h
 $O/src/Timer.o: src/Timer.cc \
 	src/MsgPtr.h \
 	src/Timer.h \
@@ -137,6 +146,17 @@ $O/src/Timer.o: src/Timer.cc \
 	src/TimerMsg_m.h
 $O/src/TimerMsg_m.o: src/TimerMsg_m.cc \
 	src/TimerMsg_m.h
+$O/src/interface/OplkException.o: src/interface/OplkException.cc \
+	src/interface/OplkException.h \
+	src/interface/oplkinc.h
+$O/src/interface/OplkHresTimer.o: src/interface/OplkHresTimer.cc \
+	src/HresTimer.h \
+	src/TimerBase.h \
+	src/TimerMsg_m.h \
+	src/interface/OplkException.h \
+	src/interface/OplkHresTimer.h \
+	src/interface/SharedLibraryHelper.h \
+	src/interface/oplkinc.h
 $O/src/interface/SharedLibraryHelper.o: src/interface/SharedLibraryHelper.cc \
 	src/interface/SharedLibraryHelper.h
 

@@ -10,6 +10,82 @@
 using namespace std;
 using namespace interface;
 
+
+SharedLibraryHelper::SharedLibraryHelper(const std::string& libname)
+    : SharedLibraryHelper(libname, 0)
+{}
+
+SharedLibraryHelper::SharedLibraryHelper(const std::string& libname, InstanceType numberOfParallelInstances)
+    : SharedLibraryHelper(libname, 0, 0)
+{}
+
+
+SharedLibraryHelper::SharedLibraryHelper(std::string const & libname, InstanceType numberOfParallelInstances, InstanceType instanceId)
+    : cLibName(libname), mInstanceId(instanceId), cMaxInstanceId(numberOfParallelInstances -1)
+{
+    createLibraryInstance();
+
+    // open shared library
+    SharedLibraryHelper::openSharedLibrary(getLibraryName());
+}
+
+SharedLibraryHelper::~SharedLibraryHelper()
+{
+    try
+    {
+        // close shared library
+        SharedLibraryHelper::closeShareLibrary(mLibHandle);
+    }
+    catch (exception const & e)
+    {
+    }
+}
+
+SharedLibraryHelper::HelperPtr SharedLibraryHelper::getNextLibrary()
+{
+    if (mInstanceId + 1 < cMaxInstanceId)
+    {
+        HelperPtr helper(new SharedLibraryHelper(cLibName, cMaxInstanceId, mInstanceId + 1));
+        return helper;
+    }
+    throw runtime_error("SharedLibraryHelper::getNextLibrary - maximum number of instances reached");
+}
+
+std::string SharedLibraryHelper::getLibraryName()
+{
+    return cLibName + ((cMaxInstanceId < 0)? "" : to_string(mInstanceId)) + getExtension();
+}
+
+void SharedLibraryHelper::createLibraryInstance()
+{
+    // check if multiple instances are used
+    if (cMaxInstanceId >= 0)
+    {
+        ifstream in(cLibName + getExtension(), ios::binary);
+        if (!in)
+            throw runtime_error("error copying library " + cLibName);
+
+        auto copyName = getLibraryName();
+        ofstream out(copyName, ios::binary);
+        if (!out)
+            throw runtime_error("error opening copied library " + copyName);
+
+        out << in.rdbuf();
+    }
+}
+
+SharedLibraryHelper::HelperPtr SharedLibraryHelper::createInstance(const std::string& libname)
+{
+    return SharedLibraryHelper::createInstance(libname, 0);
+}
+
+SharedLibraryHelper::HelperPtr SharedLibraryHelper::createInstance(const std::string& libname,
+        InstanceType numberOfParallelInstances)
+{
+    HelperPtr helper(new SharedLibraryHelper(libname, numberOfParallelInstances));
+    return helper;
+}
+
 LibraryHandle SharedLibraryHelper::openSharedLibrary(const std::string& libname)
 {
     // forward to OS specific method
@@ -89,76 +165,6 @@ std::string interface::SharedLibraryHelper::getErrorLinux()
 #endif
 }
 
-SharedLibraryHelper::SharedLibraryHelper(const std::string& libname)
-    : SharedLibraryHelper(libname, 0)
-{}
-
-SharedLibraryHelper::SharedLibraryHelper(const std::string& libname, InstanceType numberOfParallelInstances)
-    : SharedLibraryHelper(libname, 0, 0)
-{}
-
-
-SharedLibraryHelper::SharedLibraryHelper(std::string const & libname, InstanceType numberOfParallelInstances, InstanceType instanceId)
-    : cLibName(libname), mInstanceId(instanceId), cMaxInstanceId(numberOfParallelInstances -1)
-{
-    createLibraryInstance();
-
-    // open shared library
-    SharedLibraryHelper::openSharedLibrary(getLibraryName());
-}
-
-SharedLibraryHelper::~SharedLibraryHelper()
-{
-    try
-    {
-        // close shared library
-        SharedLibraryHelper::closeShareLibrary(mLibHandle);
-    }
-    catch (exception const & e)
-    {
-    }
-}
-
-SharedLibraryHelper::HelperPtr SharedLibraryHelper::getNextLibrary()
-{
-    HelperPtr helper(new SharedLibraryHelper(cLibName, cMaxInstanceId, mInstanceId + 1));
-    return helper;
-}
-
-std::string SharedLibraryHelper::getLibraryName()
-{
-    return cLibName + ((cMaxInstanceId < 0)? "" : to_string(mInstanceId)) + getExtension();
-}
-
-void SharedLibraryHelper::createLibraryInstance()
-{
-    // check if multiple instances are used
-    if (cMaxInstanceId >= 0)
-    {
-        ifstream in(cLibName + getExtension(), ios::binary);
-        if (!in)
-            throw runtime_error("error copying library " + cLibName);
-
-        auto copyName = getLibraryName();
-        ofstream out(copyName, ios::binary);
-        if (!out)
-            throw runtime_error("error opening copied library " + copyName);
-
-        out << in.rdbuf();
-    }
-}
-
-SharedLibraryHelper::HelperPtr SharedLibraryHelper::createInstance(const std::string& libname)
-{
-    return SharedLibraryHelper::createInstance(libname, 0);
-}
-
-SharedLibraryHelper::HelperPtr SharedLibraryHelper::createInstance(const std::string& libname,
-        InstanceType numberOfParallelInstances)
-{
-    HelperPtr helper(new SharedLibraryHelper(libname, numberOfParallelInstances));
-    return helper;
-}
 
 std::string SharedLibraryHelper::getErrorWindows()
 {

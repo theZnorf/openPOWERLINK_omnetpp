@@ -9,7 +9,7 @@
 #define MSGPTR_H_
 
 #include <memory>
-#include <cmessage.h>
+#include <omnetpp.h>
 
 using MsgPtr = std::unique_ptr<cMessage>;
 

@@ -22,7 +22,7 @@
 #include "TimerMsg_m.h"
 
 template<typename THandle, typename TInfo>
-class TimerBase : public cSimpleModule
+class TimerBase : public OPP::cSimpleModule
 {
         // Definitions
     protected:

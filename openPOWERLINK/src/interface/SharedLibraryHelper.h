@@ -74,21 +74,25 @@ namespace interface
     {
             // Definitions
         public:
+            using InstanceHandle = unsigned int;
             using InstanceType = int;
             using HelperPtr = std::unique_ptr<SharedLibraryHelper>;
 
             // C-Tor / D-Tor
+        public:
+            SharedLibraryHelper(SharedLibraryHelper const &) = delete;
+            SharedLibraryHelper(SharedLibraryHelper &&) = default;
+
         private:
             SharedLibraryHelper(std::string const & libname);
             SharedLibraryHelper(std::string const & libname, InstanceType numberOfParallelInstances);
-            SharedLibraryHelper(std::string const & libname, InstanceType numberOfParallelInstances, InstanceType);
+            SharedLibraryHelper(std::string const & libname, InstanceType numberOfParallelInstances, InstanceType instanceId);
 
         public:
             ~SharedLibraryHelper();
 
             // Methods
         public:
-
             HelperPtr getNextLibrary();
 
             template<typename TRet, typename ... TArgs>

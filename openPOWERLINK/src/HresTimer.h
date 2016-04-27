@@ -17,8 +17,10 @@
 #define __OPENPOWERLINK_HRESTIMER_H_
 
 #include <omnetpp.h>
-#include <TimerBase.h>
 #include <functional>
+
+#include "TimerBase.h"
+#include "interface/OplkHresTimer.h"
 
 using HresTimerHandle = unsigned long;
 struct HresTimerInfo;
@@ -28,18 +30,11 @@ class HresTimer : public TimerBase<HresTimerHandle, HresTimerInfo>
 {
         // Definitions
     public:
-        using TimeType = unsigned long long;
-        using ArgumentType = unsigned long;
-        using ErrorType = unsigned long;
-
-        struct TimerEventArgs
-        {
-                HresTimerHandle handle;
-                ArgumentType value;
-        };
-
+        using TimeType = interface::OplkHresTimer::TimeType;
+        using ArgumentType = interface::OplkHresTimer::ArgumentType;
+        using ErrorType = interface::OplkHresTimer::ErrorType;
+        using TimerEventArgs = interface::OplkHresTimer::TimerEventArgs;
         using TimerCallback = std::function<ErrorType(TimerEventArgs*)>;
-
 
         // Methods
     public:
