@@ -46,9 +46,7 @@ void OplkHresTimer::initHresTimer(HresTimerPtr hresTimer)
     mHresTimerInfos.push_back(move(info));
 
     OPLK::tHresTimerFunctions functions;
-
-    // TODO: resolve hacked C style cast
-    functions.pfnModifyHresTimer = (OPLK::tModifyHresTimerFunction)&OplkHresTimer::modifyTimer;
+    functions.pfnModifyHresTimer = OplkHresTimer::modifyTimer;
     functions.pfnDeleteHresTimer = OplkHresTimer::deleteTimer;
 
 
