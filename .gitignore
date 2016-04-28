@@ -1,4 +1,117 @@
-out/
+*~
+.directory
+
+local.properties
 .settings/
-*_m.cc
+.loadpath
+.recommenders
+
+.directory
+
+# Eclipse Core
+.project
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# PyDev specific (Python IDE for Eclipse)
+*.pydevproject
+
+# CDT-specific (C/C++ Development Tooling)
+.cproject
+
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
+# Java annotation processor (APT)
+.factorypath
+
+# PDT-specific (PHP Development Tools)
+.buildpath
+
+# sbteclipse plugin
+.target
+
+# Tern plugin
+.tern-project
+
+# TeXlipse plugin
+.texlipse
+
+# STS (Spring Tool Suite)
+.springBeans
+
+# Code Recommenders
+
+
+.recommenders/
+RemoteSystemsTempFiles/
+
+
+*.o
+*.d
+*.log
+.tkenvrc
+.tkenvlog
+
+*.a
+*/bin/*
+*.so
+
+out/
+
+*.properties
+artifacts.xml
+*.instance
+
+# ignore generated files
+.settings/
 *_m.h
+*_m.cc
+*_sm.h
+*_sm.cc
+
+Makefile
+
+*.log
+*.sim
+*.pyc
+*.pcap
+*.sca
+*.vec
+*.vci
+.buildlog*
+# local files not to be committed
+.oppfeaturestate
+.nedexclusions
+
+# ignore binary files
+out/
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+*.exe
+*.o
+*.obj
+*.pdb
+*.idb
+*.manifest
+.qtenv.ini
+.tkenvrc
+.tkenvlog
+.cmdenv-log
+netanim-trace.txt
+*.out
+gcc-debug
+gcc-release
+
+# ignore backup and temp files
+*.UPDATED
+*.FAILED
+*.bak
+
