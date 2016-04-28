@@ -13,11 +13,25 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink;
+package openpowerlink.MN;
 
-//
-// TODO auto-generated module
-//
-simple Trace
+module MN
 {
+    @display("bgb=394,132");
+    submodules:
+        edrv: Edrv {
+            @display("p=193,58");
+        }
+        hresTimer: HresTimer {
+            @display("p=55,58;is=s");
+        }
+        sdoUdp: SdoUdp {
+            @display("p=263,58");
+        }
+        target: Target {
+            @display("p=125,58");
+        }
+        trace: Trace {
+            @display("p=331,58");
+        }
 }

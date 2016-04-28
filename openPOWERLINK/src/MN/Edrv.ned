@@ -13,8 +13,11 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink;
+package openpowerlink.MN;
 
-simple Timer
+//
+// TODO auto-generated module
+//
+simple Edrv
 {
 }

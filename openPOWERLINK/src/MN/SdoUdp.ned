@@ -13,16 +13,11 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink;
+package openpowerlink.MN;
 
-import openpowerlink.MN.*;
-
-
-network Mn_simulation
+//
+// TODO auto-generated module
+//
+simple SdoUdp
 {
-    @display("bgb=323,249");
-    submodules:
-        mn: MN {
-            @display("p=157,120");
-        }
 }

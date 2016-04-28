@@ -13,11 +13,8 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink;
+package openpowerlink.MN;
 
-//
-// TODO auto-generated module
-//
-simple HresTimer
+simple Timer
 {
 }
