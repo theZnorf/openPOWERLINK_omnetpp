@@ -31,8 +31,15 @@ struct HresTimerInfo
 
 void HresTimer::initialize()
 {
+    try
+    {
     // initialze dispatcher for this module
     interface::OplkHresTimer::getInstance().initModule(this);
+    }
+    catch (std::exception const & e)
+    {
+        EV << "HresTimer -  init : " << e.what() << std::endl;
+    }
 }
 
 void HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallback callback, ArgumentType arg,

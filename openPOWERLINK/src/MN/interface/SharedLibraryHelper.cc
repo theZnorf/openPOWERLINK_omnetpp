@@ -26,7 +26,7 @@ SharedLibraryHelper::SharedLibraryHelper(std::string const & libname, InstanceTy
     createLibraryInstance();
 
     // open shared library
-    SharedLibraryHelper::openSharedLibrary(getLibraryName());
+    mLibHandle = SharedLibraryHelper::openSharedLibrary(getLibraryName());
 }
 
 SharedLibraryHelper::~SharedLibraryHelper()
@@ -119,9 +119,9 @@ std::string interface::SharedLibraryHelper::getError()
 LibraryHandle SharedLibraryHelper::openSharedLibraryLinux(const std::string& libname)
 {
 #if defined(__linux__)
-    auto handle = dlopen(libname.c_str(), RTLD_NOW | RTLD_LOCAL);
+    auto handle = dlopen(libname.c_str(), RTLD_LAZY | RTLD_LOCAL);
     if (handle == NULL)
-        throw runtime_error("SharedLibraryHelper::openSharedLibraryLinux - error loading library " + libname);
+        throw runtime_error("SharedLibraryHelper::openSharedLibraryLinux - error loading library " + libname + " with error " + getError());
     return handle;
 #else
     throw runtime_error("error linux function called under different OS");

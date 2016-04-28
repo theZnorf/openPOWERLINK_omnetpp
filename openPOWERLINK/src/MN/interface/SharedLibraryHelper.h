@@ -137,9 +137,11 @@ namespace interface
             static std::function<TRet(TArgs...)> resolveFunctionLinux(LibraryHandle handle,
                     std::string const & functionName)
             {
-                auto rawFunc = dlsym(handle, functionName.c_str());
+                auto cName = functionName.c_str();
+
+                auto rawFunc = dlsym(handle, cName);
                 if (rawFunc == nullptr)
-                    throw std::runtime_error("resolveFunctionLinux - error resolving function " + functionName);
+                    throw std::runtime_error("resolveFunctionLinux - error resolving function " + functionName + " with error " + getError());
                 std::function<TRet(TArgs...)> func = reinterpret_cast<TRet (*)(TArgs...)>(rawFunc);
                 if (func == nullptr)
                     throw std::runtime_error("getFunctionLinux - error casting function " + functionName);

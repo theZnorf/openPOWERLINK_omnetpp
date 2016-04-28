@@ -63,6 +63,7 @@ BEGIN_OPLK
 
 #undef BOOL
 #undef LONG
+#undef ASSERT
 
 END_OPLK
 
