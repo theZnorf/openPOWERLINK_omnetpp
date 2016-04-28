@@ -38,8 +38,8 @@ class HresTimer : public TimerBase<HresTimerHandle, HresTimerInfo>
 
         // Methods
     public:
-        bool modifyTimer(HresTimerHandle* handle, TimeType time, TimerCallback callback, ArgumentType arg, bool cont);
-        bool deleteTimer(HresTimerHandle* handle);
+        void modifyTimer(HresTimerHandle* handle, TimeType time, TimerCallback callback, ArgumentType arg, bool cont);
+        void deleteTimer(HresTimerHandle* handle);
 
     protected:
         virtual void initialize();

@@ -15,6 +15,7 @@
 
 #include "HresTimer.h"
 #include "MsgPtr.h"
+#include "interface/OplkException.h"
 
 Define_Module(HresTimer);
 
@@ -34,7 +35,7 @@ void HresTimer::initialize()
     interface::OplkHresTimer::getInstance().initModule(this);
 }
 
-bool HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallback callback, ArgumentType arg,
+void HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallback callback, ArgumentType arg,
         bool cont)
 {
     // check handle
@@ -55,21 +56,21 @@ bool HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallb
     if (!configureTimer(&info))
     {
         EV << "HresTimer::modifyTimer configuration failed" << std::endl;
-        return false;
+        throw interface::OplkException("timer not valid", OPLK::kErrorTimerNoTimerCreated);
     }
     *handle = info.handle;
-    return true;
 }
 
-bool HresTimer::deleteTimer(HresTimerHandle* handle)
+void HresTimer::deleteTimer(HresTimerHandle* handle)
 {
     if (handle == nullptr)
     {
         EV << "HresTimer::deleteTimer invalid handle" << std::endl;
-        return false;
+        throw interface::OplkException("invalid handle", OPLK::kErrorTimerInvalidHandle);
     }
 
-    return removeTimer(*handle);
+    if (!removeTimer(*handle))
+        throw interface::OplkException("timer not valid", OPLK::kErrorTimerNoTimerCreated);
 }
 
 void HresTimer::handleMessage(cMessage *rawMsg)
