@@ -112,7 +112,7 @@ namespace interface
     {
         try
         {
-            OplkTarget::getInstance().getModule(instanceHandle)->setLed(ledType, ledOn);
+            OplkTarget::getInstance().getModule(instanceHandle)->setLed(ledType, ledOn == TRUE);
         }
         catch (OplkException const & e)
         {

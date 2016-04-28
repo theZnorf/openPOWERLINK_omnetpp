@@ -37,8 +37,9 @@ namespace interface
         functions.pfnClearMulticastMacAddr = OplkEdrv::clearRxMulticastMacAddr;
 
         // set function pointer of interface
-        if (helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tEdrvFunctions>("sim_setEdrvFunctions")(handle, functions) != TRUE)
-            throw std::runtime_error("OplkHresTimer::setFunctions - unable to set function pointer");
+        if (helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tEdrvFunctions>("sim_setEdrvFunctions")(handle,
+                functions) != TRUE)
+            throw std::runtime_error("OplkEdrv::setFunctions - unable to set function pointer");
     }
 
     OplkEdrv& OplkEdrv::getInstance()
@@ -50,6 +51,9 @@ namespace interface
 
     OplkEdrv::ErrorType OplkEdrv::initEdrv(InstanceHandle handle, EdrvInitParamType* initParam)
     {
+        if (initParam == nullptr)
+            return OPLK::kErrorApiInvalidParam;
+
         try
         {
             OplkEdrv::getInstance().getModule(handle)->initEdrv(initParam);
@@ -62,7 +66,6 @@ namespace interface
         {
             return OPLK::kErrorGeneralError;
         }
-
 
         return OPLK::kErrorOk;
     }
@@ -82,7 +85,6 @@ namespace interface
             return OPLK::kErrorGeneralError;
         }
 
-
         return OPLK::kErrorOk;
     }
 
@@ -100,6 +102,9 @@ namespace interface
 
     OplkEdrv::ErrorType OplkEdrv::sendTxBuffer(InstanceHandle handle, TxBufferType* txBuffer)
     {
+        if (txBuffer == nullptr)
+            return OPLK::kErrorEdrvInvalidParam;
+
         try
         {
             OplkEdrv::getInstance().getModule(handle)->sendTxBuffer(txBuffer);
@@ -113,12 +118,14 @@ namespace interface
             return OPLK::kErrorGeneralError;
         }
 
-
         return OPLK::kErrorOk;
     }
 
     OplkEdrv::ErrorType OplkEdrv::allocTxBuffer(InstanceHandle handle, TxBufferType* txBuffer)
     {
+        if (txBuffer == nullptr)
+            return OPLK::kErrorEdrvInvalidParam;
+
         try
         {
             OplkEdrv::getInstance().getModule(handle)->allocTxBuffer(txBuffer);
@@ -132,12 +139,14 @@ namespace interface
             return OPLK::kErrorGeneralError;
         }
 
-
         return OPLK::kErrorOk;
     }
 
     OplkEdrv::ErrorType OplkEdrv::freeTxBuffer(InstanceHandle handle, TxBufferType* txBuffer)
     {
+        if (txBuffer == nullptr)
+            return OPLK::kErrorEdrvInvalidParam;
+
         try
         {
             OplkEdrv::getInstance().getModule(handle)->freeTxBuffer(txBuffer);
@@ -151,13 +160,15 @@ namespace interface
             return OPLK::kErrorGeneralError;
         }
 
-
         return OPLK::kErrorOk;
     }
 
     OplkEdrv::ErrorType OplkEdrv::changeRxFilter(InstanceHandle handle, FilterType* filter, unsigned int count,
             unsigned int entryChanged, unsigned int changeFlags)
     {
+        if (filter == nullptr)
+            return OPLK::kErrorEdrvInvalidParam;
+
         try
         {
             OplkEdrv::getInstance().getModule(handle)->changeRxFilter(filter, count, entryChanged, changeFlags);
@@ -170,7 +181,6 @@ namespace interface
         {
             return OPLK::kErrorGeneralError;
         }
-
 
         return OPLK::kErrorOk;
     }
@@ -190,7 +200,6 @@ namespace interface
             return OPLK::kErrorGeneralError;
         }
 
-
         return OPLK::kErrorOk;
     }
 
@@ -208,7 +217,6 @@ namespace interface
         {
             return OPLK::kErrorGeneralError;
         }
-
 
         return OPLK::kErrorOk;
     }
