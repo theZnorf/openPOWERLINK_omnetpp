@@ -27,7 +27,7 @@ class Api : public OPP::cSimpleModule
 
     // Member
   private:
-    interface::OplkApi::ApiFunctions mApi;
+    interface::api::ApiFunctions mApi;
 };
 
 #endif

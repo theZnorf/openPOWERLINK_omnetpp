@@ -13,30 +13,27 @@
 
 namespace interface
 {
-    // forward declarations
-    struct ApiFunctions;
-
-    class OplkApi : public OplkBase<ApiFunctions*>
+    namespace api
     {
-            // Definitions
-        public:
-            using ErrorType = OPLK::ErrorType;
-            using ApiInitParam = OPLK::tOplkApiInitParam;
-            using NmtEvent = OPLK::tNmtEvent;
-            using ObdCallbackParam = OPLK::tObdCbParam;
-            using ObdSize = OPLK::tObdSize;
-            using SdoComConHdl = OPLK::tSdoComConHdl;
-            using SdoType = OPLK::tSdoType;
-            using ObdAlConnHdl = OPLK::tObdAlConHdl;
-            using BoolType = OPLK::BoolType;
-            using AsndFrame = OPLK::tAsndFrame;
-            using PlkFrame = OPLK::tPlkFrame;
-            using IdentResponse = OPLK::tIdentResponse;
-            using ApiStackInfo = OPLK::tOplkApiStackInfo;
-            using SocTimeInfo = OPLK::tOplkApiSocTimeInfo;
+        using ErrorType = OPLK::ErrorType;
+        using ApiInitParam = OPLK::tOplkApiInitParam;
+        using NmtEvent = OPLK::tNmtEvent;
+        using ObdCallbackParam = OPLK::tObdCbParam;
+        using ObdSize = OPLK::tObdSize;
+        using SdoComConHdl = OPLK::tSdoComConHdl;
+        using SdoType = OPLK::tSdoType;
+        using ObdAlConnHdl = OPLK::tObdAlConHdl;
+        using BoolType = OPLK::BoolType;
+        using AsndFrame = OPLK::tAsndFrame;
+        using PlkFrame = OPLK::tPlkFrame;
+        using IdentResponse = OPLK::tIdentResponse;
+        using ApiStackInfo = OPLK::tOplkApiStackInfo;
+        using SocTimeInfo = OPLK::tOplkApiSocTimeInfo;
+        using NmtNodeCommand = OPLK::tNmtNodeCommand;
+        using AsndFilter = OPLK::tOplkApiAsndFilter;
 
-            struct ApiFunctions
-            {
+        struct ApiFunctions
+        {
                 std::function<ErrorType(void)> initialize;
                 std::function<ErrorType(ApiInitParam*)> create;
                 std::function<ErrorType(void)> destroy;
@@ -54,6 +51,12 @@ namespace interface
                 std::function<ErrorType(UINT, UINT, void*, UINT)> writeLocalObject;
                 std::function<ErrorType(UINT8, AsndFrame*, size_t)> sendAsndFrame;
                 std::function<ErrorType(PlkFrame*, UINT)> sendEthFrame;
+                std::function<ErrorType(UINT8, AsndFilter)> setAsndForward;
+                std::function<ErrorType(BoolType)> setNonPlkForward;
+                std::function<ErrorType(void*)> postUserEvent;
+                std::function<ErrorType(UINT, NmtNodeCommand)> triggerMnStateChange;
+                std::function<ErrorType(BYTE*, UINT)> setCdcBuffer;
+                std::function<ErrorType(const char*)> setOdArchivePath;
                 std::function<ErrorType(const char*)> setCdcFilename;
                 std::function<ErrorType(void)> process;
                 std::function<ErrorType(UINT, IdentResponse**)> getIdentResponse;
@@ -65,7 +68,14 @@ namespace interface
                 std::function<UINT32(void)> getStackConfiguration;
                 std::function<ErrorType(ApiStackInfo*)> getStackInfo;
                 std::function<ErrorType(SocTimeInfo*)> getSocTime;
-            };
+        };
+
+    }
+
+    class OplkApi : public OplkBase<api::ApiFunctions*>
+    {
+            // Definitions
+        public:
 
             // C-Tor / D-Tor
         private:

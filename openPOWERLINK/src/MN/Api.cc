@@ -21,8 +21,12 @@ Define_Module(Api);
 
 void Api::initialize()
 {
+    interface::api::ApiFunctions & functions = mApi;
+
     // init interface
-    interface::OplkApi::getInstance().initModule(nullptr);
+    interface::OplkApi::getInstance().initModule(&functions);
+
+
 }
 
 void Api::handleMessage(cMessage *msg)
