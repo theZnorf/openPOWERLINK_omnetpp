@@ -25,6 +25,8 @@ namespace interface
             using MacType = UINT8*;
             using TxBufferType = OPLK::tEdrvTxBuffer;
             using FilterType = OPLK::tEdrvFilter;
+            using RxCallbackType = OPLK::tEdrvRxHandler;
+            using HwInfoType = OPLK::tHwParam;
 
             // C-Tor / D-Tor
         private:

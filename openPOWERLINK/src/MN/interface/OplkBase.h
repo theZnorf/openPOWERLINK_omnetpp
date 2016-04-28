@@ -14,7 +14,7 @@
 
 namespace interface
 {
-    template<typename TModulePtr>
+    template<typename TModule>
     class OplkBase
     {
             // Definitions
@@ -22,7 +22,7 @@ namespace interface
 
             struct ModuleInfo
             {
-                    TModulePtr module;
+                    TModule module;
                     SharedLibraryHelper::HelperPtr helper;
             };
 
@@ -43,7 +43,7 @@ namespace interface
 
             // Methods
         public:
-            void initModule(TModulePtr module)
+            void initModule(TModule module)
             {
                 if (module == nullptr)
                     throw std::invalid_argument("OplkBase::initModule - invalid module pointer");
@@ -79,7 +79,7 @@ namespace interface
                 }
             }
 
-            TModulePtr getModule(InstanceHandle handle)
+            TModule getModule(InstanceHandle handle)
             {
                 if (handle < mModuleInfos.size())
                     return mModuleInfos[handle].module;

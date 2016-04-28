@@ -13,25 +13,21 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.MN;
+#ifndef __OPENPOWERLINK_API_H_
+#define __OPENPOWERLINK_API_H_
 
-module MN
+#include <omnetpp.h>
+#include "interface/OplkApi.h"
+
+class Api : public OPP::cSimpleModule
 {
-    @display("bgb=348,401");
-    submodules:
-        edrv: Edrv {
-            @display("p=55,202");
-        }
-        hresTimer: HresTimer {
-            @display("p=55,58;is=s");
-        }
-        sdoUdp: SdoUdp {
-            @display("p=55,348");
-        }
-        target: Target {
-            @display("p=55,130");
-        }
-        trace: Trace {
-            @display("p=55,271");
-        }
-}
+  protected:
+    virtual void initialize();
+    virtual void handleMessage(OPP::cMessage *msg);
+
+    // Member
+  private:
+    interface::OplkApi::ApiFunctions mApi;
+};
+
+#endif

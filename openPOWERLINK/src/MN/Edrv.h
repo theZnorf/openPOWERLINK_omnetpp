@@ -16,6 +16,7 @@
 #ifndef __OPENPOWERLINK_EDRV_H_
 #define __OPENPOWERLINK_EDRV_H_
 
+#include <array>
 #include <omnetpp.h>
 #include "interface/OplkEdrv.h"
 
@@ -27,6 +28,9 @@ class Edrv : public OPP::cSimpleModule
         using MacType = interface::OplkEdrv::MacType;
         using TxBufferType = interface::OplkEdrv::TxBufferType;
         using FilterType = interface::OplkEdrv::FilterType;
+        using MacCont = std::array<UINT8, 6>;
+        using RxCallbackType = interface::OplkEdrv::RxCallbackType;
+        using HwInfoType = interface::OplkEdrv::HwInfoType;
 
         // Methods
     protected:
@@ -43,6 +47,12 @@ class Edrv : public OPP::cSimpleModule
         void changeRxFilter(FilterType* filter, UINT count, UINT entryChanged, UINT changeFlags);
         void clearRxMulticastMacAddr(MacType macAddr);
         void setRxMulticastMacAddr(MacType macAddr);
+
+        // Member
+    private:
+        MacCont mMac;
+        RxCallbackType mRxCallback;
+        HwInfoType mHwInfo;
 };
 
 #endif

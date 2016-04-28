@@ -15,23 +15,9 @@
 
 package openpowerlink.MN;
 
-module MN
+//
+// TODO auto-generated module
+//
+simple Api
 {
-    @display("bgb=348,401");
-    submodules:
-        edrv: Edrv {
-            @display("p=55,202");
-        }
-        hresTimer: HresTimer {
-            @display("p=55,58;is=s");
-        }
-        sdoUdp: SdoUdp {
-            @display("p=55,348");
-        }
-        target: Target {
-            @display("p=55,130");
-        }
-        trace: Trace {
-            @display("p=55,271");
-        }
 }

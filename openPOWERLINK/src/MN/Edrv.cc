@@ -14,7 +14,10 @@
 // 
 
 #include "Edrv.h"
+#include "interface/OplkException.h"
+#include <sstream>
 
+using namespace std;
 USING_NAMESPACE
 
 Define_Module(Edrv);
@@ -31,6 +34,31 @@ void Edrv::handleMessage(cMessage *msg)
 
 void Edrv::initEdrv(EdrvInitParamType* initParam)
 {
+    bubble("Ethernet driver initialized");
+    // init member
+    stringstream strStream;
+
+    // copy mac addr
+    mMac[0] = initParam->aMacAddr[0];
+    strStream << "MacAddress: " << initParam->aMacAddr[0];
+
+    for (auto i = 1; i < mMac.size(); i++)
+    {
+        mMac[i] = initParam->aMacAddr[i];
+        strStream << ":" << initParam->aMacAddr[i];
+    }
+    strStream << std::endl;
+
+    // set rx handler
+    mRxCallback = initParam->pfnRxHandler;
+
+    // save hw info
+    mHwInfo = initParam->hwParam;
+
+    strStream << "Device Number: " << mHwInfo.devNum << std::endl;
+    strStream << "Device Name: " << mHwInfo.pDevName << std::endl;
+
+    getDisplayString().setTagArg("t", 0, strStream.str().c_str());
 }
 
 void Edrv::exitEdrv()
@@ -39,29 +67,47 @@ void Edrv::exitEdrv()
 
 Edrv::MacType Edrv::getMacAddr()
 {
-    return nullptr;
+    return mMac.data();
 }
 
 void Edrv::sendTxBuffer(TxBufferType* txBuffer)
 {
+    bubble("Send Tx given buffer");
+
+    // call tx handler
+    txBuffer->pfnTxHandler(txBuffer);
 }
 
 void Edrv::allocTxBuffer(TxBufferType* txBuffer)
 {
+    // allocate buffer with new
+    txBuffer->pBuffer = new UINT8[txBuffer->maxBufferSize];
+    if (txBuffer->pBuffer == nullptr)
+        throw interface::OplkException("error allocating tx buffer ", OPLK::kErrorEdrvNoFreeBufEntry);
+
+    txBuffer->txBufferNumber.pArg = nullptr;
 }
 
 void Edrv::freeTxBuffer(TxBufferType* txBuffer)
 {
+    if (txBuffer->pBuffer != nullptr)
+    {
+        delete[] txBuffer->pBuffer;
+        txBuffer->pBuffer = nullptr;
+    }
 }
 
 void Edrv::changeRxFilter(FilterType* filter, unsigned int count, unsigned int entryChanged, unsigned int changeFlags)
 {
+    bubble("change filter");
 }
 
 void Edrv::clearRxMulticastMacAddr(MacType macAddr)
 {
+    bubble("clear rx multicast mac addr");
 }
 
 void Edrv::setRxMulticastMacAddr(MacType macAddr)
 {
+    bubble("set rx multicast mac addr");
 }

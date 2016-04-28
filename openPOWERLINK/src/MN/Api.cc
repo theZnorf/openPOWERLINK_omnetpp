@@ -13,46 +13,19 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#include <string>
-#include "Target.h"
+#include "Api.h"
 
 using namespace std;
 USING_NAMESPACE
+Define_Module(Api);
 
-Define_Module(Target);
+void Api::initialize()
+{
+    // init interface
+    interface::OplkApi::getInstance().initModule(nullptr);
+}
 
-
-void Target::initialize()
+void Api::handleMessage(cMessage *msg)
 {
     // TODO - Generated method body
-}
-
-void Target::handleMessage(cMessage *msg)
-{
-    // TODO - Generated method body
-}
-
-void Target::msleep(MilliSecondsType milliseconds)
-{
-    bubble(("msleep called for waiting " + to_string(milliseconds) + " milliseconds").c_str());
-}
-
-void Target::setIpAddress(std::string interfaceName, AddressType ipAddress, AddressType subnetMask, MtuType mtu)
-{
-    bubble("setIpAddress called");
-}
-
-void Target::setDefaultGateway(AddressType defaultGateway)
-{
-    bubble("setDefaultGateway called");
-}
-
-Target::TickType Target::getTickCount()
-{
-    return static_cast<TickType>(simTime().raw());
-}
-
-void Target::setLed(LedType ledType, bool ledOn)
-{
-    bubble("setLed called");
 }

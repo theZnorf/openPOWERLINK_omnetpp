@@ -20,4 +20,6 @@ package openpowerlink.MN;
 //
 simple Edrv
 {
+    parameters:
+        @display("t=NoMacAddressDefined,r,black");
 }
