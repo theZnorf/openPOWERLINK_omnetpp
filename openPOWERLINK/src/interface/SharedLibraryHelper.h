@@ -76,7 +76,7 @@ namespace interface
         public:
             using InstanceHandle = unsigned int;
             using InstanceType = int;
-            using HelperPtr = std::unique_ptr<SharedLibraryHelper>;
+            using HelperPtr = std::shared_ptr<SharedLibraryHelper>;
 
             // C-Tor / D-Tor
         public:

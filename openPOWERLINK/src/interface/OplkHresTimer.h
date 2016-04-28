@@ -8,10 +8,7 @@
 #ifndef OPLKHRESTIMER_H_
 #define OPLKHRESTIMER_H_
 
-#include <vector>
-#include "oplkinc.h"
-#include <cnedvalue.h>
-#include "SharedLibraryHelper.h"
+#include "OplkBase.h"
 
 // forward declarations
 class HresTimer;
@@ -19,24 +16,12 @@ using HresTimerHandle = unsigned long;
 
 namespace interface
 {
-    class OplkHresTimer
+    class OplkHresTimer : public OplkBase<HresTimer*>
     {
             // Definitions
         public:
-            using HresTimerPtr = HresTimer*;
-
-            struct HresTimerInfo
-            {
-                    HresTimerPtr hresTimer;
-                    SharedLibraryHelper::HelperPtr helper;
-            };
-
-            using InfoCont = std::vector<HresTimerInfo>;
-
-            using InstanceHandle = SharedLibraryHelper::InstanceHandle;
             using TimeType = unsigned long long;
             using ArgumentType = unsigned long;
-            using ErrorType = OPLK::ErrorType;
             using BoolType = unsigned char;
             using TimerEventArgs = OPLK::tTimerEventArg;
 
@@ -50,12 +35,7 @@ namespace interface
 
             // Methods
         public:
-            void initHresTimer(HresTimerPtr hresTimer);
-            HresTimerPtr getHresTimer(InstanceHandle handle) const;
-
-            // Member
-        private:
-            InfoCont mHresTimerInfos;
+            virtual void setFunctions(SharedLibraryHelper::HelperPtr helper, InstanceHandle handle) override;
 
             // Static Methods
         public:
