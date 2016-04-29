@@ -75,4 +75,5 @@ void interface::OplkApi::setFunctions(SharedLibraryHelper::HelperPtr helper, Ins
     functions->getStackConfiguration = helper->getFunction<UINT32>("oplk_getStackConfiguration");
     functions->getStackInfo = helper->getFunction<api::ErrorType, api::ApiStackInfo*>("oplk_getStackInfo");
     functions->getSocTime = helper->getFunction<api::ErrorType, api::SocTimeInfo*>("oplk_getSocTime");
+    functions->getRetStr = helper->getFunction<char*, api::ErrorType>("debugstr_getRetValStr");
 }

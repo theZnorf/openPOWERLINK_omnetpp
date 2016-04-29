@@ -33,12 +33,13 @@ void HresTimer::initialize()
 {
     try
     {
-    // initialze dispatcher for this module
-    interface::OplkHresTimer::getInstance().initModule(this);
+        // initialze dispatcher for this module
+        interface::OplkHresTimer::getInstance().initModule(this);
     }
     catch (std::exception const & e)
     {
         EV << "HresTimer -  init : " << e.what() << std::endl;
+        throw e;
     }
 }
 

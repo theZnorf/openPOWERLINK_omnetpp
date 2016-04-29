@@ -14,6 +14,7 @@
 // 
 
 #include "Trace.h"
+#include "interface/OplkTrace.h"
 
 USING_NAMESPACE
 
@@ -21,7 +22,7 @@ Define_Module(Trace);
 
 void Trace::initialize()
 {
-    // TODO - Generated method body
+    interface::OplkTrace::getInstance().initModule(this);
 }
 
 void Trace::handleMessage(cMessage *msg)

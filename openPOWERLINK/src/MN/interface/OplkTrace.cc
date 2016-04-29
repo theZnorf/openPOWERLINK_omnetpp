@@ -28,8 +28,11 @@ namespace interface
         functions.pfnTrace = OplkTrace::trace;
 
         // set function pointer of interface
-        if (helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tTraceFunctions>("sim_setTraceFunctions")(handle,
-                functions) != TRUE)
+        auto setFunctions = helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tTraceFunctions>("sim_setTraceFunctions");
+
+        auto ret = setFunctions(handle,functions);
+
+        if (ret != TRUE)
             throw std::runtime_error("OplkTrace::setFunctions - unable to set function pointer");
     }
 

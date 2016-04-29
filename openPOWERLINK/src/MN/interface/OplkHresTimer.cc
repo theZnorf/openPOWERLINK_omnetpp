@@ -87,6 +87,10 @@ void OplkHresTimer::setFunctions(SharedLibraryHelper::HelperPtr helper, Instance
     functions.pfnDeleteHresTimer = OplkHresTimer::deleteTimer;
 
     // set function pointer of interface
-    if (helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tHresTimerFunctions>("sim_setHresTimerFunctions")(handle, functions) != TRUE)
+    auto setFunctions = helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tHresTimerFunctions>("sim_setHresTimerFunctions");
+
+    auto ret = setFunctions(handle, functions);
+
+    if (ret != TRUE)
         throw runtime_error("OplkHresTimer::setFunctions - unable to set function pointer");
 }

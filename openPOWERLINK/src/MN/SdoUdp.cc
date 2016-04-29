@@ -14,6 +14,7 @@
 // 
 
 #include "SdoUdp.h"
+#include "interface/OplkSdoUdp.h"
 
 USING_NAMESPACE
 
@@ -21,7 +22,7 @@ Define_Module(SdoUdp);
 
 void SdoUdp::initialize()
 {
-    // TODO - Generated method body
+    interface::OplkSdoUdp::getInstance().initModule(this);
 }
 
 void SdoUdp::handleMessage(cMessage *msg)

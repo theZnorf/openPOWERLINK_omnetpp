@@ -32,10 +32,12 @@ namespace interface
         functions.pfnCiritcalSection = OplkSdoUdp::ciricalSection;
 
         // set function pointer of interface
-        if (helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tSdoUdpFunctions>("sim_setSdoUdpFunctions")(
-                handle, functions) != TRUE)
-            throw std::runtime_error("OplkSdoUdp::setFunctions - unable to set function pointer");
+        auto setFunctions = helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tSdoUdpFunctions>("sim_setSdoUdpFunctions");
 
+        auto ret = setFunctions(handle,functions);
+
+        if (ret != TRUE)
+            throw std::runtime_error("OplkSdoUdp::setFunctions - unable to set function pointer");
     }
 
     OplkSdoUdp& OplkSdoUdp::getInstance()

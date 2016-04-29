@@ -37,8 +37,11 @@ namespace interface
         functions.pfnClearMulticastMacAddr = OplkEdrv::clearRxMulticastMacAddr;
 
         // set function pointer of interface
-        if (helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tEdrvFunctions>("sim_setEdrvFunctions")(handle,
-                functions) != TRUE)
+        auto setFunctions = helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tEdrvFunctions>("sim_setEdrvFunctions");
+
+        auto ret = setFunctions(handle,functions);
+
+        if (ret != TRUE)
             throw std::runtime_error("OplkEdrv::setFunctions - unable to set function pointer");
     }
 

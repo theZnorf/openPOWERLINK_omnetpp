@@ -15,6 +15,7 @@
 
 #include "Edrv.h"
 #include "interface/OplkException.h"
+#include "interface/OplkEdrv.h"
 #include <sstream>
 
 using namespace std;
@@ -24,7 +25,7 @@ Define_Module(Edrv);
 
 void Edrv::initialize()
 {
-    // TODO - Generated method body
+    interface::OplkEdrv::getInstance().initModule(this);
 }
 
 void Edrv::handleMessage(cMessage *msg)

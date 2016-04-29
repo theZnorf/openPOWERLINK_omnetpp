@@ -31,6 +31,8 @@ namespace interface
         using SocTimeInfo = OPLK::tOplkApiSocTimeInfo;
         using NmtNodeCommand = OPLK::tNmtNodeCommand;
         using AsndFilter = OPLK::tOplkApiAsndFilter;
+        using ApiEventType = OPLK::tOplkApiEventType;
+        using ApiEventArg = OPLK::tOplkApiEventArg;
 
         struct ApiFunctions
         {
@@ -68,6 +70,7 @@ namespace interface
                 std::function<UINT32(void)> getStackConfiguration;
                 std::function<ErrorType(ApiStackInfo*)> getStackInfo;
                 std::function<ErrorType(SocTimeInfo*)> getSocTime;
+                std::function<char*(ErrorType)> getRetStr;
         };
 
     }

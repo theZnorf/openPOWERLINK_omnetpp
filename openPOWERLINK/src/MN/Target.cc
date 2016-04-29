@@ -15,6 +15,7 @@
 
 #include <string>
 #include "Target.h"
+#include "interface/OplkTarget.h"
 
 using namespace std;
 USING_NAMESPACE
@@ -24,7 +25,7 @@ Define_Module(Target);
 
 void Target::initialize()
 {
-    // TODO - Generated method body
+    interface::OplkTarget::getInstance().initModule(this);
 }
 
 void Target::handleMessage(cMessage *msg)

@@ -33,7 +33,11 @@ namespace interface
         functions.pfnSetLed = OplkTarget::setLed;
 
         // set function pointer of interface
-        if (helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tTargetFunctions>("sim_setTargetFunctions")(handle, functions) != TRUE)
+        auto setFunctions = helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tTargetFunctions>("sim_setTargetFunctions");
+
+        auto ret = setFunctions(handle,functions);
+
+        if (ret != TRUE)
             throw std::runtime_error("OplkHresTimer::setFunctions - unable to set function pointer");
     }
 
