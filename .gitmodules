@@ -1,3 +1,4 @@
 [submodule "openPOWERLINK_V2"]
 	path = openPOWERLINK_V2
-	url = https://www.github.com/profeltf/openPOWERLINK_V2.git
+	url = ../openPOWERLINK_V2
+	#url = https://www.github.com/profeltf/openPOWERLINK_V2.git
