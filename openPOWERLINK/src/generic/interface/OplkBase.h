@@ -53,7 +53,7 @@ namespace interface
                 SharedLibraryHelper::HelperPtr helper;
 
                 if (mModuleInfos.empty())
-                    helper = SharedLibraryHelper::createInstance(/*cLibName*/"../liboplkmn-sim_d", /*cNumberOfInstances*/1);
+                    helper = SharedLibraryHelper::createInstance(/*cLibName*/"liboplkmn-sim_d", /*cNumberOfInstances*/1);
                 else
                     helper = mModuleInfos.back().helper->getNextLibrary();
 
