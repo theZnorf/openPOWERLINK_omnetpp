@@ -58,7 +58,6 @@ BEGIN_OPLK
 #include <oplk/oplkinc.h>
 #include <oplk/oplk.h>
 #include <oplk/sdo.h>
-#include <eventlog/eventlog.h>
     }
 
     using ErrorType = tOplkError;

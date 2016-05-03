@@ -13,13 +13,19 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.MN;
+cplusplus {{
+#include "stack/interface/ApiDef.h"
+#include "OplkPacking.h"
+}}
+class interface::api::ErrorType extends void;
 
-//
-// TODO auto-generated module
-//
-simple Edrv
-{
-    parameters:
-        @display("t=NoMacAddressDefined,r,black");
+
+cplusplus {{
+USING_NAMESPACE
+}}
+
+namespace oplkMessages;
+
+message ReturnMessage {
+    interface::api::ErrorType returnValue;
 }

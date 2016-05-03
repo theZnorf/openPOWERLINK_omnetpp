@@ -13,21 +13,11 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef __OPENPOWERLINK_API_H_
-#define __OPENPOWERLINK_API_H_
+package openpowerlink.generic.stack;
 
-#include <omnetpp.h>
-#include "interface/OplkApi.h"
-
-class Api : public OPP::cSimpleModule
+//
+// TODO auto-generated module
+//
+simple SdoUdp
 {
-  protected:
-    virtual void initialize();
-    virtual void handleMessage(OPP::cMessage *msg);
-
-    // Member
-  private:
-    interface::api::ApiFunctions mApi;
-};
-
-#endif
+}

@@ -1,21 +1,23 @@
 /*
- * OplkApi.h
+ * ApiDef.h
  *
- *  Created on: Apr 28, 2016
+ *  Created on: May 3, 2016
  *      Author: franz
  */
 
-#ifndef OPLKAPI_H_
-#define OPLKAPI_H_
+#ifndef APIDEF_H_
+#define APIDEF_H_
 
+#include <omnetpp.h>
 #include <functional>
-#include "OplkBase.h"
+#include "oplkinc.h"
 
 namespace interface
 {
     namespace api
     {
         using ErrorType = OPLK::ErrorType;
+        using Error = OPLK::eOplkError;
         using ApiInitParam = OPLK::tOplkApiInitParam;
         using NmtEvent = OPLK::tNmtEvent;
         using ObdCallbackParam = OPLK::tObdCbParam;
@@ -33,9 +35,31 @@ namespace interface
         using AsndFilter = OPLK::tOplkApiAsndFilter;
         using ApiEventType = OPLK::tOplkApiEventType;
         using ApiEventArg = OPLK::tOplkApiEventArg;
+        using EventNmtStateChange = OPLK::tEventNmtStateChange;
+        using EventError = OPLK::tEventError;
+        using SdoComFinished = OPLK::tSdoComFinished;
+        using ObdCbParam = OPLK::tObdCbParam;
+        using ApiEventNode = OPLK::tOplkApiEventNode;
+        using ApiEventBoot = OPLK::tOplkApiEventBoot;
+        using CfmEventCnProgress = OPLK::tCfmEventCnProgress;
+        using ApiEventCfmResult = OPLK::tOplkApiEventCfmResult;
+        using ErrHistoryEntry = OPLK::tErrHistoryEntry;
+        using ApiEventRcvAsnd = OPLK::tOplkApiEventRcvAsnd;
+        using ApiEventPdoChange = OPLK::tOplkApiEventPdoChange;
+        using ApiEventReceivedPres = OPLK::tOplkApiEventReceivedPres;
+        using ApiEventReceivedNonPlk = OPLK::tOplkApiEventReceivedNonPlk;
+        using ApiEventDefaultGwChange = OPLK::tOplkApiEventDefaultGwChange;
+        using ApiEventReceivedSdoCom = OPLK::tOplkApiEventReceivedSdoCom;
+        using ApiEventReceivedSdoSeq = OPLK::tOplkApiEventReceivedSdoSeq;
+        using ApiEventUserObdAccess = OPLK::tOplkApiEventUserObdAccess;
+        using HwParam = OPLK::tHwParam;
+        using ObdInitParam = OPLK::tObdInitParam;
+        using ObdEntry = OPLK::tObdEntry;
+        using ObdSubEntry = OPLK::tObdSubEntry;
 
         struct ApiFunctions
         {
+                // generic api functions
                 std::function<ErrorType(void)> initialize;
                 std::function<ErrorType(ApiInitParam*)> create;
                 std::function<ErrorType(void)> destroy;
@@ -70,31 +94,23 @@ namespace interface
                 std::function<UINT32(void)> getStackConfiguration;
                 std::function<ErrorType(ApiStackInfo*)> getStackInfo;
                 std::function<ErrorType(SocTimeInfo*)> getSocTime;
+
+                // process image functions
+                std::function<ErrorType(UINT, UINT)> allocProcessImage;
+                std::function<ErrorType(void)> freeProcessImage;
+                std::function<ErrorType(UINT, UINT, UINT, BoolType, ObdSize, UINT*)> linkProcessImageObject;
+                std::function<ErrorType(void)> exchangeProcessImageIn;
+                std::function<ErrorType(void)> exchangeProcessImageOut;
+                std::function<void*(void)> getProcessImageIn;
+                std::function<void*(void)> getProcessImageOut;
+
+                std::function<ErrorType(void)> setupProcessImage;
+
+                std::function<ErrorType(UINT)> triggerPresForward;
+
                 std::function<char*(ErrorType)> getRetStr;
         };
-
     }
+}
 
-    class OplkApi : public OplkBase<api::ApiFunctions*>
-    {
-            // Definitions
-        public:
-
-            // C-Tor / D-Tor
-        private:
-            OplkApi();
-        public:
-            virtual ~OplkApi();
-
-            // Methods
-        public:
-            virtual void setFunctions(SharedLibraryHelper::HelperPtr helper, InstanceHandle handle) override;
-
-            // Static Methods
-        public:
-            static OplkApi & getInstance();
-    };
-
-} /* namespace interface */
-
-#endif /* OPLKAPI_H_ */
+#endif /* APIDEF_H_ */

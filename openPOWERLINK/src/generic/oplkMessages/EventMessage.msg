@@ -13,11 +13,21 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.MN;
+cplusplus {{
+#include "stack/interface/ApiDef.h"
+#include "OplkPacking.h"
+}}
 
-//
-// TODO auto-generated module
-//
-simple HresTimer
-{
+class interface::api::ApiEventType extends void;
+class interface::api::ApiEventArg extends void;
+
+cplusplus {{
+USING_NAMESPACE
+}}
+
+namespace oplkMessages;
+
+message EventMessage {
+    interface::api::ApiEventType eventType;
+    interface::api::ApiEventArg eventArg;
 }

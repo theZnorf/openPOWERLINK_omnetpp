@@ -11,6 +11,6 @@
 #include <memory>
 #include <omnetpp.h>
 
-using MsgPtr = std::unique_ptr<cMessage>;
+using MsgPtr = std::unique_ptr<OPP::cMessage>;
 
 #endif /* MSGPTR_H_ */

@@ -13,12 +13,39 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.MN;
+#include "AppBase.h"
+#include "MsgPtr.h"
+#include "ApiDef.h"
+#include "InitMessage_m.h"
 
-import openpowerlink.generic.GenericNode;
+USING_NAMESPACE
 
-module MN extends GenericNode
+Define_Module(AppBase);
+
+void AppBase::initialize()
 {
-    @display("bgb=348,401");
-    submodules:
+
+}
+
+void AppBase::handleMessage(cMessage *rawMsg)
+{
+    MsgPtr msg(rawMsg);
+
+    if (msg != nullptr)
+    {
+        // check message kind
+        switch (static_cast<AppCallType>(msg->getKind()))
+        {
+            case AppCallType::init:
+                break;
+            case AppCallType::processSync:
+                break;
+            case AppCallType::shutdown:
+                break;
+            default:
+                error("unknown message kind %d", msg->getKind());
+        }
+
+
+    }
 }

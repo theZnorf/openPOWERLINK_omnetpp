@@ -13,11 +13,35 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.MN;
+#ifndef __OPENPOWERLINK_APPBASE_H_
+#define __OPENPOWERLINK_APPBASE_H_
 
-//
-// TODO auto-generated module
-//
-simple Target
+#include <omnetpp.h>
+
+/**
+ * TODO - Generated class
+ */
+class AppBase : public OPP::cSimpleModule
 {
-}
+        // Definitions
+    public:
+        enum class AppCallType : short
+        {
+            init,
+            shutdown,
+            processSync
+        };
+
+  protected:
+    virtual void initialize();
+    virtual void handleMessage(OPP::cMessage *msg);
+
+    // Member
+  private:
+    OPP::cGate* mApiCallGate;
+    OPP::cGate* mEventGate;
+    int mApiReturnId;
+    int mEventReturnId;
+};
+
+#endif

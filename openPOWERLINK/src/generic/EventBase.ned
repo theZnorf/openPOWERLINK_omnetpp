@@ -13,12 +13,15 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.MN;
+package openpowerlink.generic;
 
-import openpowerlink.generic.GenericNode;
-
-module MN extends GenericNode
+//
+// TODO auto-generated module
+//
+simple EventBase
 {
-    @display("bgb=348,401");
-    submodules:
+    gates:
+        input event;
+        output eventReturn;
+        output stackShutdown;
 }

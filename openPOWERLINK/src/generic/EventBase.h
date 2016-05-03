@@ -13,12 +13,30 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.MN;
+#ifndef __OPENPOWERLINK_EVENTBASE_H_
+#define __OPENPOWERLINK_EVENTBASE_H_
 
-import openpowerlink.generic.GenericNode;
+#include <omnetpp.h>
+#include "ApiDef.h"
 
-module MN extends GenericNode
+/**
+ * TODO - Generated class
+ */
+class EventBase : public OPP::cSimpleModule
 {
-    @display("bgb=348,401");
-    submodules:
-}
+        // Methods
+  protected:
+    virtual void initialize();
+    virtual void handleMessage(OPP::cMessage *msg);
+
+    virtual interface::api::ErrorType processEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+
+    void sendReturnMessage(interface::api::ErrorType returnValue);
+
+    // Member
+  protected:
+    OPP::cGate* mReturnGate;
+
+};
+
+#endif

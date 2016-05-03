@@ -13,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.MN;
+package openpowerlink.generic.stack;
 
 //
 // TODO auto-generated module

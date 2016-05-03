@@ -13,12 +13,8 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.MN;
+package openpowerlink.generic.stack;
 
-import openpowerlink.generic.GenericNode;
-
-module MN extends GenericNode
+simple Timer
 {
-    @display("bgb=348,401");
-    submodules:
 }

@@ -8,4 +8,4 @@
 MAKEMAKE=opp_makemake $(MMOPT)
 
 all:
-	$(MAKEMAKE) -f --deep -O out
+	$(MAKEMAKE) -f --deep -O out -Xcommon -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/stack/include -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/stack/proj/linux/liboplkmn-sim -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/sim/include

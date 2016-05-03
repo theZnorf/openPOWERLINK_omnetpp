@@ -13,12 +13,12 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.MN;
+cplusplus {{
+USING_NAMESPACE
+}}
 
-import openpowerlink.generic.GenericNode;
+namespace oplkMessages;
 
-module MN extends GenericNode
-{
-    @display("bgb=348,401");
-    submodules:
+packet StringMessage {
+    string String;
 }

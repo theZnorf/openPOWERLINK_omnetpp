@@ -13,41 +13,81 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#include "Api.h"
-#include "interface/oplkinc.h"
+#include <functional>
+#include "DemoBase.h"
+#include "MsgPtr.h"
+#include "stack/Api.h"
+#include "InitMessage_m.h"
+#include "StringMessage_m.h"
 
 using namespace std;
 USING_NAMESPACE
-Define_Module(Api);
 
-static interface::api::ErrorType processEvents(interface::api::ApiEventType eventType_p,
-        interface::api::ApiEventArg* pEventArg_p, void* pUserArg_p)
+Define_Module(DemoBase);
+
+DemoBase::DemoBase()
+    : cSimpleModule(0)
 {
-    EV << "User event:" << endl;
-    EV << " EvenType: " << eventType_p << endl;
-
-    return OPLK::kErrorOk;
 }
 
-void Api::initialize()
+void DemoBase::activity()
 {
-    interface::api::ApiFunctions & functions = mApi;
+    bool running = true;
 
-    // init interface
-    interface::OplkApi::getInstance().initModule(&functions);
+    // initialize demo
 
-    // schedule self message
+    // main loop
+    while(running)
+    {
+        // receive message
+
+        // handle message
+
+    }
+}
+
+void DemoBase::initialize()
+{
+    // resolve gates
+    mApiCallGate = gate("apiCall");
+    mAppCallGate = gate("appCall");
+
+    // init dispatcher
+    mDispatch[gate("apiReturn")->getId()] = std::bind(&DemoBase::processApiReturn, this, placeholders::_1);
+    mDispatch[gate("appReturn")->getId()] = std::bind(&DemoBase::processAppReturn, this, placeholders::_1);
+
+    // schedule init message
     scheduleAt(simTime() + simtime_t::parse("1s"), new cMessage());
 }
 
-void Api::handleMessage(cMessage *msg)
+void DemoBase::handleMessage(::cMessage* rawMsg)
 {
+    MsgPtr msg(rawMsg);
+
+    if (msg != nullptr)
+    {
+        // check if external message
+        if (!msg->isSelfMessage())
+        {
+            mDispatch.at(msg->getArrivalGateId())(dynamic_cast<ReturnMsgPtr>(msg.get()));
+        }
+        else // self schedule init message
+        {
+            // init demo
+            initPowerlink();
+            initApp();
+        }
+    }
+}
+
+void DemoBase::initPowerlink()
+{
+
     BYTE macAddr[] = { 0x01, 0x23, 0x45, 0x67, 0x89, 0x00 };
     char cdcFile[] = "mnobd.cdc";
-    interface::api::ErrorType ret = OPLK::kErrorOk;
 
     static interface::api::ApiInitParam initParam;
-    static char devName[128];
+    static char devName[128] = {0};
 
     EV << "Initializing openPOWERLINK stack..." << std::endl;
 
@@ -89,8 +129,9 @@ void Api::handleMessage(cMessage *msg)
     initParam.syncNodeId = C_ADR_SYNC_ON_SOA;
     initParam.fSyncOnPrcNode = FALSE;
 
-    // set callback functions
-    initParam.pfnCbEvent = processEvents;
+    // set callback functions to null for seperation of modules
+    // (events will be transmmitted via messages)
+    initParam.pfnCbEvent = nullptr;
 
 #if defined(CONFIG_KERNELSTACK_DIRECTLINK)
     initParam.pfnCbSync = processSync;
@@ -99,23 +140,40 @@ void Api::handleMessage(cMessage *msg)
 #endif
 
     // initialize POWERLINK stack
-    ret = mApi.initialize();
-    if (ret != OPLK::kErrorOk)
-    {
-        EV << "oplk_initialize() failed with " << ret << " : " << mApi.getRetStr(ret) << std::endl;
-    }
+    auto initMessage = new cMessage("Init Stack", static_cast<short>(Api::ApiCallType::init));
+    send(initMessage, mApiCallGate);
 
-    ret = mApi.create(&initParam);
-    if (ret != OPLK::kErrorOk)
-    {
-        EV << "oplk_create() failed with " << ret << " : " << mApi.getRetStr(ret) << std::endl;
-    }
+    auto initMsg = new oplkMessages::InitMessage("Create Stack", static_cast<short>(Api::ApiCallType::create));
+    initMsg->setInitParam(initParam);
+    send(initMsg, mApiCallGate);
 
-    ret = mApi.setCdcFilename(cdcFile);
-    if (ret != OPLK::kErrorOk)
-    {
-        EV << "oplk_setCdcFilename() failed with " << ret << " : " << mApi.getRetStr(ret) << std::endl;
-    }
+    auto cdcMsg = new oplkMessages::StringMessage("Set cdc file", static_cast<short>(Api::ApiCallType::setCdcFilename));
+    cdcMsg->setString(cdcFile);
+    send(cdcMsg, mApiCallGate);
 
-    EV << "Initialization resulted: " << ret << " : " << mApi.getRetStr(ret) << std::endl;
+    EV << "Initialization succeeded" << std::endl;
+}
+
+void DemoBase::initApp()
+{
+
+}
+
+
+void DemoBase::processApiReturn(ReturnMsgPtr msg)
+{
+    EV << "Api call returned with " << msg->getReturnValue() << endl;
+}
+
+void DemoBase::processAppReturn(ReturnMsgPtr msg)
+{
+    EV << "App call returned with " << msg->getReturnValue() << endl;
+}
+
+void DemoBase::processStackShutdown()
+{
+    EV << "Stack is shutting down" << endl;
+
+    // TODO: shutdown demo
+
 }
