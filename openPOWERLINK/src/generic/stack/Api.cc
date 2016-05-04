@@ -20,6 +20,11 @@
 #include "ReturnMessage_m.h"
 #include "EventMessage_m.h"
 #include "InitMessage_m.h"
+#include "NmtMessage_m.h"
+#include "ObdCbMessage_m.h"
+#include "LinkMessage_m.h"
+#include "LinkReturnMessage_m.h"
+#include "ObjectMessage_m.h"
 
 using namespace std;
 USING_NAMESPACE
@@ -47,14 +52,12 @@ void Api::handleMessage(cMessage *rawMsg)
 
     if (msg != nullptr)
     {
-        interface::api::ErrorType ret = interface::api::Error::kErrorOk;
-
-        switch (static_cast<ApiCallType>(msg->getKind())) {
+        switch (static_cast<ApiCallType>(msg->getKind()))
+        {
             case ApiCallType::init:
-                ret = mApi.initialize();
+                sendReturnValue(mApi.initialize());
                 break;
-            case ApiCallType::create:
-            {
+            case ApiCallType::create: {
                 // cast message
                 auto initMsg = dynamic_cast<oplkMessages::InitMessage*>(msg.get());
 
@@ -67,21 +70,77 @@ void Api::handleMessage(cMessage *rawMsg)
                     // set event callback user arg to this pointer
                     initParam.pEventUserArg = static_cast<void*>(this);
 
-                    ret = mApi.create(&initParam);
+                    sendReturnValue(mApi.create(&initParam));
                 }
+                else
+                    sendReturnValue(interface::api::Error::kErrorInvalidOperation);
                 break;
             }
             case ApiCallType::destroy:
+                sendReturnValue(mApi.destroy());
                 break;
             case ApiCallType::exit:
+                mApi.exit();
                 break;
-            case ApiCallType::execNmtCommand:
+            case ApiCallType::execNmtCommand: {
+                // cast message
+                auto nmtMsg = dynamic_cast<oplkMessages::NmtMessage*>(msg.get());
+
+                if (nmtMsg != nullptr)
+                    sendReturnValue(mApi.execNmtCommand(nmtMsg->getNmtEvent()));
+                else
+                    sendReturnValue(interface::api::Error::kErrorInvalidOperation);
+            }
                 break;
-            case ApiCallType::cbGenericObdAccess:
+            case ApiCallType::cbGenericObdAccess: {
+                // cast message
+                auto obdMessage = dynamic_cast<oplkMessages::ObdCbMessage*>(msg.get());
+
+                if (obdMessage != nullptr)
+                    sendReturnValue(mApi.cbGenericObdAccess(&obdMessage->getObdCbParam()));
+                else
+                    sendReturnValue(interface::api::Error::kErrorInvalidOperation);
+            }
                 break;
-            case ApiCallType::linkObject:
+            case ApiCallType::linkObject: {
+                // cast message
+                auto linkMsg = dynamic_cast<oplkMessages::LinkMessage*>(msg.get());
+
+                if (linkMsg != nullptr)
+                {
+                    UINT varEntries = linkMsg->getVarEntries();
+                    interface::api::ObdSize entrySize = linkMsg->getEntrySize();
+
+                    auto ret = mApi.linkObject(linkMsg->getObjIndex(), (void*) linkMsg->getVariable(), &varEntries,
+                            &entrySize, linkMsg->getFirstSubIndex());
+                    auto retMsg = new oplkMessages::LinkReturnMessage();
+                    retMsg->setReturnValue(ret);
+                    retMsg->setVarEntries(varEntries);
+                    retMsg->setEntrySize(entrySize);
+
+                    sendReturnMessage(retMsg);
+                }
+                else
+                    sendReturnValue(interface::api::Error::kErrorInvalidOperation);
+            }
                 break;
-            case ApiCallType::readObject:
+            case ApiCallType::readObject: {
+                // cast message
+                auto objMsg = dynamic_cast<oplkMessages::ObjectMessage*>(msg.get());
+
+                if (objMsg != nullptr)
+                {
+                    // TODO: solve void* handling -> invalid pointer
+                    void* destData;
+                    UINT size = objMsg->getSize();
+
+                    auto ret = mApi.readObject(&objMsg->getSdoComConHdl(), objMsg->getNodeId(), objMsg->getIndex(),
+                            objMsg->getSubIndex(), destData, &size, objMsg->getSdoType(), (void*) objMsg->getUserArg());
+
+                    // TODO: send return message
+
+                }
+            }
                 break;
             case ApiCallType::writeObject:
                 break;
@@ -162,8 +221,6 @@ void Api::handleMessage(cMessage *rawMsg)
             default:
                 error("%s - unknown message kind received %d", __PRETTY_FUNCTION__, msg->getKind());
         }
-
-        sendReturnMessage(ret);
     }
 }
 
@@ -194,10 +251,14 @@ interface::api::ErrorType Api::processEvent(interface::api::ApiEventType eventTy
     return api->processEvent(eventType_p, pEventArg_p);
 }
 
-void Api::sendReturnMessage(interface::api::ErrorType returnValue)
+void Api::sendReturnValue(interface::api::ErrorType returnValue)
 {
     auto retMsg = new oplkMessages::ReturnMessage();
     retMsg->setReturnValue(returnValue);
+    sendReturnMessage(retMsg);
+}
 
-    send(retMsg, mReturnGate);
+void Api::sendReturnMessage(cMessage* msg)
+{
+    send(msg, mReturnGate);
 }

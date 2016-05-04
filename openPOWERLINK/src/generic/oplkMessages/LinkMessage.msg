@@ -13,12 +13,25 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
+
 cplusplus {{
-USING_NAMESPACE
+#include "stack/interface/ApiDef.h"
+#include "OplkPacking.h"
+}}
+
+class interface::api::ObdSize extends void;
+class oplkMessages::PointerCont extends void;
+
+cplusplus {{
+    USING_NAMESPACE
 }}
 
 namespace oplkMessages;
 
-message StringMessage {
-    string String;
+message LinkMessage {
+    unsigned int objIndex;
+    oplkMessages::PointerCont variable;
+    unsigned int varEntries;
+    interface::api::ObdSize entrySize;
+    unsigned int firstSubIndex;
 }

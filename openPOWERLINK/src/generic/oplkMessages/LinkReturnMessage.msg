@@ -14,11 +14,21 @@
 // 
 
 cplusplus {{
-USING_NAMESPACE
+    #include "stack/interface/ApiDef.h"
+    #include "OplkPacking.h"
+    #include "ReturnMessage_m.h"
+}}
+
+class interface::api::ObdSize extends void;
+packet oplkMessages::ReturnMessage;
+    
+cplusplus {{
+    USING_NAMESPACE
 }}
 
 namespace oplkMessages;
 
-message StringMessage {
-    string String;
+message LinkReturnMessage extends ReturnMessage {
+    unsigned int varEntries;
+    interface::api::ObdSize entrySize;
 }

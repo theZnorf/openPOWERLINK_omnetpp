@@ -9,6 +9,15 @@
 
 namespace oplkMessages
 {
+    void doUnpacking(OPP::cCommBuffer *b, PointerCont& cont)
+    {
+        b->unpack(cont);
+    }
+
+    void doPacking(OPP::cCommBuffer *b, PointerCont& cont)
+    {
+        b->pack(cont);
+    }
 
     void doUnpacking(OPP::cCommBuffer *b, interface::api::ApiInitParam& param)
     {
@@ -49,11 +58,11 @@ namespace oplkMessages
         b->unpack(param.pDevName);
         b->unpack(param.pHwVersion);
         b->unpack(param.pSwVersion);
-        auto eventCb = (UINT64) param.pfnCbEvent;
+        auto eventCb = (PointerCont) param.pfnCbEvent;
         b->unpack(eventCb);
-        auto userArg = (UINT64) param.pEventUserArg;
+        auto userArg = (PointerCont) param.pEventUserArg;
         b->unpack(userArg);
-        auto cbSync = (UINT64) param.pfnCbSync;
+        auto cbSync = (PointerCont) param.pfnCbSync;
         b->unpack(cbSync);
         doUnpacking(b, param.hwParam);
         b->unpack(param.syncResLatency);
@@ -103,9 +112,9 @@ namespace oplkMessages
         b->pack(param.pHwVersion);
         b->pack(param.pSwVersion);
 
-        UINT64 cbEvent = 0;
-        UINT64 userArg = 0;
-        UINT64 cbSync = 0;
+        PointerCont cbEvent = 0;
+        PointerCont userArg = 0;
+        PointerCont cbSync = 0;
 
         b->pack(cbEvent);
         b->pack(userArg);
@@ -126,7 +135,7 @@ namespace oplkMessages
 
     void doUnpacking(OPP::cCommBuffer* b, interface::api::ApiEventArg& arg)
     {
-        UINT64 userArg;
+        PointerCont userArg;
 
         b->unpack(userArg);
         arg.pUserArg = reinterpret_cast<decltype(arg.pUserArg)>(userArg);
@@ -134,7 +143,7 @@ namespace oplkMessages
 
     void doPacking(OPP::cCommBuffer* b, interface::api::ApiEventArg& arg)
     {
-        auto userArg = (UINT64) arg.pUserArg;
+        auto userArg = (PointerCont) arg.pUserArg;
 
         b->pack(userArg);
     }
@@ -177,7 +186,7 @@ namespace oplkMessages
         b->unpack(entry.count);
         doUnpacking(b, entry.pSubIndex, entry.count);
 
-        UINT64 callback = 0;
+        PointerCont callback = 0;
         b->unpack(callback);
 
         entry.pfnCallback = reinterpret_cast<decltype(entry.pfnCallback)>(callback);
@@ -197,8 +206,8 @@ namespace oplkMessages
         b->unpack(subentry.type);
         b->unpack(subentry.access);
 
-        UINT64 defaultVal = 0;
-        UINT64 current = 0;
+        PointerCont defaultVal = 0;
+        PointerCont current = 0;
 
         b->unpack(defaultVal);
         b->unpack(current);
@@ -214,5 +223,27 @@ namespace oplkMessages
         b->pack(subentry.pDefault);
         b->pack(subentry.pCurrent);
     }
+
+
+    void doUnpacking(OPP::cCommBuffer* b, interface::api::ObdCallbackParam& param)
+    {
+        b->unpack(param.obdEvent);
+        b->unpack(param.index);
+        b->unpack(param.subIndex);
+        PointerCont arg;
+        b->unpack(arg);
+        param.pArg = reinterpret_cast<decltype(param.pArg)>(arg);
+        b->unpack(param.abortCode);
+    }
+
+    void doPacking(OPP::cCommBuffer* b, interface::api::ObdCallbackParam& param)
+    {
+        b->pack(param.obdEvent);
+        b->pack(param.index);
+        b->pack(param.subIndex);
+        b->pack(param.pArg);
+        b->pack(param.abortCode);
+    }
+
 
 } /* namespace oplkMessages */

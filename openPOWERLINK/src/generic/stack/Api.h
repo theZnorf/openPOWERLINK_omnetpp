@@ -91,7 +91,8 @@ class Api : public OPP::cSimpleModule
             interface::api::ApiEventArg* pEventArg_p, void* pUserArg_p);
 
 
-    void sendReturnMessage(interface::api::ErrorType returnValue);
+    void sendReturnValue(interface::api::ErrorType returnValue);
+    void sendReturnMessage(OPP::cMessage* msg);
 
     // Member
   private:

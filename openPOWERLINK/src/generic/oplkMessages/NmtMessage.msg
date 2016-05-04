@@ -13,12 +13,13 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
+
 cplusplus {{
 USING_NAMESPACE
 }}
 
 namespace oplkMessages;
 
-message StringMessage {
-    string String;
+message NmtMessage {
+    uint8_t nmtEvent;
 }

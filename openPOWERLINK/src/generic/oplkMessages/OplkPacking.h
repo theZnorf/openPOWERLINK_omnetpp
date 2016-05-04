@@ -12,6 +12,12 @@
 
 namespace oplkMessages
 {
+    using PointerCont = UINT64;
+
+    // pointer cont
+    void doUnpacking(OPP::cCommBuffer *b, PointerCont& cont);
+    void doPacking(OPP::cCommBuffer *b, PointerCont& cont);
+
     // init params
     void doUnpacking(OPP::cCommBuffer *b, interface::api::ApiInitParam& param);
     void doPacking(OPP::cCommBuffer *b, interface::api::ApiInitParam& param);
@@ -36,6 +42,11 @@ namespace oplkMessages
     void doUnpacking(OPP::cCommBuffer* b, interface::api::ObdSubEntry& subentry);
     void doPacking(OPP::cCommBuffer* b, interface::api::ObdSubEntry& subentry);
 
+    // obd cb param
+    void doUnpacking(OPP::cCommBuffer* b, interface::api::ObdCallbackParam& param);
+    void doPacking(OPP::cCommBuffer* b, interface::api::ObdCallbackParam& param);
+
+    // templates for iterables
     template<typename TIter, typename TSize>
     void doUnpacking(OPP::cCommBuffer* b, TIter iter, TSize size)
     {

@@ -65,7 +65,7 @@ namespace interface
                 std::function<ErrorType(void)> destroy;
                 std::function<ErrorType(void)> exit;
                 std::function<ErrorType(NmtEvent)> execNmtCommand;
-                std::function<ErrorType(ObdCallbackParam)> cbGenericObdAccess;
+                std::function<ErrorType(ObdCallbackParam*)> cbGenericObdAccess;
                 std::function<ErrorType(UINT, void*, UINT*, ObdSize*, UINT)> linkObject;
                 std::function<ErrorType(SdoComConHdl*, UINT, UINT, UINT, void*, UINT*, SdoType, void*)> readObject;
                 std::function<ErrorType(SdoComConHdl*, UINT, UINT, UINT, void*, UINT, SdoType, void*)> writeObject;
