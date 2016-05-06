@@ -46,6 +46,10 @@ namespace oplkMessages
     void doUnpacking(OPP::cCommBuffer* b, interface::api::ObdCallbackParam& param);
     void doPacking(OPP::cCommBuffer* b, interface::api::ObdCallbackParam& param);
 
+    // ob al conn hdl
+    void doUnpacking(OPP::cCommBuffer* b, interface::api::ObdAlConnHdl connHdl);
+    void doPacking(OPP::cCommBuffer* b, interface::api::ObdAlConnHdl connHdl);
+
     // templates for iterables
     template<typename TIter, typename TSize>
     void doUnpacking(OPP::cCommBuffer* b, TIter iter, TSize size)

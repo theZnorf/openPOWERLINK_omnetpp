@@ -20,7 +20,7 @@ cplusplus {{
 }}
 
 class interface::api::ObdSize extends void;
-packet oplkMessages::ReturnMessage;
+message oplkMessages::ReturnMessage;
     
 cplusplus {{
     USING_NAMESPACE

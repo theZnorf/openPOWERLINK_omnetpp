@@ -16,11 +16,11 @@
 cplusplus {{
     #include "stack/interface/ApiDef.h"
     #include "OplkPacking.h"
+    #include "ObjectMessage_m.h"
 }}
 
-class interface::api::SdoComConHdl extends void;
-class interface::api::SdoType extends void;
-class oplkMessages::PointerCont extends void;
+class interface::api::ErrorType extends void;
+message oplkMessages::ObjectMessage;
     
 cplusplus {{
     USING_NAMESPACE
@@ -28,12 +28,6 @@ cplusplus {{
 
 namespace oplkMessages;
 
-message ObjectMessage {
-    interface::api::SdoComConHdl sdoComConHdl;
-    unsigned int nodeId;
-    unsigned int index;
-    unsigned int subIndex;
-    interface::api::SdoType sdoType;
-    PointerCont userArg;
-    uint8_t objData[];
+message ObjectReturnMessage extends ObjectMessage {
+    interface::api::ErrorType returnValue;
 }

@@ -245,5 +245,30 @@ namespace oplkMessages
         b->pack(param.abortCode);
     }
 
+    void doUnpacking(OPP::cCommBuffer* b, interface::api::ObdAlConnHdl connHdl)
+    {
+        b->unpack(connHdl.index);
+        b->unpack(connHdl.subIndex);
+        b->unpack(connHdl.accessTyp);
+        // data pointer and sizes are skipped, because the information is stored directly in the message
+        b->unpack(connHdl.totalPendSize);
+        b->unpack(connHdl.dataOffset);
+        b->unpack(connHdl.obdAlHdl);
+        b->unpack(connHdl.plkError);
+        b->unpack(connHdl.origin);
+    }
+
+    void doPacking(OPP::cCommBuffer* b, interface::api::ObdAlConnHdl connHdl)
+    {
+        b->pack(connHdl.index);
+        b->pack(connHdl.subIndex);
+        b->pack(connHdl.accessTyp);
+        // data pointer and sizes are skipped, because the information is stored directly in the message
+        b->pack(connHdl.totalPendSize);
+        b->pack(connHdl.dataOffset);
+        b->pack(connHdl.obdAlHdl);
+        b->pack(connHdl.plkError);
+        b->pack(connHdl.origin);
+    }
 
 } /* namespace oplkMessages */

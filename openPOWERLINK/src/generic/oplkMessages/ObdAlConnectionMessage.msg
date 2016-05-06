@@ -13,27 +13,19 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
+
 cplusplus {{
-    #include "stack/interface/ApiDef.h"
-    #include "OplkPacking.h"
+#include "stack/interface/ApiDef.h"
+#include "OplkPacking.h"
+}}
+class interface::api::ObdAlConnHdl extends void;
+
+
+cplusplus {{
+USING_NAMESPACE
 }}
 
-class interface::api::SdoComConHdl extends void;
-class interface::api::SdoType extends void;
-class oplkMessages::PointerCont extends void;
-    
-cplusplus {{
-    USING_NAMESPACE
-}}
-
-namespace oplkMessages;
-
-message ObjectMessage {
-    interface::api::SdoComConHdl sdoComConHdl;
-    unsigned int nodeId;
-    unsigned int index;
-    unsigned int subIndex;
-    interface::api::SdoType sdoType;
-    PointerCont userArg;
-    uint8_t objData[];
+message ObdAlConnectionMessage {
+	interface::api::ObdAlConnHdl obdAlConnHdl;
+	uint8_t data[];
 }

@@ -25,6 +25,8 @@
 #include "LinkMessage_m.h"
 #include "LinkReturnMessage_m.h"
 #include "ObjectMessage_m.h"
+#include "ObjectReturnMessage_m.h"
+#include "ObdAlConnectionMessage_m.h"
 
 using namespace std;
 USING_NAMESPACE
@@ -130,22 +132,107 @@ void Api::handleMessage(cMessage *rawMsg)
 
                 if (objMsg != nullptr)
                 {
-                    // TODO: solve void* handling -> invalid pointer
-                    void* destData;
-                    UINT size = objMsg->getSize();
+                    UINT size = objMsg->getObjDataArraySize();
+                    std::unique_ptr<BYTE[]> destData(new BYTE[size] { 0 });
 
                     auto ret = mApi.readObject(&objMsg->getSdoComConHdl(), objMsg->getNodeId(), objMsg->getIndex(),
-                            objMsg->getSubIndex(), destData, &size, objMsg->getSdoType(), (void*) objMsg->getUserArg());
+                            objMsg->getSubIndex(), destData.get(), &size, objMsg->getSdoType(),
+                            (void*) objMsg->getUserArg());
 
-                    // TODO: send return message
+                    // create return message and copy data from recieved message
+                    auto retMsg = new oplkMessages::ObjectReturnMessage();
+                    retMsg->setSdoComConHdl(objMsg->getSdoComConHdl());
+                    retMsg->setNodeId(objMsg->getNodeId());
+                    retMsg->setIndex(objMsg->getIndex());
+                    retMsg->setSubIndex(objMsg->getSubIndex());
+                    retMsg->setSdoType(objMsg->getSdoType());
+                    retMsg->setUserArg(objMsg->getUserArg());
 
+                    // allocate array for read data
+                    objMsg->setObjDataArraySize(size);
+                    // write read data to array
+                    for (auto i = 0u; i < size; i++)
+                        objMsg->setObjData(i, destData[i]);
+
+                    // set return value
+                    retMsg->setReturnValue(ret);
+
+                    sendReturnMessage(retMsg);
                 }
+                else
+                    sendReturnValue(interface::api::Error::kErrorInvalidOperation);
             }
                 break;
-            case ApiCallType::writeObject:
+            case ApiCallType::writeObject: {
+                // cast message
+                auto objMsg = dynamic_cast<oplkMessages::ObjectMessage*>(msg.get());
+
+                if (objMsg != nullptr)
+                {
+                    UINT size = objMsg->getObjDataArraySize();
+                    std::unique_ptr<BYTE[]> destData(new BYTE[size] { 0 });
+
+                    // copy transmitted data
+                    for (auto i = 0u; i < size; i++)
+                        destData[i] = objMsg->getObjData(i);
+
+                    auto ret = mApi.writeObject(&objMsg->getSdoComConHdl(), objMsg->getNodeId(), objMsg->getIndex(),
+                            objMsg->getSubIndex(), destData.get(), size, objMsg->getSdoType(),
+                            (void*) objMsg->getUserArg());
+
+                    // create return message and copy data from recieved message
+                    auto retMsg = new oplkMessages::ObjectReturnMessage();
+                    retMsg->setSdoComConHdl(objMsg->getSdoComConHdl());
+                    retMsg->setNodeId(objMsg->getNodeId());
+                    retMsg->setIndex(objMsg->getIndex());
+                    retMsg->setSubIndex(objMsg->getSubIndex());
+                    retMsg->setSdoType(objMsg->getSdoType());
+                    retMsg->setUserArg(objMsg->getUserArg());
+
+                    // set return value
+                    retMsg->setReturnValue(ret);
+
+                    sendReturnMessage(retMsg);
+                }
+                else
+                    sendReturnValue(interface::api::Error::kErrorInvalidOperation);
                 break;
-            case ApiCallType::finishUserObdAccess:
+            }
+            case ApiCallType::finishUserObdAccess: {
+                // cast message
+                auto objMsg = dynamic_cast<oplkMessages::ObjectMessage*>(msg.get());
+
+                if (objMsg != nullptr)
+                {
+                    UINT size = objMsg->getObjDataArraySize();
+                    std::unique_ptr<BYTE[]> destData(new BYTE[size] { 0 });
+
+                    // copy transmitted data
+                    for (auto i = 0u; i < size; i++)
+                        destData[i] = objMsg->getObjData(i);
+
+                    auto ret = mApi.writeObject(&objMsg->getSdoComConHdl(), objMsg->getNodeId(), objMsg->getIndex(),
+                            objMsg->getSubIndex(), destData.get(), size, objMsg->getSdoType(),
+                            (void*) objMsg->getUserArg());
+
+                    // create return message and copy data from recieved message
+                    auto retMsg = new oplkMessages::ObjectReturnMessage();
+                    retMsg->setSdoComConHdl(objMsg->getSdoComConHdl());
+                    retMsg->setNodeId(objMsg->getNodeId());
+                    retMsg->setIndex(objMsg->getIndex());
+                    retMsg->setSubIndex(objMsg->getSubIndex());
+                    retMsg->setSdoType(objMsg->getSdoType());
+                    retMsg->setUserArg(objMsg->getUserArg());
+
+                    // set return value
+                    retMsg->setReturnValue(ret);
+
+                    sendReturnMessage(retMsg);
+                }
+                else
+                    sendReturnValue(interface::api::Error::kErrorInvalidOperation);
                 break;
+            }
             case ApiCallType::enableUserObdAccess:
                 break;
             case ApiCallType::freeSdoChannel:
