@@ -56,6 +56,9 @@ namespace interface
         using ObdInitParam = OPLK::tObdInitParam;
         using ObdEntry = OPLK::tObdEntry;
         using ObdSubEntry = OPLK::tObdSubEntry;
+        using MsgType = OPLK::eMsgType;
+        using NetTime = OPLK::tNetTime;
+        //using ServiceId = OPLK::eServiceId;
 
         struct ApiFunctions
         {
@@ -69,7 +72,7 @@ namespace interface
                 std::function<ErrorType(UINT, void*, UINT*, ObdSize*, UINT)> linkObject;
                 std::function<ErrorType(SdoComConHdl*, UINT, UINT, UINT, void*, UINT*, SdoType, void*)> readObject;
                 std::function<ErrorType(SdoComConHdl*, UINT, UINT, UINT, void*, UINT, SdoType, void*)> writeObject;
-                std::function<ErrorType(ObdAlConnHdl)> finishUserObdAccess;
+                std::function<ErrorType(ObdAlConnHdl*)> finishUserObdAccess;
                 std::function<ErrorType(BoolType)> enableUserObdAccess;
                 std::function<ErrorType(SdoComConHdl)> freeSdoChannel;
                 std::function<ErrorType(SdoComConHdl, UINT32)> abortSdoChannel;

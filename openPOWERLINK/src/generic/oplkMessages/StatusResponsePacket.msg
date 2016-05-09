@@ -13,21 +13,24 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-
 cplusplus {{
-#include "stack/interface/ApiDef.h"
-#include "OplkPacking.h"
+    #include "stack/interface/ApiDef.h"
+    #include "OplkPacking.h"
 }}
-class interface::api::ObdAlConnHdl extends void;
 
+class interface::api::ErrHistoryEntry extends void;
 
 cplusplus {{
-USING_NAMESPACE
+    USING_NAMESPACE
 }}
 
 namespace oplkMessages;
 
-message ObdAlConnectionMessage {
-	interface::api::ObdAlConnHdl obdAlConnHdl;
-	uint8_t data[];
+packet StatusResponsePacket {
+    uint8_t flag1;
+    uint8_t flag2;
+    uint8_t nmtStatus;
+    uint8_t reserved[3];
+    uint8_t staticErrorLe;
+    interface::api::ErrHistoryEntry errorHistoryEntries[];
 }

@@ -25,7 +25,7 @@ namespace oplkMessages
         b->unpack(param.sizeOfInitParam);
         b->unpack(param.fAsyncOnly);
         b->unpack(param.nodeId);
-        b->unpack(param.aMacAddress, 6);
+        b->unpack(param.aMacAddress, sizeof(param.aMacAddress));
         b->unpack(param.featureFlags);
         b->unpack(param.cycleLen);
         b->unpack(param.isochrTxMaxPayload);
@@ -53,8 +53,8 @@ namespace oplkMessages
         b->unpack(param.ipAddress);
         b->unpack(param.subnetMask);
         b->unpack(param.defaultGateway);
-        b->unpack(param.sHostname, 32);
-        b->unpack(param.aVendorSpecificExt2, 48);
+        b->unpack(param.sHostname, sizeof(param.sHostname));
+        b->unpack(param.aVendorSpecificExt2, sizeof(param.aVendorSpecificExt2));
         b->unpack(param.pDevName);
         b->unpack(param.pHwVersion);
         b->unpack(param.pSwVersion);
@@ -78,7 +78,7 @@ namespace oplkMessages
         b->pack(param.sizeOfInitParam);
         b->pack(param.fAsyncOnly);
         b->pack(param.nodeId);
-        b->pack(param.aMacAddress, 6);
+        b->pack(param.aMacAddress, sizeof(param.aMacAddress));
         b->pack(param.featureFlags);
         b->pack(param.cycleLen);
         b->pack(param.isochrTxMaxPayload);
@@ -106,8 +106,8 @@ namespace oplkMessages
         b->pack(param.ipAddress);
         b->pack(param.subnetMask);
         b->pack(param.defaultGateway);
-        b->pack(param.sHostname, 32);
-        b->pack(param.aVendorSpecificExt2, 48);
+        b->pack(param.sHostname, sizeof(param.sHostname));
+        b->pack(param.aVendorSpecificExt2, sizeof(param.aVendorSpecificExt2));
         b->pack(param.pDevName);
         b->pack(param.pHwVersion);
         b->pack(param.pSwVersion);
@@ -245,30 +245,75 @@ namespace oplkMessages
         b->pack(param.abortCode);
     }
 
-    void doUnpacking(OPP::cCommBuffer* b, interface::api::ObdAlConnHdl connHdl)
+    void doUnpacking(OPP::cCommBuffer* b, interface::api::ObdAlConnHdl& connHdl)
     {
         b->unpack(connHdl.index);
         b->unpack(connHdl.subIndex);
         b->unpack(connHdl.accessTyp);
         // data pointer and sizes are skipped, because the information is stored directly in the message
         b->unpack(connHdl.totalPendSize);
+        b->unpack(connHdl.dataSize);
         b->unpack(connHdl.dataOffset);
         b->unpack(connHdl.obdAlHdl);
         b->unpack(connHdl.plkError);
         b->unpack(connHdl.origin);
     }
 
-    void doPacking(OPP::cCommBuffer* b, interface::api::ObdAlConnHdl connHdl)
+    void doPacking(OPP::cCommBuffer* b, interface::api::ObdAlConnHdl& connHdl)
     {
         b->pack(connHdl.index);
         b->pack(connHdl.subIndex);
         b->pack(connHdl.accessTyp);
         // data pointer and sizes are skipped, because the information is stored directly in the message
         b->pack(connHdl.totalPendSize);
+        b->pack(connHdl.dataSize);
         b->pack(connHdl.dataOffset);
         b->pack(connHdl.obdAlHdl);
         b->pack(connHdl.plkError);
         b->pack(connHdl.origin);
     }
+
+    void doUnpacking(OPP::cCommBuffer* b, interface::api::NetTime& time)
+    {
+        b->unpack(time.sec);
+        b->unpack(time.nsec);
+    }
+
+    void doPacking(OPP::cCommBuffer* b, interface::api::NetTime& time)
+    {
+        b->pack(time.sec);
+        b->pack(time.nsec);
+    }
+
+
+    void doUnpacking(OPP::cCommBuffer* b, interface::api::ErrHistoryEntry& entry)
+    {
+        UINT16 type;
+        UINT16 error;
+        interface::api::NetTime time;
+
+        b->unpack(type);
+        b->unpack(error);
+        doUnpacking(b, time);
+
+        entry.entryType = type;
+        entry.errorCode = error;
+        entry.timeStamp = time;
+
+        doUnpacking(b, entry.aAddInfo, sizeof(entry.aAddInfo));
+    }
+
+    void doPacking(OPP::cCommBuffer* b, interface::api::ErrHistoryEntry& entry)
+    {
+        UINT16 type = entry.entryType;
+        UINT16 error = entry.errorCode;
+        interface::api::NetTime time = entry.timeStamp;
+
+        b->pack(type);
+        b->pack(error);
+        doPacking(b, time);
+        doPacking(b, entry.aAddInfo, sizeof(entry.aAddInfo));
+    }
+
 
 } /* namespace oplkMessages */

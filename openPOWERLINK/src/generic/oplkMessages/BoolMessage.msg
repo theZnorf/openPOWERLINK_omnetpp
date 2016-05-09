@@ -13,21 +13,12 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-
 cplusplus {{
-#include "stack/interface/ApiDef.h"
-#include "OplkPacking.h"
-}}
-class interface::api::ObdAlConnHdl extends void;
-
-
-cplusplus {{
-USING_NAMESPACE
+    USING_NAMESPACE
 }}
 
 namespace oplkMessages;
 
-message ObdAlConnectionMessage {
-	interface::api::ObdAlConnHdl obdAlConnHdl;
-	uint8_t data[];
+message BoolMessage {
+    bool value;
 }

@@ -50,7 +50,7 @@ void interface::OplkApi::setFunctions(SharedLibraryHelper::HelperPtr helper, Ins
     functions->writeObject =
             helper->getFunction<ErrorType, SdoComConHdl*, UINT, UINT, UINT, void*, UINT, SdoType, void*>(
                     "oplk_writeObject");
-    functions->finishUserObdAccess = helper->getFunction<ErrorType, ObdAlConnHdl>("oplk_finishUserObdAccess");
+    functions->finishUserObdAccess = helper->getFunction<ErrorType, ObdAlConnHdl*>("oplk_finishUserObdAccess");
     functions->enableUserObdAccess = helper->getFunction<ErrorType, BoolType>("oplk_enableUserObdAccess");
     functions->freeSdoChannel = helper->getFunction<ErrorType, SdoComConHdl>("oplk_freeSdoChannel");
     functions->abortSdoChannel = helper->getFunction<ErrorType, SdoComConHdl, UINT32>("oplk_abortSdo");
