@@ -21,5 +21,6 @@ namespace oplkMessages;
 
 packet AsndFramePacket {
     uint8_t serviceId;
+    uint8_t payLoad[256];
     // asnd payload will be encapsulated
 }

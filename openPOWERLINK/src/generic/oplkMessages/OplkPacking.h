@@ -58,6 +58,18 @@ namespace oplkMessages
     void doUnpacking(OPP::cCommBuffer* b, interface::api::ErrHistoryEntry& entry);
     void doPacking(OPP::cCommBuffer* b, interface::api::ErrHistoryEntry& entry);
 
+    // async sco com
+    void doUnpacking(OPP::cCommBuffer* b, interface::api::AsySdoCom& com);
+    void doPacking(OPP::cCommBuffer* b, interface::api::AsySdoCom& com);
+
+    // stack info
+    void doUnpacking(OPP::cCommBuffer* b, interface::api::ApiStackInfo& info);
+    void doPacking(OPP::cCommBuffer* b, interface::api::ApiStackInfo& info);
+
+    // soc time info
+    void doUnpacking(OPP::cCommBuffer* b, interface::api::SocTimeInfo& info);
+    void doPacking(OPP::cCommBuffer* b, interface::api::SocTimeInfo& info);
+
     // templates for iterables
     template<typename TIter, typename TSize>
     void doUnpacking(OPP::cCommBuffer* b, TIter iter, TSize size)

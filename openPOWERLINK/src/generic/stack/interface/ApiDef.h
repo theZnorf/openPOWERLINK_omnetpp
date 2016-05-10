@@ -58,7 +58,7 @@ namespace interface
         using ObdSubEntry = OPLK::tObdSubEntry;
         using MsgType = OPLK::eMsgType;
         using NetTime = OPLK::tNetTime;
-        //using ServiceId = OPLK::eServiceId;
+        using AsySdoCom = OPLK::tAsySdoCom;
 
         struct ApiFunctions
         {

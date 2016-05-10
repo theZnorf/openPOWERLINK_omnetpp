@@ -19,13 +19,8 @@ cplusplus {{
 
 namespace oplkMessages;
 
-packet PlkPacket {
-    uint8_t dstMac[6];
-    uint8_t srcMac[6];
-    uint16_t etherType;
-    unsigned short msgType;
-    uint8_t dstNodeId;
-    uint8_t srcNodeId;
-    // frame data is encapsulated packet
-    uint8_t payLoad[257];
+packet NmtCommandServicePacket {
+    uint8_t nmtCommandId;
+    uint8_t reservec1;
+    uint8_t nmtCommandData[32];
 }

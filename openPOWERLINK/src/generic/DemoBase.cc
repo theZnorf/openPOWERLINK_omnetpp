@@ -156,7 +156,7 @@ void DemoBase::initPowerlink()
 
 void DemoBase::initApp()
 {
-
+    // TODO: call init of app module
 }
 
 

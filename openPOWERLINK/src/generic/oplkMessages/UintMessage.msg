@@ -12,20 +12,13 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
-
+    
 cplusplus {{
     USING_NAMESPACE
 }}
 
 namespace oplkMessages;
 
-packet PlkPacket {
-    uint8_t dstMac[6];
-    uint8_t srcMac[6];
-    uint16_t etherType;
-    unsigned short msgType;
-    uint8_t dstNodeId;
-    uint8_t srcNodeId;
-    // frame data is encapsulated packet
-    uint8_t payLoad[257];
+message UintMessage {
+    unsigned int value;
 }

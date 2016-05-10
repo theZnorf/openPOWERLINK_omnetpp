@@ -19,13 +19,12 @@ cplusplus {{
 
 namespace oplkMessages;
 
-packet PlkPacket {
-    uint8_t dstMac[6];
-    uint8_t srcMac[6];
-    uint16_t etherType;
-    unsigned short msgType;
-    uint8_t dstNodeId;
-    uint8_t srcNodeId;
-    // frame data is encapsulated packet
-    uint8_t payLoad[257];
+packet SyncResponsePacket {
+    uint16_t reserved;
+    uint32_t syncStatusLe;
+    uint32_t latencyLe;
+    uint32_t syncNodeNumbeLe;
+    uint32_t syncDelayLe;
+    uint32_t presTimeFirstLe;
+    uint32_t presTimeSecondLe;
 }

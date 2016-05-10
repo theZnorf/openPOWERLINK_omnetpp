@@ -315,5 +315,69 @@ namespace oplkMessages
         doPacking(b, entry.aAddInfo, sizeof(entry.aAddInfo));
     }
 
+    void doUnpacking(OPP::cCommBuffer* b, interface::api::AsySdoCom& com)
+    {
+        UINT16 segmentSizeLe;
+        UINT16 reserved;
+
+        doUnpacking(b, com.reserved1);
+        doUnpacking(b, com.transactionId);
+        doUnpacking(b, com.flags);
+        doUnpacking(b, com.commandId);
+        doUnpacking(b, segmentSizeLe);
+        doUnpacking(b, reserved);
+        doUnpacking(b, com.aCommandData, sizeof(com.aCommandData));
+        doUnpacking(b, com.reserved1);
+        doUnpacking(b, com.reserved1);
+        doUnpacking(b, com.reserved1);
+
+        com.segmentSizeLe = segmentSizeLe;
+        com.reserved2 = reserved;
+    }
+
+    void doPacking(OPP::cCommBuffer* b, interface::api::AsySdoCom& com)
+    {
+        doPacking(b, com.reserved1);
+        doPacking(b, com.transactionId);
+        doPacking(b, com.flags);
+        doPacking(b, com.commandId);
+        doPacking(b, com.segmentSizeLe);
+        doPacking(b, com.reserved2);
+        doPacking(b, com.aCommandData, sizeof(com.aCommandData));
+        doPacking(b, com.reserved1);
+        doPacking(b, com.reserved1);
+        doPacking(b, com.reserved1);
+    }
+
+    void doUnpacking(OPP::cCommBuffer* b, interface::api::ApiStackInfo& info)
+    {
+        doUnpacking(b, info.userVersion);
+        doUnpacking(b, info.userFeature);
+        doUnpacking(b, info.kernelVersion);
+        doUnpacking(b, info.kernelFeature);
+    }
+
+    void doPacking(OPP::cCommBuffer* b, interface::api::ApiStackInfo& info)
+    {
+        doPacking(b, info.userVersion);
+        doPacking(b, info.userFeature);
+        doPacking(b, info.kernelVersion);
+        doPacking(b, info.kernelFeature);
+    }
+
+
+    void doUnpacking(OPP::cCommBuffer* b, interface::api::SocTimeInfo& info)
+    {
+        doUnpacking(b, info.netTime);
+        doUnpacking(b, info.relTime);
+        doUnpacking(b, info.fValidRelTime);
+    }
+
+    void doPacking(OPP::cCommBuffer* b, interface::api::SocTimeInfo& info)
+    {
+        doPacking(b, info.netTime);
+        doPacking(b, info.relTime);
+        doPacking(b, info.fValidRelTime);
+    }
 
 } /* namespace oplkMessages */

@@ -14,18 +14,22 @@
 // 
 
 cplusplus {{
+    #include "stack/interface/ApiDef.h"
+    #include "OplkPacking.h"
+}}
+
+class interface::api::AsySdoCom extends void;
+
+cplusplus {{
     USING_NAMESPACE
 }}
 
 namespace oplkMessages;
 
-packet PlkPacket {
-    uint8_t dstMac[6];
-    uint8_t srcMac[6];
-    uint16_t etherType;
-    unsigned short msgType;
-    uint8_t dstNodeId;
-    uint8_t srcNodeId;
-    // frame data is encapsulated packet
-    uint8_t payLoad[257];
+
+packet AsyncSdoSeqPacket {
+    uint8_t recvSeqNumCon;
+    uint8_t sendSeqNumCon;
+    uint8_t reserved[2];
+    interface::api::AsySdoCom sdoSeqPayload;
 }
