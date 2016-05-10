@@ -49,6 +49,7 @@ class DemoBase : public UseApiBase
     private:
         OPP::cGate* mApiCallGate;
         OPP::cGate* mAppCallGate;
+        OPP::cGate* mAppApiReturnGate;
         MessageDispatcher mDispatcher;
 };
 

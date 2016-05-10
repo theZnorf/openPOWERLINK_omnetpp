@@ -18,6 +18,7 @@
 #include "MsgPtr.h"
 #include "ApiDef.h"
 #include "InitMessage_m.h"
+#include "OplkException.h"
 
 #include "xap.h"
 
@@ -25,8 +26,25 @@ USING_NAMESPACE
 
 Define_Module(AppBase);
 
-AppBase::AppBase()
- : UseApiBase("functionCall")
+#define DEFAULT_MAX_CYCLE_COUNT 20      // 6 is very fast
+#define APP_LED_COUNT_1         8       // number of LEDs for CN1
+#define APP_LED_MASK_1          (1 << (APP_LED_COUNT_1 - 1))
+#define MAX_NODES               255
+
+typedef struct
+{
+        UINT leds;UINT ledsOld;UINT input;UINT inputOld;UINT period;
+        int toggle;
+} APP_NODE_VAR_T;
+
+static int usedNodeIds_l[] = { 1, 32, 110, 0 };
+static UINT cnt_l;
+static APP_NODE_VAR_T nodeVar_l[MAX_NODES];
+static PI_IN* pProcessImageIn_l;
+static PI_OUT* pProcessImageOut_l;
+
+AppBase::AppBase() :
+        UseApiBase("apiCall")
 {
 }
 
@@ -73,35 +91,39 @@ void AppBase::handleOtherMessage(MessagePtr msg)
 interface::api::ErrorType AppBase::initApp()
 {
     interface::api::ErrorType ret = interface::api::Error::kErrorOk;
-//    int i;
-//
-//    cnt_l = 0;
-//
-//    for (i = 0; (i < MAX_NODES) && (usedNodeIds_l[i] != 0); i++)
-//    {
-//        nodeVar_l[i].leds = 0;
-//        nodeVar_l[i].ledsOld = 0;
-//        nodeVar_l[i].input = 0;
-//        nodeVar_l[i].inputOld = 0;
-//        nodeVar_l[i].toggle = 0;
-//        nodeVar_l[i].period = 0;
-//    }
-//
-//    printf("Initializing process image...\n");
-//    printf("Size of process image: Input = %lu Output = %lu\n", (ULONG)sizeof(PI_IN), (ULONG)sizeof(PI_OUT));
-//    eventlog_printMessage(kEventlogLevelInfo, kEventlogCategoryGeneric,
-//                        "Allocating process image: Input:%lu Output:%lu", (ULONG)sizeof(PI_IN), (ULONG)sizeof(PI_OUT));
-//
-//    ret = oplk_allocProcessImage(sizeof(PI_IN), sizeof(PI_OUT));
-//    if (ret != kErrorOk)
-//    {
-//        return ret;
-//    }
-//
-//    pProcessImageIn_l = (PI_IN*)oplk_getProcessImageIn();
-//    pProcessImageOut_l = (PI_OUT*)oplk_getProcessImageOut();
-//
-//    ret = oplk_setupProcessImage();
+    try
+    {
+        int i;
+
+        cnt_l = 0;
+
+        for (i = 0; (i < MAX_NODES) && (usedNodeIds_l[i] != 0); i++)
+        {
+            nodeVar_l[i].leds = 0;
+            nodeVar_l[i].ledsOld = 0;
+            nodeVar_l[i].input = 0;
+            nodeVar_l[i].inputOld = 0;
+            nodeVar_l[i].toggle = 0;
+            nodeVar_l[i].period = 0;
+        }
+
+        EV << "Initializing process image..." << std::endl;
+        EV << "Size of process image: Input = " << (ULONG) sizeof(PI_IN) << " Output = " << (ULONG) sizeof(PI_OUT)
+                << std::endl;
+        //eventlog_printMessage(kEventlogLevelInfo, kEventlogCategoryGeneric, "Allocating process image: Input:%lu Output:%lu", (ULONG)sizeof(PI_IN), (ULONG)sizeof(PI_OUT));
+
+        allocProcessImage(sizeof(PI_IN), sizeof(PI_OUT));
+
+        pProcessImageIn_l = (PI_IN*) getProcessImageIn();
+        pProcessImageOut_l = (PI_OUT*) getProcessImageOut();
+
+        setupProcessImage();
+
+    }
+    catch (interface::OplkException const & e)
+    {
+        ret = e.errorNumber();
+    }
 
     return ret;
 }

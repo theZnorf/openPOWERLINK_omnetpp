@@ -115,3 +115,4 @@ gcc-release
 *.FAILED
 *.bak
 
+out

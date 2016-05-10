@@ -19,6 +19,7 @@
 #include "stack/Api.h"
 #include "InitMessage_m.h"
 #include "StringMessage_m.h"
+#include "AppBase.h"
 
 using namespace std;
 USING_NAMESPACE
@@ -37,6 +38,7 @@ void DemoBase::initialize()
     // resolve gates
     mApiCallGate = gate("apiCall");
     mAppCallGate = gate("appCall");
+    mAppApiReturnGate = gate("appApiReturn");
 
     // init dispatcher
     mDispatcher.registerFunction(gate("apiReturn"), std::bind(&DemoBase::processApiReturn, this, placeholders::_1));
@@ -142,12 +144,17 @@ void DemoBase::initPowerlink()
 
 void DemoBase::initApp()
 {
-    // TODO: call init of app module
+    // create init message for app module
+    auto msg = new cMessage();
+    msg->setKind(static_cast<short>(AppBase::AppCallType::init));
+
+    send(msg, mAppCallGate);
 }
 
 void DemoBase::processApiReturn(RawMessagePtr msg)
 {
-    EV << "Api call returned UNEXPECTED" << endl;
+    // forward unexpected api returns to app module
+    send(msg->dup(), mAppApiReturnGate);
 }
 
 void DemoBase::processAppReturn(RawMessagePtr msg)

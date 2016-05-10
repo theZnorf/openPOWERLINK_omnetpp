@@ -14,6 +14,7 @@
 #include <omnetpp.h>
 #include "ApiDef.h"
 #include "Api.h"
+#include "ReturnMessage_m.h"
 
 class UseApiBase : public OPP::cSimpleModule
 {
@@ -23,9 +24,7 @@ class UseApiBase : public OPP::cSimpleModule
         using ErrorType = interface::api::ErrorType;
         using Error = interface::api::Error;
         using CallType = Api::ApiCallType;
-        using ReturnCont = std::map<CallType, ErrorType>;
-
-        static const ErrorType cInvalidError = -1;
+        using ReturnCont = std::map<CallType, MessagePtr>;
 
         // C-Tor / D-Tor
     public:
@@ -41,10 +40,17 @@ class UseApiBase : public OPP::cSimpleModule
         void createStack(interface::api::ApiInitParam& param);
         void setCdcFile(std::string const & fileName);
 
+        void allocProcessImage(UINT sizeProcessImageIn, UINT sizeProcessImageOut);
+        void* getProcessImageIn();
+        void* getProcessImageOut();
+        void setupProcessImage();
+
+        //TODO: implement missing methods and reorder
+
     protected:
         virtual void handleOtherMessage(MessagePtr msg) = 0;
 
-        static void checkReturnValue(ErrorType err, std::string const & msg);
+        static void checkReturnMessage(MessagePtr msg, std::string const & errorMessage);
 
         void receiveMessage();
 
