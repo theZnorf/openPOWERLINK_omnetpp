@@ -21,5 +21,5 @@ package openpowerlink.generic.stack;
 simple Edrv
 {
     parameters:
-        @display("t=NoMacAddressDefined,r,black");
+        @display("t=Uninitialized,r,black");
 }

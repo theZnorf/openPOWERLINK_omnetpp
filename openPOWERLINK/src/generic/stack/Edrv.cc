@@ -33,6 +33,12 @@ void Edrv::handleMessage(cMessage *msg)
     // TODO - Generated method body
 }
 
+
+void Edrv::finish()
+{
+
+}
+
 void Edrv::initEdrv(EdrvInitParamType* initParam)
 {
     bubble("Ethernet driver initialized");
@@ -41,12 +47,12 @@ void Edrv::initEdrv(EdrvInitParamType* initParam)
 
     // copy mac addr
     mMac[0] = initParam->aMacAddr[0];
-    strStream << "MacAddress: " << initParam->aMacAddr[0];
+    strStream << "MacAddress: " << std::hex << (int)mMac[0];
 
-    for (auto i = 1; i < mMac.size(); i++)
+    for (auto i = 1u; i < mMac.size(); i++)
     {
         mMac[i] = initParam->aMacAddr[i];
-        strStream << ":" << initParam->aMacAddr[i];
+        strStream << ":" << (int)mMac[i];
     }
     strStream << std::endl;
 
@@ -64,6 +70,7 @@ void Edrv::initEdrv(EdrvInitParamType* initParam)
 
 void Edrv::exitEdrv()
 {
+    getDisplayString().setTagArg("t", 0, "Uninitialized");
 }
 
 Edrv::MacType Edrv::getMacAddr()

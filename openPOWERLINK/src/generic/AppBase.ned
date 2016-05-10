@@ -15,12 +15,11 @@
 
 package openpowerlink.generic;
 
-//
-// TODO auto-generated module
-//
 simple AppBase
 {
     gates:
         input functionCall;
         output return;
+        output apiCall;
+        input apiReturn;
 }

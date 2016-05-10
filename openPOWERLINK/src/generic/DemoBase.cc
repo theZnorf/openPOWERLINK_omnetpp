@@ -25,51 +25,35 @@ USING_NAMESPACE
 
 Define_Module(DemoBase);
 
-DemoBase::DemoBase()
-    : cSimpleModule(0)
+DemoBase::DemoBase() :
+        UseApiBase("apiCall")
 {
-}
-
-void DemoBase::activity()
-{
-    bool running = true;
-
-    // initialize demo
-
-    // main loop
-    while(running)
-    {
-        // receive message
-
-        // handle message
-
-    }
 }
 
 void DemoBase::initialize()
 {
+    UseApiBase::initialize();
+
     // resolve gates
     mApiCallGate = gate("apiCall");
     mAppCallGate = gate("appCall");
 
     // init dispatcher
-    mDispatch[gate("apiReturn")->getId()] = std::bind(&DemoBase::processApiReturn, this, placeholders::_1);
-    mDispatch[gate("appReturn")->getId()] = std::bind(&DemoBase::processAppReturn, this, placeholders::_1);
+    mDispatcher.registerFunction(gate("apiReturn"), std::bind(&DemoBase::processApiReturn, this, placeholders::_1));
+    mDispatcher.registerFunction(gate("appReturn"), std::bind(&DemoBase::processAppReturn, this, placeholders::_1));
 
     // schedule init message
     scheduleAt(simTime() + simtime_t::parse("1s"), new cMessage());
 }
 
-void DemoBase::handleMessage(::cMessage* rawMsg)
+void DemoBase::handleOtherMessage(MessagePtr msg)
 {
-    MsgPtr msg(rawMsg);
-
     if (msg != nullptr)
     {
         // check if external message
         if (!msg->isSelfMessage())
         {
-            mDispatch.at(msg->getArrivalGateId())(dynamic_cast<ReturnMsgPtr>(msg.get()));
+            mDispatcher.dispatch(msg.get());
         }
         else // self schedule init message
         {
@@ -82,12 +66,11 @@ void DemoBase::handleMessage(::cMessage* rawMsg)
 
 void DemoBase::initPowerlink()
 {
-
     BYTE macAddr[] = { 0x01, 0x23, 0x45, 0x67, 0x89, 0x00 };
     char cdcFile[] = "mnobd.cdc";
 
     static interface::api::ApiInitParam initParam;
-    static char devName[128] = {0};
+    static char devName[128] = { 0 };
 
     EV << "Initializing openPOWERLINK stack..." << std::endl;
 
@@ -140,16 +123,19 @@ void DemoBase::initPowerlink()
 #endif
 
     // initialize POWERLINK stack
-    auto initMessage = new cMessage("Init Stack", static_cast<short>(Api::ApiCallType::init));
-    send(initMessage, mApiCallGate);
+    initStack();
+    //auto initMessage = new cMessage("Init Stack", static_cast<short>(Api::ApiCallType::init));
+    //send(initMessage, mApiCallGate);
 
-    auto initMsg = new oplkMessages::InitMessage("Create Stack", static_cast<short>(Api::ApiCallType::create));
-    initMsg->setInitParam(initParam);
-    send(initMsg, mApiCallGate);
+    createStack(initParam);
+    //auto initMsg = new oplkMessages::InitMessage("Create Stack", static_cast<short>(Api::ApiCallType::create));
+    //initMsg->setInitParam(initParam);
+    //send(initMsg, mApiCallGate);
 
-    auto cdcMsg = new oplkMessages::StringMessage("Set cdc file", static_cast<short>(Api::ApiCallType::setCdcFilename));
-    cdcMsg->setString(cdcFile);
-    send(cdcMsg, mApiCallGate);
+    setCdcFile(cdcFile);
+    //auto cdcMsg = new oplkMessages::StringMessage("Set cdc file", static_cast<short>(Api::ApiCallType::setCdcFilename));
+    //cdcMsg->setString(cdcFile);
+    //send(cdcMsg, mApiCallGate);
 
     EV << "Initialization succeeded" << std::endl;
 }
@@ -159,15 +145,19 @@ void DemoBase::initApp()
     // TODO: call init of app module
 }
 
-
-void DemoBase::processApiReturn(ReturnMsgPtr msg)
+void DemoBase::processApiReturn(RawMessagePtr msg)
 {
-    EV << "Api call returned with " << msg->getReturnValue() << endl;
+    EV << "Api call returned UNEXPECTED" << endl;
 }
 
-void DemoBase::processAppReturn(ReturnMsgPtr msg)
+void DemoBase::processAppReturn(RawMessagePtr msg)
 {
-    EV << "App call returned with " << msg->getReturnValue() << endl;
+    EV << "App call returned";
+
+    auto retMsg = dynamic_cast<oplkMessages::ReturnMessage*>(msg);
+    if (retMsg != nullptr)
+        EV << " with " << retMsg->getReturnValue();
+    EV << std::endl;
 }
 
 void DemoBase::processStackShutdown()

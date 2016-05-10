@@ -18,7 +18,7 @@ package openpowerlink.MN;
 import openpowerlink.generic.GenericNode;
 
 module MN extends GenericNode
-{
+{    
     @display("bgb=348,401");
     submodules:
 }

@@ -36,6 +36,7 @@ class Edrv : public OPP::cSimpleModule
     protected:
         virtual void initialize();
         virtual void handleMessage(OPP::cMessage *msg);
+        virtual void finish();
 
     public:
         void initEdrv(EdrvInitParamType* initParam);

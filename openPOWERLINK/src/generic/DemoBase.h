@@ -17,20 +17,16 @@
 #define __OPENPOWERLINK_DEMOBASE_H_
 
 #include <omnetpp.h>
-#include <functional>
-#include <map>
+#include "UseApiBase.h"
 #include "ReturnMessage_m.h"
+#include "MessageDispatcher.h"
 
-/**
- * TODO - Generated class
- */
-class DemoBase : public OPP::cSimpleModule
+
+class DemoBase : public UseApiBase
 {
         // Definitions
     private:
-        using ReturnMsgPtr = oplkMessages::ReturnMessage*;
-        using MessageFun = std::function<void(ReturnMsgPtr)>;
-        using DispatcherCont = std::map<int, MessageFun>;
+        using RawMessagePtr = MessageDispatcher::RawMessagePtr;
 
         // C-Tor
     public:
@@ -38,23 +34,22 @@ class DemoBase : public OPP::cSimpleModule
 
         // Methods
     protected:
-        virtual void activity();
         virtual void initialize();
-        virtual void handleMessage(OPP::cMessage *rawMsg);
+        virtual void handleOtherMessage(MessagePtr msg);
 
     private:
         void initPowerlink();
         void initApp();
 
-        void processApiReturn(ReturnMsgPtr msg);
-        void processAppReturn(ReturnMsgPtr msg);
+        void processApiReturn(RawMessagePtr msg);
+        void processAppReturn(RawMessagePtr msg);
         void processStackShutdown();
 
         // Member
     private:
-        DispatcherCont mDispatch;
         OPP::cGate* mApiCallGate;
         OPP::cGate* mAppCallGate;
+        MessageDispatcher mDispatcher;
 };
 
 #endif

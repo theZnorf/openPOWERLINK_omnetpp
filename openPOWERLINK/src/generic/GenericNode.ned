@@ -31,15 +31,17 @@ module GenericNode
         app: AppBase {
             @display("p=196,61");
         }
-        demoBase: DemoBase {
+        demo: DemoBase {
             @display("p=71,61");
         }
     connections:
-        demoBase.apiCall --> stack.apiCall;
-        stack.apiReturn --> demoBase.apiReturn;
+        demo.apiCall --> stack.apiCall;
+        stack.apiReturn --> demo.apiReturn;
         stack.event --> event.event;
         event.eventReturn --> stack.eventReturn;
-        demoBase.appCall --> app.functionCall;
-        app.return --> demoBase.appReturn;
-        event.stackShutdown --> demoBase.stackShutdown;
+        demo.appCall --> app.functionCall;
+        app.return --> demo.appReturn;
+        event.stackShutdown --> demo.stackShutdown;
+        demo.appApiReturn --> app.apiReturn;
+        app.apiCall --> demo.appApiCall;
 }

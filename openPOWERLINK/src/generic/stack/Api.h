@@ -19,6 +19,7 @@
 #include <omnetpp.h>
 #include "interface/OplkApi.h"
 #include "interface/ApiDef.h"
+#include "MessageDispatcher.h"
 
 class Api : public OPP::cSimpleModule
 {
@@ -26,6 +27,7 @@ class Api : public OPP::cSimpleModule
     public:
         enum class ApiCallType : short
         {
+            undefined = 0,
             init,
             create,
             destroy,
@@ -77,13 +79,18 @@ class Api : public OPP::cSimpleModule
             getRetStr
         };
 
+    private:
+        using RawMessagePtr = MessageDispatcher::RawMessagePtr;
 
   protected:
     virtual void initialize();
-    virtual void handleMessage(OPP::cMessage *msg);
-
+    virtual void handleMessage(OPP::cMessage *rawMsg);
 
   private:
+    void handleApiCall(RawMessagePtr msg);
+    void handleEventReturn(RawMessagePtr msg);
+
+
     interface::api::ErrorType processEvent(interface::api::ApiEventType eventType_p,
                 interface::api::ApiEventArg* pEventArg_p);
 
@@ -91,11 +98,11 @@ class Api : public OPP::cSimpleModule
             interface::api::ApiEventArg* pEventArg_p, void* pUserArg_p);
 
 
-    void sendReturnValue(interface::api::ErrorType returnValue);
     void sendReturnMessage(OPP::cMessage* msg);
 
     // Member
   private:
+    MessageDispatcher mDispatcher;
     interface::api::ApiFunctions mApi;
     OPP::cGate* mReturnGate;
     OPP::cGate* mEventGate;

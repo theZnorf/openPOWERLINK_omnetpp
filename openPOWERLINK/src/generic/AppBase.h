@@ -17,31 +17,38 @@
 #define __OPENPOWERLINK_APPBASE_H_
 
 #include <omnetpp.h>
+#include "UseApiBase.h"
+#include "ReturnHandler.h"
 
-/**
- * TODO - Generated class
- */
-class AppBase : public OPP::cSimpleModule
+class AppBase : public UseApiBase
 {
         // Definitions
     public:
-        enum class AppCallType : short
-        {
-            init,
-            shutdown,
-            processSync
+        enum class AppCallType
+            : short
+            {
+                init, shutdown, processSync
         };
 
-  protected:
-    virtual void initialize();
-    virtual void handleMessage(OPP::cMessage *msg);
+        // C-Tor
+    public:
+            AppBase();
 
-    // Member
-  private:
-    OPP::cGate* mApiCallGate;
-    OPP::cGate* mEventGate;
-    int mApiReturnId;
-    int mEventReturnId;
+        // Methods
+    protected:
+        virtual void initialize();
+        virtual void handleOtherMessage(MessagePtr msg);
+
+        virtual interface::api::ErrorType initApp();
+        virtual interface::api::ErrorType processSync();
+        virtual void shutdownApp();
+
+        // Member
+    private:
+        OPP::cGate* mReturnGate;
+
+    protected:
+        HandlerPtr mRet;
 };
 
 #endif
