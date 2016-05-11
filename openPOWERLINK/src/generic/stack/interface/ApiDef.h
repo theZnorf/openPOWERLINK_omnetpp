@@ -59,6 +59,7 @@ namespace interface
         using MsgType = OPLK::eMsgType;
         using NetTime = OPLK::tNetTime;
         using AsySdoCom = OPLK::tAsySdoCom;
+        using NmtEventType = OPLK::eNmtEvent;
 
         struct ApiFunctions
         {

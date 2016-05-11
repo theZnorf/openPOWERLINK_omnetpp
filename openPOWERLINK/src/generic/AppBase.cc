@@ -116,6 +116,9 @@ interface::api::ErrorType AppBase::initApp()
         pProcessImageIn_l = (PI_IN*) getProcessImageIn();
         pProcessImageOut_l = (PI_OUT*) getProcessImageOut();
 
+        if ((pProcessImageIn_l == nullptr) || (pProcessImageOut_l == nullptr))
+            throw interface::OplkException("Invalid process image returned", interface::api::Error::kErrorNoResource);
+
         setupProcessImage();
 
     }

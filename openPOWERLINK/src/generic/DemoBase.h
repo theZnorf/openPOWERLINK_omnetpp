@@ -28,6 +28,12 @@ class DemoBase : public UseApiBase
     private:
         using RawMessagePtr = MessageDispatcher::RawMessagePtr;
 
+        enum class DemoState : short
+        {
+                initializing,
+                mainloop
+        };
+
         // C-Tor
     public:
         DemoBase();

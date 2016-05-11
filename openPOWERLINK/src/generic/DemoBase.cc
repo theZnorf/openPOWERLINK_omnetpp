@@ -20,6 +20,7 @@
 #include "InitMessage_m.h"
 #include "StringMessage_m.h"
 #include "AppBase.h"
+#include "OplkException.h"
 
 using namespace std;
 USING_NAMESPACE
@@ -46,7 +47,8 @@ void DemoBase::initialize()
     mDispatcher.registerFunction(gate("appApiCall"), std::bind(&DemoBase::processAppApiCall, this, placeholders::_1));
 
     // schedule init message
-    scheduleAt(simTime() + simtime_t::parse("1s"), new cMessage());
+    scheduleAt(simTime() + simtime_t::parse("1s"),
+            new cMessage("Init demo", static_cast<short>(DemoState::initializing)));
 }
 
 void DemoBase::handleOtherMessage(MessagePtr msg)
@@ -58,11 +60,44 @@ void DemoBase::handleOtherMessage(MessagePtr msg)
         {
             mDispatcher.dispatch(msg.get());
         }
-        else // self schedule init message
+        else // handle self messages
         {
-            // init demo
-            initPowerlink();
-            initApp();
+
+            //TODO fix
+            auto mMainInterval = simtime_t::parse("1s");
+
+            switch (static_cast<DemoState>(msg->getKind()))
+            {
+                case DemoState::initializing:
+                    // init demo
+                    initPowerlink();
+                    initApp();
+
+                    // perform sw reset
+                    execNmtCommand(interface::api::NmtEventType::kNmtEventSwReset);
+
+                    // schedule first main message
+                    scheduleAt(simTime() + mMainInterval,
+                            new cMessage("first demo main loop message", static_cast<short>(DemoState::mainloop)));
+                    break;
+
+                case DemoState::mainloop: {
+
+                    // send process sync of app
+                    auto processMsg = new cMessage();
+                    processMsg->setKind(static_cast<short>(AppBase::AppCallType::processSync));
+
+                    send(processMsg, mAppCallGate);
+
+                    // schedule following main message
+                    scheduleAt(simTime() + mMainInterval,
+                            new cMessage("demo main loop message", static_cast<short>(DemoState::mainloop)));
+                    break;
+                }
+
+                default:
+                    error("DemoBase - invalid message kind: %d", msg->getKind());
+            }
         }
     }
 }
@@ -164,7 +199,18 @@ void DemoBase::processAppReturn(RawMessagePtr msg)
 
     auto retMsg = dynamic_cast<oplkMessages::ReturnMessage*>(msg);
     if (retMsg != nullptr)
+    {
         EV << " with " << retMsg->getReturnValue();
+
+        auto ret = retMsg->getReturnValue();
+
+        // check if error
+        if (ret != interface::api::Error::kErrorOk)
+            throw interface::OplkException("Error in App call ocurred", ret);
+
+        // advance to next state
+
+    }
     EV << std::endl;
 }
 
