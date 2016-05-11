@@ -31,5 +31,5 @@ void MessageDispatcher::registerFunction(::cGate* gate, MessageDispatcher::Messa
 
 void MessageDispatcher::dispatch(RawMessagePtr msg)
 {
-    mDispatch[msg->getArrivalGateId()](msg);
+    mDispatch.at(msg->getArrivalGateId())(msg);
 }

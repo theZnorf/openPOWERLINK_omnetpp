@@ -43,6 +43,7 @@ class DemoBase : public UseApiBase
 
         void processApiReturn(RawMessagePtr msg);
         void processAppReturn(RawMessagePtr msg);
+        void processAppApiCall(RawMessagePtr msg);
         void processStackShutdown();
 
         // Member

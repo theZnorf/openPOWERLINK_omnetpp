@@ -67,6 +67,8 @@ void HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallb
         throw interface::OplkException("timer not valid", OPLK::kErrorTimerNoTimerCreated);
     }
     *handle = info.handle;
+
+    bubble("Timer modified");
 }
 
 void HresTimer::deleteTimer(HresTimerHandle* handle)
@@ -91,6 +93,9 @@ void HresTimer::handleMessage(cMessage *rawMsg)
 
         if (timerMsg != nullptr)
         {
+
+            bubble("Timer expired");
+
             // get timer
             auto timer = getTimerInfo(timerMsg->getTimerHandle());
             if (timer != nullptr)
@@ -99,7 +104,7 @@ void HresTimer::handleMessage(cMessage *rawMsg)
                 TimerEventArgs arg;
 
                 // call callback
-                //timer->callback(arg);
+                timer->callback(&arg);
             }
         }
     }

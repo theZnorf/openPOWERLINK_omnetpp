@@ -43,6 +43,7 @@ void DemoBase::initialize()
     // init dispatcher
     mDispatcher.registerFunction(gate("apiReturn"), std::bind(&DemoBase::processApiReturn, this, placeholders::_1));
     mDispatcher.registerFunction(gate("appReturn"), std::bind(&DemoBase::processAppReturn, this, placeholders::_1));
+    mDispatcher.registerFunction(gate("appApiCall"), std::bind(&DemoBase::processAppApiCall, this, placeholders::_1));
 
     // schedule init message
     scheduleAt(simTime() + simtime_t::parse("1s"), new cMessage());
@@ -134,7 +135,7 @@ void DemoBase::initPowerlink()
     //initMsg->setInitParam(initParam);
     //send(initMsg, mApiCallGate);
 
-    setCdcFile(cdcFile);
+    setCdcFilename(cdcFile);
     //auto cdcMsg = new oplkMessages::StringMessage("Set cdc file", static_cast<short>(Api::ApiCallType::setCdcFilename));
     //cdcMsg->setString(cdcFile);
     //send(cdcMsg, mApiCallGate);
@@ -165,6 +166,12 @@ void DemoBase::processAppReturn(RawMessagePtr msg)
     if (retMsg != nullptr)
         EV << " with " << retMsg->getReturnValue();
     EV << std::endl;
+}
+
+void DemoBase::processAppApiCall(RawMessagePtr msg)
+{
+    // forward api calls to stack
+    send(msg->dup(), mApiCallGate);
 }
 
 void DemoBase::processStackShutdown()

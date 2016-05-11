@@ -110,7 +110,6 @@ interface::api::ErrorType AppBase::initApp()
         EV << "Initializing process image..." << std::endl;
         EV << "Size of process image: Input = " << (ULONG) sizeof(PI_IN) << " Output = " << (ULONG) sizeof(PI_OUT)
                 << std::endl;
-        //eventlog_printMessage(kEventlogLevelInfo, kEventlogCategoryGeneric, "Allocating process image: Input:%lu Output:%lu", (ULONG)sizeof(PI_IN), (ULONG)sizeof(PI_OUT));
 
         allocProcessImage(sizeof(PI_IN), sizeof(PI_OUT));
 
@@ -122,6 +121,7 @@ interface::api::ErrorType AppBase::initApp()
     }
     catch (interface::OplkException const & e)
     {
+        EV << "Stack Error: " << e.what() << std::endl;
         ret = e.errorNumber();
     }
 
@@ -131,9 +131,78 @@ interface::api::ErrorType AppBase::initApp()
 interface::api::ErrorType AppBase::processSync()
 {
     interface::api::ErrorType ret = interface::api::Error::kErrorOk;
+    try
+    {
+        waitSyncEvent(100000);
+
+        exchangeProcessImageOut();
+
+        cnt_l++;
+
+        nodeVar_l[0].input = pProcessImageOut_l->CN1_M00_DigitalInput_00h_AU8_DigitalInput;
+        nodeVar_l[1].input = pProcessImageOut_l->CN32_M00_DigitalInput_00h_AU8_DigitalInput;
+        nodeVar_l[2].input = pProcessImageOut_l->CN110_M00_DigitalInput_00h_AU8_DigitalInput;
+
+        for (auto i = 0u; (i < MAX_NODES) && (usedNodeIds_l[i] != 0); i++)
+        {
+            /* Running LEDs */
+            /* period for LED flashing determined by inputs */
+            nodeVar_l[i].period = (nodeVar_l[i].input == 0) ? 1 : (nodeVar_l[i].input * 20);
+            if (cnt_l % nodeVar_l[i].period == 0)
+            {
+                if (nodeVar_l[i].leds == 0x00)
+                {
+                    nodeVar_l[i].leds = 0x1;
+                    nodeVar_l[i].toggle = 1;
+                }
+                else
+                {
+                    if (nodeVar_l[i].toggle)
+                    {
+                        nodeVar_l[i].leds <<= 1;
+                        if (nodeVar_l[i].leds == APP_LED_MASK_1)
+                        {
+                            nodeVar_l[i].toggle = 0;
+                        }
+                    }
+                    else
+                    {
+                        nodeVar_l[i].leds >>= 1;
+                        if (nodeVar_l[i].leds == 0x01)
+                        {
+                            nodeVar_l[i].toggle = 1;
+                        }
+                    }
+                }
+            }
+
+            if (nodeVar_l[i].input != nodeVar_l[i].inputOld)
+            {
+                nodeVar_l[i].inputOld = nodeVar_l[i].input;
+            }
+
+            if (nodeVar_l[i].leds != nodeVar_l[i].ledsOld)
+            {
+                nodeVar_l[i].ledsOld = nodeVar_l[i].leds;
+            }
+        }
+
+        pProcessImageIn_l->CN1_M00_DigitalOutput_00h_AU8_DigitalOutput = nodeVar_l[0].leds;
+        pProcessImageIn_l->CN32_M00_DigitalOutput_00h_AU8_DigitalOutput = nodeVar_l[1].leds;
+        pProcessImageIn_l->CN110_M00_DigitalOutput_00h_AU8_DigitalOutput = nodeVar_l[2].leds;
+
+        exchangeProcessImageIn();
+    }
+    catch (interface::OplkException const & e)
+    {
+        EV << "Stack Error: " << e.what() << std::endl;
+        ret = e.errorNumber();
+    }
     return ret;
 }
 
 void AppBase::shutdownApp()
 {
+    freeProcessImage();
+    EV << "Stack shutdown - free process image suceeded" << std::endl;
 }

@@ -108,10 +108,9 @@ void Api::handleApiCall(RawMessagePtr msg)
                 UINT varEntries = linkMsg->getVarEntries();
                 interface::api::ObdSize entrySize = linkMsg->getEntrySize();
 
-                auto ret = mApi.linkObject(linkMsg->getObjIndex(), (void*) linkMsg->getVariable(), &varEntries,
+                ret = mApi.linkObject(linkMsg->getObjIndex(), (void*) linkMsg->getVariable(), &varEntries,
                         &entrySize, linkMsg->getFirstSubIndex());
                 auto retMsg = new oplkMessages::LinkReturnMessage("LinkObjectReturn", msg->getKind());
-                retMsg->setReturnValue(ret);
                 retMsg->setVarEntries(varEntries);
                 retMsg->setEntrySize(entrySize);
 
@@ -128,7 +127,7 @@ void Api::handleApiCall(RawMessagePtr msg)
                 UINT size = objMsg->getObjDataArraySize();
                 std::unique_ptr<BYTE[]> destData(new BYTE[size] { 0 });
 
-                auto ret = mApi.readObject(&objMsg->getSdoComConHdl(), objMsg->getNodeId(), objMsg->getIndex(),
+                ret = mApi.readObject(&objMsg->getSdoComConHdl(), objMsg->getNodeId(), objMsg->getIndex(),
                         objMsg->getSubIndex(), destData.get(), &size, objMsg->getSdoType(),
                         (void*) objMsg->getUserArg());
 
@@ -147,9 +146,6 @@ void Api::handleApiCall(RawMessagePtr msg)
                 for (auto i = 0u; i < size; i++)
                     objMsg->setObjData(i, destData[i]);
 
-                // set return value
-                retMsg->setReturnValue(ret);
-
                 retPtr = retMsg;
             }
         }
@@ -167,7 +163,7 @@ void Api::handleApiCall(RawMessagePtr msg)
                 for (auto i = 0u; i < size; i++)
                     destData[i] = objMsg->getObjData(i);
 
-                auto ret = mApi.writeObject(&objMsg->getSdoComConHdl(), objMsg->getNodeId(), objMsg->getIndex(),
+                ret = mApi.writeObject(&objMsg->getSdoComConHdl(), objMsg->getNodeId(), objMsg->getIndex(),
                         objMsg->getSubIndex(), destData.get(), size, objMsg->getSdoType(),
                         (void*) objMsg->getUserArg());
 
@@ -179,9 +175,6 @@ void Api::handleApiCall(RawMessagePtr msg)
                 retMsg->setSubIndex(objMsg->getSubIndex());
                 retMsg->setSdoType(objMsg->getSdoType());
                 retMsg->setUserArg(objMsg->getUserArg());
-
-                // set return value
-                retMsg->setReturnValue(ret);
 
                 retPtr = retMsg;
             }
@@ -204,7 +197,7 @@ void Api::handleApiCall(RawMessagePtr msg)
                 connHdl.pDstData = data.get();
                 connHdl.pSrcData = data.get();
 
-                auto ret = mApi.finishUserObdAccess(&connHdl);
+                ret = mApi.finishUserObdAccess(&connHdl);
 
                 // create return message
                 auto retMsg = new oplkMessages::ObdAlConnectionReturnMessage("ObdAlConnectionReturn", msg->getKind());
@@ -214,7 +207,6 @@ void Api::handleApiCall(RawMessagePtr msg)
                     connMsg->setData(i, data[i]);
 
                 retMsg->setObdAlConnHdl(connHdl);
-                retMsg->setReturnValue(ret);
 
                 retPtr = retMsg;
             }
@@ -259,7 +251,7 @@ void Api::handleApiCall(RawMessagePtr msg)
                 UINT size = objMsg->getDataArraySize();
                 std::unique_ptr<BYTE[]> data(new BYTE[size] { 0 });
 
-                auto ret = mApi.readLocalObject(objMsg->getIndex(), objMsg->getSubIndex(), data.get(), &size);
+                ret = mApi.readLocalObject(objMsg->getIndex(), objMsg->getSubIndex(), data.get(), &size);
 
                 // create return message
                 auto retMsg = new oplkMessages::LocalObjectReturnMessage("ReadLocalObjectReturn", msg->getKind());
@@ -270,7 +262,6 @@ void Api::handleApiCall(RawMessagePtr msg)
                     retMsg->setData(i, data[i]);
                 retMsg->setIndex(objMsg->getIndex());
                 retMsg->setSubIndex(objMsg->getSubIndex());
-                retMsg->setReturnValue(ret);
 
                 retPtr = retMsg;
             }
@@ -288,7 +279,7 @@ void Api::handleApiCall(RawMessagePtr msg)
                 for (auto i = 0u; i < size; i++)
                     data[i] = objMsg->getData(i);
 
-                auto ret = mApi.writeLocalObject(objMsg->getIndex(), objMsg->getSubIndex(), data.get(), size);
+                ret = mApi.writeLocalObject(objMsg->getIndex(), objMsg->getSubIndex(), data.get(), size);
 
                 // create return message
                 auto retMsg = new oplkMessages::LocalObjectReturnMessage("WriteLocalObjectReturn", msg->getKind());
@@ -299,7 +290,6 @@ void Api::handleApiCall(RawMessagePtr msg)
                     retMsg->setData(i, data[i]);
                 retMsg->setIndex(objMsg->getIndex());
                 retMsg->setSubIndex(objMsg->getSubIndex());
-                retMsg->setReturnValue(ret);
 
                 retPtr = retMsg;
             }
@@ -349,7 +339,7 @@ void Api::handleApiCall(RawMessagePtr msg)
                     frameObj.dstNodeId = frame->getDstNodeId();
                     frameObj.srcNodeId = frame->getSrcNodeId();
 
-                    auto ptr = &frameObj.data.asnd.serviceId;
+                    auto ptr = static_cast<BYTE*>(&frameObj.data.asnd.serviceId);
 
                     // copy payload
                     for (auto i = 0u; i < frame->getPayLoadArraySize(); i++)
@@ -434,7 +424,7 @@ void Api::handleApiCall(RawMessagePtr msg)
             {
                 interface::api::IdentResponse* identResponse;
 
-                auto ret = mApi.getIdentResponse(nodeMsg->getValue(), &identResponse);
+                ret = mApi.getIdentResponse(nodeMsg->getValue(), &identResponse);
 
                 // create returning packet with encapsulated identresponse
                 auto identPkt = new oplkMessages::IdentResponsePacket();
@@ -473,7 +463,6 @@ void Api::handleApiCall(RawMessagePtr msg)
                     identPkt->setVendorSpecificExt2(i, identResponse->aVendorSpecificExt2[i]);
 
                 auto retPkt = new oplkMessages::ReturnPacket("GetIdentResponseReturn", msg->getKind());
-                retPkt->setReturnValue(ret);
                 retPkt->encapsulate(identPkt);
 
                 retPtr = retPkt;
@@ -482,11 +471,10 @@ void Api::handleApiCall(RawMessagePtr msg)
         }
         case ApiCallType::getEthMacAddr: {
             BYTE mac[6];
-            auto ret = mApi.getEthMacAddr(mac);
+            ret = mApi.getEthMacAddr(mac);
 
             auto macMsg = new oplkMessages::MacReturnMessage("GetMacReturn", msg->getKind());
 
-            macMsg->setReturnValue(ret);
             for (auto i = 0u; i < sizeof(mac); i++)
                 macMsg->setMac(i, mac[i]);
 
@@ -494,10 +482,10 @@ void Api::handleApiCall(RawMessagePtr msg)
             break;
         }
         case ApiCallType::checkKernelStack: {
-            auto ret = mApi.checkKernelStack();
+            auto valid = mApi.checkKernelStack();
 
             auto checkMsg = new oplkMessages::BoolMessage("CheckKernelStackReturn", msg->getKind());
-            checkMsg->setValue(ret);
+            checkMsg->setValue(valid);
 
             retPtr = checkMsg;
             break;
@@ -513,31 +501,31 @@ void Api::handleApiCall(RawMessagePtr msg)
             break;
         }
         case ApiCallType::getVersion: {
-            auto ret = mApi.getVersion();
+            auto version = mApi.getVersion();
 
             auto versionMsg = new oplkMessages::UintMessage("GetVersionReturn", msg->getKind());
 
-            versionMsg->setValue(ret);
+            versionMsg->setValue(version);
 
             retPtr = versionMsg;
             break;
         }
         case ApiCallType::getVersionString: {
-            auto ret = mApi.getVersionString();
+            auto str = mApi.getVersionString();
 
             auto versionMsg = new oplkMessages::StringMessage("GetVersionStringReturn", msg->getKind());
 
-            versionMsg->setString(ret);
+            versionMsg->setString(str);
 
             retPtr = versionMsg;
             break;
         }
         case ApiCallType::getStackConfiguration: {
-            auto ret = mApi.getStackConfiguration();
+            auto conf = mApi.getStackConfiguration();
 
             auto confMsg = new oplkMessages::UintMessage("GetStackConfigurationReturn", msg->getKind());
 
-            confMsg->setValue(ret);
+            confMsg->setValue(conf);
 
             retPtr = confMsg;
             break;
@@ -545,11 +533,10 @@ void Api::handleApiCall(RawMessagePtr msg)
         case ApiCallType::getStackInfo: {
             interface::api::ApiStackInfo info;
 
-            auto ret = mApi.getStackInfo(&info);
+            ret = mApi.getStackInfo(&info);
 
             auto infoMsg = new oplkMessages::StackInfoReturnMessage("GetStackInfoReturn", msg->getKind());
 
-            infoMsg->setReturnValue(ret);
             infoMsg->setInfo(info);
 
             retPtr = infoMsg;
@@ -558,11 +545,10 @@ void Api::handleApiCall(RawMessagePtr msg)
         case ApiCallType::getSocTime: {
             interface::api::SocTimeInfo info;
 
-            auto ret = mApi.getSocTime(&info);
+            ret = mApi.getSocTime(&info);
 
             auto infoMsg = new oplkMessages::SocTimeReturnMessage("GetSocTimeReturn", msg->getKind());
 
-            infoMsg->setReturnValue(ret);
             infoMsg->setInfo(info);
 
             retPtr = infoMsg;
@@ -590,12 +576,11 @@ void Api::handleApiCall(RawMessagePtr msg)
             if (linkMsg != nullptr)
             {
                 UINT varEntries = linkMsg->getVarEntries();
-                auto ret = mApi.linkProcessImageObject(linkMsg->getObjIndex(), linkMsg->getFirstSubIndex(),
+                ret = mApi.linkProcessImageObject(linkMsg->getObjIndex(), linkMsg->getFirstSubIndex(),
                         linkMsg->getOffset(), linkMsg->getOutputPi(), linkMsg->getEntrySize(), &varEntries);
 
                 // create return message
                 auto retMsg = new oplkMessages::LinkProcessImageReturnMessage("LinkProcessImageReturn", msg->getKind());
-                retMsg->setReturnValue(ret);
                 retMsg->setVarEntries(varEntries);
 
                 retPtr = retMsg;

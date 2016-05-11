@@ -11,8 +11,8 @@
 
 USING_NAMESPACE
 
-UseApiBase::UseApiBase(std::string const & sendGateName)
-    : cSimpleModule(1), mSendGateName(sendGateName)
+UseApiBase::UseApiBase(std::string const & sendGateName) :
+        cSimpleModule(1), mSendGateName(sendGateName)
 {
 }
 
@@ -30,7 +30,7 @@ void UseApiBase::activity()
 {
     bool running = true;
 
-    while(running)
+    while (running)
     {
         // receive message
         receiveMessage();
@@ -52,7 +52,8 @@ void UseApiBase::receiveMessage()
         {
             mReturnValues[kind] = msg;
         }
-        else // forward unexpected message
+        else
+            // forward unexpected message
             handleOtherMessage(msg);
     }
 }
@@ -69,30 +70,40 @@ void UseApiBase::checkReturnMessage(MessagePtr msg, std::string const & errorMes
     //TODO: error handling
 }
 
+UseApiBase::MessagePtr UseApiBase::sendMessageWithCallTypeAndWaitForReturn(RawMessagePtr msg, CallType calltype)
+{
+    // set kind of message
+    msg->setKind(static_cast<Kind>(calltype));
+
+    // set awaited call type
+    mReturnValues[calltype] = nullptr;
+
+    // send message
+    send(msg, mSendGate);
+
+    auto ret = mReturnValues[CallType::setupProcessImage];
+
+    // receive until return value was received
+    while (ret == nullptr)
+    {
+        receiveMessage();
+
+        ret = mReturnValues[calltype];
+    }
+
+    // remove message
+    mReturnValues.erase(calltype);
+
+    // return message
+    return ret;
+}
 
 void UseApiBase::initStack()
 {
     // create message
     auto msg = new OPP::cMessage();
-    msg->setKind(static_cast<short>(CallType::init));
 
-    // define awaited return
-    mReturnValues[CallType::init] = nullptr;
-
-    // send
-    send(msg, mSendGate);
-
-    auto ret = mReturnValues[CallType::init];
-
-    // receive until return value was reiceived
-    while(ret == nullptr)
-    {
-        receiveMessage();
-
-        ret = mReturnValues[CallType::init];
-    }
-
-    mReturnValues.erase(CallType::init);
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::init);
 
     checkReturnMessage(ret, "Initialize stack");
 }
@@ -101,110 +112,576 @@ void UseApiBase::createStack(interface::api::ApiInitParam& param)
 {
     // create message
     auto msg = new oplkMessages::InitMessage();
-    msg->setKind(static_cast<short>(CallType::create));
     msg->setInitParam(param);
 
-    // define awaited return
-    mReturnValues[CallType::create] = nullptr;
-
-    // send
-    send(msg, mSendGate);
-
-    auto ret = mReturnValues[CallType::create];
-
-    // receive until return value was reiceived
-    while(ret != nullptr)
-    {
-        receiveMessage();
-
-        ret = mReturnValues[CallType::create];
-    }
-
-    mReturnValues.erase(CallType::create);
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::create);
 
     checkReturnMessage(ret, "create stack");
 }
 
-void UseApiBase::setCdcFile(const std::string& fileName)
+void UseApiBase::setupProcessImage()
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::setupProcessImage);
+
+    checkReturnMessage(ret, "setup process image");
+}
+
+
+void UseApiBase::destroyStack()
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::destroy);
+
+    checkReturnMessage(ret, "Destroy stack");
+}
+
+void UseApiBase::exitStack()
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::exit);
+
+    checkReturnMessage(ret, "Exit stack");
+}
+
+void UseApiBase::execNmtCommand(interface::api::NmtEvent event)
+{
+    // create message
+    auto msg = new oplkMessages::NmtMessage();
+    msg->setNmtEvent(event);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::execNmtCommand);
+
+    checkReturnMessage(ret, "Execute nmt command");
+}
+
+void UseApiBase::cbGenericObdAccess(interface::api::ObdCallbackParam* param)
+{
+    // create message
+    auto msg = new oplkMessages::ObdCbMessage();
+    msg->setObdCbParam(*param);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::cbGenericObdAccess);
+
+    checkReturnMessage(ret, "cb generic obd access");
+}
+
+void UseApiBase::linkObject(unsigned int objIndex, void* var, unsigned int* varEntries,
+        interface::api::ObdSize* entrySize, unsigned int firstSubIndex)
+{
+    // create message
+    auto msg = new oplkMessages::LinkMessage();
+    msg->setObjIndex(objIndex);
+    msg->setVariable((oplkMessages::PointerCont)var);
+    msg->setVarEntries(*varEntries);
+    msg->setEntrySize(*entrySize);
+    msg->setFirstSubIndex(firstSubIndex);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::linkObject);
+
+    checkReturnMessage(ret, "link object");
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::LinkReturnMessage*>(ret.get());
+    if (retMsg != nullptr)
+    {
+        *varEntries = retMsg->getVarEntries();
+        *entrySize = retMsg->getEntrySize();
+    }
+}
+
+void UseApiBase::readObject(interface::api::SdoComConHdl* hdl, unsigned int nodeId, unsigned int index,
+        unsigned int subIndex, void* dstDataLe, unsigned int* size, interface::api::SdoType sdoType, void* userArg)
+{
+    // create message
+    auto msg = new oplkMessages::ObjectMessage();
+    msg->setSdoComConHdl(*hdl);
+    msg->setNodeId(nodeId);
+    msg->setIndex(index);
+    msg->setSubIndex(subIndex);
+    msg->setObjDataArraySize(*size);
+    msg->setSdoType(sdoType);
+    msg->setUserArg((oplkMessages::PointerCont)userArg);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::readObject);
+
+    checkReturnMessage(ret, "read object");
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::ObjectReturnMessage*>(ret.get());
+    if (retMsg != nullptr)
+    {
+        *hdl = retMsg->getSdoComConHdl();
+        *size = retMsg->getObjDataArraySize();
+        for (auto i = 0u; i < *size; i++)
+            static_cast<BYTE*>(dstDataLe)[i] = retMsg->getObjData(i);
+    }
+}
+
+void UseApiBase::writeObject(interface::api::SdoComConHdl* hdl, unsigned int nodeId, unsigned int index,
+        unsigned int subIndex, void* srcDataLe, unsigned int size, interface::api::SdoType sdoType, void* userArg)
+{
+    // create message
+    auto msg = new oplkMessages::ObjectMessage();
+    msg->setSdoComConHdl(*hdl);
+    msg->setNodeId(nodeId);
+    msg->setIndex(index);
+    msg->setSubIndex(subIndex);
+    msg->setObjDataArraySize(size);
+    for (auto i = 0u; i < size; i++)
+        msg->setObjData(i, static_cast<BYTE*>(srcDataLe)[i]);
+    msg->setSdoType(sdoType);
+    msg->setUserArg((oplkMessages::PointerCont)userArg);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::writeObject);
+
+    checkReturnMessage(ret, "write object");
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::ObjectReturnMessage*>(ret.get());
+    if (retMsg != nullptr)
+    {
+        *hdl = retMsg->getSdoComConHdl();
+    }
+}
+
+void UseApiBase::finishUserAccess(interface::api::ObdAlConnHdl* userObdConHdl)
+{
+    // create message
+    auto msg = new oplkMessages::ObdAlConnectionMessage();
+    msg->setObdAlConnHdl(*userObdConHdl);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::finishUserObdAccess);
+
+    checkReturnMessage(ret, "finish user access");
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::ObdAlConnectionReturnMessage*>(ret.get());
+    if (retMsg != nullptr)
+    {
+        *userObdConHdl = retMsg->getObdAlConnHdl();
+    }
+}
+
+void UseApiBase::enableUserAccess(bool enable)
+{
+    // create message
+    auto msg = new oplkMessages::BoolMessage();
+    msg->setValue(enable);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::enableUserObdAccess);
+
+    checkReturnMessage(ret, "enable user access");
+}
+
+void UseApiBase::freeSdoChannel(interface::api::SdoComConHdl sdoComConHdl)
+{
+    // create message
+    auto msg = new oplkMessages::SdoMessage();
+    msg->setComConHdl(sdoComConHdl);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::freeSdoChannel);
+
+    checkReturnMessage(ret, "free sdo channel");
+}
+
+void UseApiBase::abortSdo(interface::api::SdoComConHdl sdoComConHdl, unsigned int abortCode)
+{
+    // create message
+    auto msg = new oplkMessages::SdoMessage();
+    msg->setComConHdl(sdoComConHdl);
+    msg->setAbortCode(abortCode);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::freeSdoChannel);
+
+    checkReturnMessage(ret, "abort sdo");
+}
+
+void UseApiBase::readLocalObject(unsigned int index, unsigned int subIndex, void* dstData, unsigned int* size)
+{
+    // create message
+    auto msg = new oplkMessages::LocalObjectMessage();
+    msg->setIndex(index);
+    msg->setSubIndex(subIndex);
+    msg->setDataArraySize(*size);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::readLocalObject);
+
+    checkReturnMessage(ret, "read local object");
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::LocalObjectReturnMessage*>(ret.get());
+    if (retMsg != nullptr)
+    {
+        *size = retMsg->getDataArraySize();
+        for (auto i = 0u; i < *size; i++)
+            static_cast<BYTE*>(dstData)[i] = retMsg->getData(i);
+    }
+}
+
+void UseApiBase::writeLocalObject(unsigned int index, unsigned int subIndex, void* srcData, unsigned int size)
+{
+    // create message
+    auto msg = new oplkMessages::LocalObjectMessage();
+    msg->setIndex(index);
+    msg->setSubIndex(subIndex);
+    msg->setDataArraySize(size);
+    for (auto i = 0u; i < size; i++)
+        msg->setData(i, static_cast<BYTE*>(srcData)[i]);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::writeLocalObject);
+
+    checkReturnMessage(ret, "write local object");
+}
+
+void UseApiBase::sendAsndFrame(unsigned char dstNodeId, interface::api::AsndFrame* asndFrame, size_t asndSize)
+{
+    // create message
+    auto pkt = new oplkMessages::SendAsndFramePacket();
+    pkt->setDestNodeId(dstNodeId);
+    pkt->setAsndSize(asndSize);
+
+    // encapluslate asnd frame packet
+    auto asndPkt = new oplkMessages::AsndFramePacket();
+    asndPkt->setServiceId(asndFrame->serviceId);
+    // copy payload
+    for (auto i = 0u; i < asndPkt->getPayLoadArraySize(); i++)
+        asndPkt->setPayLoad(i, asndFrame->payload.aPayload[i]);
+
+    pkt->encapsulate(asndPkt);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(pkt, CallType::sendAsndFrame);
+
+    checkReturnMessage(ret, "send asnd frame");
+}
+
+void UseApiBase::sendEthFrame(interface::api::PlkFrame* frame, unsigned int frameSize)
+{
+    // create message
+    auto pkt = new oplkMessages::SendPlkPacket();
+    pkt->setFrameSize(frameSize);
+
+    // encapluslate plk frame packet
+    auto plkPkt = new oplkMessages::PlkPacket();
+    plkPkt->setEtherType(frame->etherType);
+    plkPkt->setMsgType(frame->messageType);
+    plkPkt->setDstNodeId(frame->dstNodeId);
+    plkPkt->setSrcNodeId(frame->srcNodeId);
+    // copy mac addresses
+    for (auto i = 0u; i < plkPkt->getDstMacArraySize(); i++)
+    {
+        plkPkt->setDstMac(i, frame->aDstMac[i]);
+        plkPkt->setSrcMac(i, frame->aDstMac[i]);
+    }
+    // copy payload
+    for (auto i = 0u; i < plkPkt->getPayLoadArraySize(); i++)
+        plkPkt->setPayLoad(i, static_cast<BYTE*>(&frame->data.asnd.serviceId)[i]);
+
+    pkt->encapsulate(plkPkt);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(pkt, CallType::sendEthFrame);
+
+    checkReturnMessage(ret, "send eth frame");
+}
+
+void UseApiBase::setAsndForward(unsigned char serviceId, interface::api::AsndFilter filterType)
+{
+    // create message
+    auto msg = new oplkMessages::AsndFilterMessage();
+    msg->setServiceId(serviceId);
+    msg->setFilterType(filterType);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::setAsndForward);
+
+    checkReturnMessage(ret, "set asnd forward");
+}
+
+void UseApiBase::setNonPlkForward(bool enable)
+{
+    // create message
+    auto msg = new oplkMessages::BoolMessage();
+    msg->setValue(enable);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::setNonPlkForward);
+
+    checkReturnMessage(ret, "set non plk forward");
+}
+
+void UseApiBase::postUserEvent(void* userArg)
+{
+    // create message
+    auto msg = new oplkMessages::PointerContMessage();
+    msg->setPointer((oplkMessages::PointerCont)userArg);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::postUserEvent);
+
+    checkReturnMessage(ret, "post user event");
+}
+
+void UseApiBase::triggerMnStateChange(unsigned int nodeId, interface::api::NmtNodeCommand nodeCommand)
+{
+    // create message
+    auto msg = new oplkMessages::NmtNodeMessage();
+    msg->setNodeId(nodeId);
+    msg->setNodeCommand(nodeCommand);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::triggerMnStateChange);
+
+    checkReturnMessage(ret, "trigger nmt state change");
+}
+
+void UseApiBase::setCdcBuffer(unsigned char* cdc, unsigned int cdcSize)
+{
+    //TODO: check and implement
+}
+
+void UseApiBase::setCdcFilename(const std::string& fileName)
 {
     // create message
     auto msg = new oplkMessages::StringMessage();
-    msg->setKind(static_cast<short>(CallType::setCdcFilename));
     msg->setString(fileName.c_str());
 
-    // define awaited return
-    mReturnValues[CallType::setCdcFilename] = nullptr;
-
-    // send
-    send(msg, mSendGate);
-
-    auto ret = mReturnValues[CallType::setCdcFilename];
-
-    // receive until return value was reiceived
-    while(ret != nullptr)
-    {
-        receiveMessage();
-
-        ret = mReturnValues[CallType::setCdcFilename];
-    }
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::setCdcFilename);
 
     mReturnValues.erase(CallType::setCdcFilename);
 
     checkReturnMessage(ret, "set cdc filename");
 }
 
+void UseApiBase::setOdArchivePath(const std::string& backUpPath)
+{
+    // create message
+    auto msg = new oplkMessages::StringMessage();
+    msg->setString(backUpPath.c_str());
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::setOdArchivePath);
+
+    checkReturnMessage(ret, "set od archive path");
+}
+
+void UseApiBase::stackProcess()
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::process);
+
+    checkReturnMessage(ret, "stack process");
+}
+
+void UseApiBase::getIdentResponse(unsigned int nodeId, interface::api::IdentResponse** identResponse)
+{
+    // create message
+    auto msg = new oplkMessages::UintMessage();
+    msg->setValue(nodeId);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getIdentResponse);
+
+    checkReturnMessage(ret, "get ident response");
+
+    // cast packet
+    auto retPkt = dynamic_cast<oplkMessages::ReturnPacket*>(ret.get());
+
+    if (retPkt != nullptr)
+    {
+        //TODO: implement and solve memory issue
+    }
+}
+
+void UseApiBase::getEthMacAddr(unsigned char* macAddr)
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getEthMacAddr);
+
+    checkReturnMessage(ret, "get mac addr");
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::MacReturnMessage*>(ret.get());
+    if (retMsg != nullptr)
+    {
+        for (auto i = 0u; i < retMsg->getMacArraySize(); i++)
+            macAddr[i] = retMsg->getMac(i);
+    }
+}
+
+bool UseApiBase::checkKernelStack()
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::checkKernelStack);
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::BoolMessage*>(ret.get());
+    if (retMsg != nullptr)
+    {
+        return retMsg->getValue();
+    }
+
+    return false;
+}
+
+void UseApiBase::waitSyncEvent(unsigned long int timeout)
+{
+    // create message
+    auto msg = new oplkMessages::UlongMessage();
+    msg->setValue(timeout);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::waitSyncEvent);
+
+    checkReturnMessage(ret, "wait sync event");
+}
+
+unsigned int UseApiBase::getVersion()
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getVersion);
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::UintMessage*>(ret.get());
+    if (retMsg != nullptr)
+        return retMsg->getValue();
+    return 0;
+}
+
+std::string UseApiBase::getVersionString()
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getVersionString);
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::StringMessage*>(ret.get());
+    if (retMsg != nullptr)
+        return retMsg->getString();
+    return "";
+}
+
+unsigned int UseApiBase::getStackConfiguration()
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getStackConfiguration);
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::UintMessage*>(ret.get());
+    if (retMsg != nullptr)
+        return retMsg->getValue();
+    return 0;
+}
+
+void UseApiBase::getStackInfo(interface::api::ApiStackInfo* stackInfo)
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getStackConfiguration);
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::StackInfoReturnMessage*>(ret.get());
+    if (retMsg != nullptr)
+        *stackInfo = retMsg->getInfo();
+}
+
+void UseApiBase::getSocTime(interface::api::SocTimeInfo* timeInfo)
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getSocTime);
+
+    checkReturnMessage(ret, "get soc time");
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::SocTimeReturnMessage*>(ret.get());
+    if (retMsg != nullptr)
+        *timeInfo = retMsg->getInfo();
+}
+
 void UseApiBase::allocProcessImage(unsigned int sizeProcessImageIn, unsigned int sizeProcessImageOut)
 {
     // create message
     auto msg = new oplkMessages::ProcessImageSIzeMessage();
-    msg->setKind(static_cast<short>(CallType::allocProcessImage));
     msg->setSizeIn(sizeProcessImageIn);
     msg->setSizeOut(sizeProcessImageOut);
 
-    // define awaited return
-    mReturnValues[CallType::allocProcessImage] = nullptr;
-
-    // send
-    send(msg, mSendGate);
-
-    auto ret = mReturnValues[CallType::allocProcessImage];
-
-    // receive until return value was reiceived
-    while(ret != nullptr)
-    {
-        receiveMessage();
-
-        ret = mReturnValues[CallType::allocProcessImage];
-    }
-
-    mReturnValues.erase(CallType::allocProcessImage);
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::allocProcessImage);
 
     checkReturnMessage(ret, "allocate process image");
+}
+
+void UseApiBase::freeProcessImage()
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::freeProcessImage);
+
+    checkReturnMessage(ret, "free process image");
+}
+
+void UseApiBase::linkProcessImageObject(unsigned int objIndex, unsigned int firstSubIndex, unsigned int offsetPI,
+        bool outputPI, interface::api::ObdSize entrySize, unsigned int* varEntries)
+{
+    // create message
+    auto msg = new oplkMessages::LinkProcessImageMessage();
+    msg->setObjIndex(objIndex);
+    msg->setFirstSubIndex(firstSubIndex);
+    msg->setOffset(offsetPI);
+    msg->setOutputPi(outputPI);
+    msg->setEntrySize(entrySize);
+    msg->setVarEntries(*varEntries);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::linkProcessImageObject);
+
+    checkReturnMessage(ret, "link process image");
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::LinkProcessImageReturnMessage*>(ret.get());
+    if (retMsg != nullptr)
+    {
+        *varEntries = retMsg->getVarEntries();
+    }
+}
+
+void UseApiBase::exchangeProcessImageIn()
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::exchangeProcessImageIn);
+
+    checkReturnMessage(ret, "exchange process image in");
+}
+
+void UseApiBase::exchangeProcessImageOut()
+{
+    // create message
+    auto msg = new OPP::cMessage();
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::exchangeProcessImageOut);
+
+    checkReturnMessage(ret, "exchange process image out");
 }
 
 void* UseApiBase::getProcessImageIn()
 {
     // create message
     auto msg = new cMessage();
-    msg->setKind(static_cast<short>(CallType::getProcessImageIn));
 
-    // define awaited return
-    mReturnValues[CallType::getProcessImageIn] = nullptr;
-
-    // send
-    send(msg, mSendGate);
-
-    auto ret = mReturnValues[CallType::getProcessImageIn];
-
-    // receive until return value was reiceived
-    while(ret != nullptr)
-    {
-        receiveMessage();
-
-        ret = mReturnValues[CallType::getProcessImageIn];
-    }
-
-    mReturnValues.erase(CallType::getProcessImageIn);
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getProcessImageIn);
 
     checkReturnMessage(ret, "get process image in");
 
@@ -212,7 +689,7 @@ void* UseApiBase::getProcessImageIn()
     auto retMsg = dynamic_cast<oplkMessages::PointerContMessage*>(ret.get());
 
     if (retMsg != nullptr)
-        return (void*)retMsg->getPointer();
+        return (void*) retMsg->getPointer();
     else
         return nullptr;
 }
@@ -221,25 +698,8 @@ void* UseApiBase::getProcessImageOut()
 {
     // create message
     auto msg = new cMessage();
-    msg->setKind(static_cast<short>(CallType::getProcessImageOut));
 
-    // define awaited return
-    mReturnValues[CallType::getProcessImageOut] = nullptr;
-
-    // send
-    send(msg, mSendGate);
-
-    auto ret = mReturnValues[CallType::getProcessImageOut];
-
-    // receive until return value was reiceived
-    while(ret != nullptr)
-    {
-        receiveMessage();
-
-        ret = mReturnValues[CallType::getProcessImageOut];
-    }
-
-    mReturnValues.erase(CallType::getProcessImageOut);
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getProcessImageOut);
 
     checkReturnMessage(ret, "get process image out");
 
@@ -247,34 +707,18 @@ void* UseApiBase::getProcessImageOut()
     auto retMsg = dynamic_cast<oplkMessages::PointerContMessage*>(ret.get());
 
     if (retMsg != nullptr)
-        return (void*)retMsg->getPointer();
+        return (void*) retMsg->getPointer();
     else
         return nullptr;
 }
 
-void UseApiBase::setupProcessImage()
+void UseApiBase::triggerPresForward(UINT nodeId)
 {
     // create message
-    auto msg = new OPP::cMessage();
-    msg->setKind(static_cast<short>(CallType::setupProcessImage));
+    auto msg = new oplkMessages::UintMessage();
+    msg->setValue(nodeId);
 
-    // define awaited return
-    mReturnValues[CallType::setupProcessImage] = nullptr;
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::triggerPresForward);
 
-    // send
-    send(msg, mSendGate);
-
-    auto ret = mReturnValues[CallType::setupProcessImage];
-
-    // receive until return value was reiceived
-    while(ret == nullptr)
-    {
-        receiveMessage();
-
-        ret = mReturnValues[CallType::setupProcessImage];
-    }
-
-    mReturnValues.erase(CallType::setupProcessImage);
-
-    checkReturnMessage(ret, "setup process image");
+    checkReturnMessage(ret, "trigger pres forward");
 }
