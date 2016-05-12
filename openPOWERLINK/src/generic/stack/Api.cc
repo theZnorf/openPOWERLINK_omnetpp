@@ -594,19 +594,19 @@ void Api::handleApiCall(RawMessagePtr msg)
             ret = mApi.exchangeProcessImageOut();
             break;
         case ApiCallType::getProcessImageIn: {
-            auto img = mApi.exchangeProcessImageIn();
+            auto img = mApi.getProcessImageIn();
 
             auto retMsg = new oplkMessages::PointerContMessage("GetProcessImageInReturn", msg->getKind());
-            retMsg->setPointer(img);
+            retMsg->setPointer((oplkMessages::PointerCont)img);
 
             retPtr = retMsg;
             break;
         }
         case ApiCallType::getProcessImageOut: {
-            auto img = mApi.exchangeProcessImageOut();
+            auto img = mApi.getProcessImageOut();
 
             auto retMsg = new oplkMessages::PointerContMessage("GetProcessImageOutReturn", msg->getKind());
-            retMsg->setPointer(img);
+            retMsg->setPointer((oplkMessages::PointerCont)img);
 
             retPtr = retMsg;
             break;
