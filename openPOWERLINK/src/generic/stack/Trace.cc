@@ -33,4 +33,5 @@ void Trace::handleMessage(cMessage *msg)
 void Trace::trace(std::string msg)
 {
     EV << "TRACE: " << msg << std::endl;
+    bubble(msg.c_str());
 }

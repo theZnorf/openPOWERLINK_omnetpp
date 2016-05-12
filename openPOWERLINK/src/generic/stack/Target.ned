@@ -15,9 +15,9 @@
 
 package openpowerlink.generic.stack;
 
-//
-// TODO auto-generated module
-//
+
 simple Target
 {
+    parameters:
+        @display("i=device/device,green");
 }

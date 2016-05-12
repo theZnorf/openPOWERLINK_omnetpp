@@ -36,7 +36,7 @@ namespace interface
             throw std::runtime_error("OplkTrace::setFunctions - unable to set function pointer");
     }
 
-    OplkTrace OplkTrace::getInstance()
+    OplkTrace& OplkTrace::getInstance()
     {
         static OplkTrace traceInstance;
 

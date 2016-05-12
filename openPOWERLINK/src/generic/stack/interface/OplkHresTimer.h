@@ -41,6 +41,8 @@ namespace interface
         public:
             static OplkHresTimer& getInstance();
 
+            static OPLK::ErrorType initTimer(InstanceHandle instanceHandle);
+            static OPLK::ErrorType exitTimer(InstanceHandle instanceHandle);
             static OPLK::ErrorType modifyTimer(InstanceHandle instanceHandle, HresTimerHandle* timerHandle, TimeType time, TimerCallback callback,
                     ArgumentType arg, OPLK::BoolType cont);
             static OPLK::ErrorType deleteTimer(InstanceHandle instanceHandle, HresTimerHandle* timerHandle);

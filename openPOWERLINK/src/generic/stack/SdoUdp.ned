@@ -15,9 +15,8 @@
 
 package openpowerlink.generic.stack;
 
-//
-// TODO auto-generated module
-//
 simple SdoUdp
 {
+    parameters:
+        @display("i=block/transport,green");
 }

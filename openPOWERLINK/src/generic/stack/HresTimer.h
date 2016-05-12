@@ -38,12 +38,17 @@ class HresTimer : public TimerBase<HresTimerHandle, HresTimerInfo>
 
         // Methods
     public:
+        void initTimer();
+        void exitTimer();
         void modifyTimer(HresTimerHandle* handle, TimeType time, TimerCallback callback, ArgumentType arg, bool cont);
         void deleteTimer(HresTimerHandle* handle);
 
     protected:
         virtual void initialize();
         virtual void handleMessage(cMessage *msg);
+
+    private:
+        void refreshDisplay();
 
         // Member
     private:

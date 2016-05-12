@@ -15,14 +15,19 @@
 
 package openpowerlink;
 
-import openpowerlink.MN.*;
+import openpowerlink.CN.CN;
+import openpowerlink.MN.MN;
 
 
-network Mn_simulation
+network singleCn
 {
-    @display("bgb=323,249");
+    parameters:
+        @display("bgb=323,249");
     submodules:
         mn: MN {
-            @display("p=157,120");
+            @display("p=60,100");
+        }
+        cn: CN {
+            @display("p=202,96");
         }
 }

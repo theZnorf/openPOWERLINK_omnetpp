@@ -16,7 +16,7 @@ SharedLibraryHelper::SharedLibraryHelper(const std::string& libname)
 {}
 
 SharedLibraryHelper::SharedLibraryHelper(const std::string& libname, InstanceType numberOfParallelInstances)
-    : SharedLibraryHelper(libname, 0, 0)
+    : SharedLibraryHelper(libname, numberOfParallelInstances, 0)
 {}
 
 
@@ -43,9 +43,9 @@ SharedLibraryHelper::~SharedLibraryHelper()
 
 SharedLibraryHelper::HelperPtr SharedLibraryHelper::getNextLibrary()
 {
-    if (mInstanceId + 1 < cMaxInstanceId)
+    if (mInstanceId + 1 <= cMaxInstanceId)
     {
-        HelperPtr helper(new SharedLibraryHelper(cLibName, cMaxInstanceId, mInstanceId + 1));
+        HelperPtr helper(new SharedLibraryHelper(cLibName, cMaxInstanceId +1, mInstanceId + 1));
         return helper;
     }
     throw runtime_error("SharedLibraryHelper::getNextLibrary - maximum number of instances reached");
@@ -53,19 +53,25 @@ SharedLibraryHelper::HelperPtr SharedLibraryHelper::getNextLibrary()
 
 std::string SharedLibraryHelper::getLibraryName()
 {
-    return cLibName + ((cMaxInstanceId < 0)? "" : to_string(mInstanceId)) + getExtension();
+    return cLibName + ((cMaxInstanceId > 0)? to_string(mInstanceId) : "") + getExtension();
 }
 
 void SharedLibraryHelper::createLibraryInstance()
 {
     // check if multiple instances are used
-    if (cMaxInstanceId >= 0)
+    if (cMaxInstanceId > 0)
     {
         ifstream in(cLibName + getExtension(), ios::binary);
         if (!in)
-            throw runtime_error("error copying library " + cLibName);
+            throw runtime_error("error copying library " + cLibName + getExtension() + " with errno " + to_string(errno));
 
         auto copyName = getLibraryName();
+        // check if copy already exisist
+        {
+            ifstream check(copyName);
+            if (check.good())
+                return;
+        }
         ofstream out(copyName, ios::binary);
         if (!out)
             throw runtime_error("error opening copied library " + copyName);
@@ -119,7 +125,7 @@ std::string interface::SharedLibraryHelper::getError()
 LibraryHandle SharedLibraryHelper::openSharedLibraryLinux(const std::string& libname)
 {
 #if defined(__linux__)
-    auto handle = dlopen(libname.c_str(), RTLD_LAZY | RTLD_LOCAL);
+    auto handle = dlopen(libname.c_str(), RTLD_NOW);
     if (handle == NULL)
         throw runtime_error("SharedLibraryHelper::openSharedLibraryLinux - error loading library " + libname + " with error " + getError());
     return handle;

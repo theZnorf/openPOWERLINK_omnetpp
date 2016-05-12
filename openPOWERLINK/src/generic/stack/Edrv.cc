@@ -66,11 +66,13 @@ void Edrv::initEdrv(EdrvInitParamType* initParam)
     strStream << "Device Name: " << mHwInfo.pDevName << std::endl;
 
     getDisplayString().setTagArg("t", 0, strStream.str().c_str());
+    getDisplayString().setTagArg("i",1,"green");
 }
 
 void Edrv::exitEdrv()
 {
     getDisplayString().setTagArg("t", 0, "Uninitialized");
+    getDisplayString().setTagArg("i",1,"red");
 }
 
 Edrv::MacType Edrv::getMacAddr()

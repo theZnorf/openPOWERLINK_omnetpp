@@ -13,10 +13,12 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.generic.stack;
+package openpowerlink.CN;
 
-simple Trace
-{
-    parameters:
-        @display("i=status/question,green");
+import openpowerlink.generic.GenericNode;
+
+module CN extends GenericNode
+{    
+    @display("bgb=348,401");
+    submodules:
 }

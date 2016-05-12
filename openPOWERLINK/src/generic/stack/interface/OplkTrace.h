@@ -29,7 +29,7 @@ namespace interface
 
             // Static Methods
         public:
-            static OplkTrace getInstance();
+            static OplkTrace& getInstance();
 
             static void trace(InstanceHandle handle, char const * msg);
     };

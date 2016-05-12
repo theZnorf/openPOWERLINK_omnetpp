@@ -13,6 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
+#include <string>
 #include "HresTimer.h"
 #include "MsgPtr.h"
 #include "interface/OplkException.h"
@@ -43,6 +44,21 @@ void HresTimer::initialize()
     }
 }
 
+
+void HresTimer::initTimer()
+{
+    bubble("HresTimer initialized");
+    getDisplayString().setTagArg("i",1,"green");
+    refreshDisplay();
+}
+
+void HresTimer::exitTimer()
+{
+    bubble("HresTimer exited");
+    getDisplayString().setTagArg("i",1,"red");
+    getDisplayString().setTagArg("t",0,"");
+}
+
 void HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallback callback, ArgumentType arg,
         bool cont)
 {
@@ -69,6 +85,8 @@ void HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallb
     *handle = info.handle;
 
     bubble("Timer modified");
+
+    refreshDisplay();
 }
 
 void HresTimer::deleteTimer(HresTimerHandle* handle)
@@ -81,6 +99,8 @@ void HresTimer::deleteTimer(HresTimerHandle* handle)
 
     if (!removeTimer(*handle))
         throw interface::OplkException("timer not valid", OPLK::kErrorTimerNoTimerCreated);
+
+    refreshDisplay();
 }
 
 void HresTimer::handleMessage(cMessage *rawMsg)
@@ -108,4 +128,9 @@ void HresTimer::handleMessage(cMessage *rawMsg)
             }
         }
     }
+}
+
+void HresTimer::refreshDisplay()
+{
+    getDisplayString().setTagArg("t",0,("Timers modified: " + std::to_string(mTimers.size())).c_str());
 }

@@ -15,11 +15,8 @@
 
 package openpowerlink.generic.stack;
 
-//
-// TODO auto-generated module
-//
 simple Edrv
 {
     parameters:
-        @display("t=Uninitialized,r,black");
+        @display("t=Uninitialized,r,black;i=block/network,red");
 }

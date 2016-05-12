@@ -15,9 +15,8 @@
 
 package openpowerlink.generic.stack;
 
-//
-// TODO auto-generated module
-//
 simple HresTimer
 {
+    parameters:
+        @display("i=device/clock,red;t=,r,black");
 }

@@ -31,8 +31,8 @@ OplkHresTimer& OplkHresTimer::getInstance()
     return timer;
 }
 
-OPLK::ErrorType OplkHresTimer::modifyTimer(InstanceHandle instanceHandle, HresTimerHandle* timerHandle, TimeType time, TimerCallback callback,
-        ArgumentType arg, OPLK::BoolType cont)
+OPLK::ErrorType OplkHresTimer::modifyTimer(InstanceHandle instanceHandle, HresTimerHandle* timerHandle, TimeType time,
+        TimerCallback callback, ArgumentType arg, OPLK::BoolType cont)
 {
     // check parameter
     if (timerHandle == nullptr)
@@ -44,6 +44,44 @@ OPLK::ErrorType OplkHresTimer::modifyTimer(InstanceHandle instanceHandle, HresTi
 
         // call module method
         OplkHresTimer::getInstance().getModule(instanceHandle)->modifyTimer(timerHandle, time, cb, arg, cont == TRUE);
+    }
+    catch (OplkException & e)
+    {
+        return e.errorNumber();
+    }
+    catch (exception & e)
+    {
+        return OPLK::kErrorGeneralError;
+    }
+
+    return OPLK::kErrorOk;
+}
+
+OPLK::ErrorType interface::OplkHresTimer::initTimer(InstanceHandle instanceHandle)
+{
+    try
+    {
+        // call module method
+        OplkHresTimer::getInstance().getModule(instanceHandle)->initTimer();
+    }
+    catch (OplkException & e)
+    {
+        return e.errorNumber();
+    }
+    catch (exception & e)
+    {
+        return OPLK::kErrorGeneralError;
+    }
+
+    return OPLK::kErrorOk;
+}
+
+OPLK::ErrorType interface::OplkHresTimer::exitTimer(InstanceHandle instanceHandle)
+{
+    try
+    {
+        // call module method
+        OplkHresTimer::getInstance().getModule(instanceHandle)->exitTimer();
     }
     catch (OplkException & e)
     {
@@ -83,11 +121,14 @@ OplkHresTimer::ErrorType OplkHresTimer::deleteTimer(InstanceHandle instanceHandl
 void OplkHresTimer::setFunctions(SharedLibraryHelper::HelperPtr helper, InstanceHandle handle)
 {
     OPLK::tHresTimerFunctions functions;
+    functions.pfnInitHresTimer = OplkHresTimer::initTimer;
+    functions.pfnExitHresTimer = OplkHresTimer::exitTimer;
     functions.pfnModifyHresTimer = OplkHresTimer::modifyTimer;
     functions.pfnDeleteHresTimer = OplkHresTimer::deleteTimer;
 
     // set function pointer of interface
-    auto setFunctions = helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tHresTimerFunctions>("sim_setHresTimerFunctions");
+    auto setFunctions = helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tHresTimerFunctions>(
+            "sim_setHresTimerFunctions");
 
     auto ret = setFunctions(handle, functions);
 

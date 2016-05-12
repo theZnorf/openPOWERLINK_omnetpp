@@ -8,10 +8,11 @@
 #ifndef OPLKBASE_H_
 #define OPLKBASE_H_
 
+#include <omnetpp.h>
 #include <vector>
+#include <string>
 #include "SharedLibraryHelper.h"
 #include "oplkinc.h"
-#include <omnetpp.h>
 
 namespace interface
 {
@@ -33,7 +34,13 @@ namespace interface
 
             // C-Tor / D-Tor
         protected:
-            OplkBase()
+            OplkBase() :
+                    cLibName("../openPOWERLINK_V2/stack/lib/linux/x86_64/liboplkmn-sim_d"), cNumberOfInstances(2)
+            {
+            }
+
+            OplkBase(std::string const & libName, int numberOfInstances) :
+                    cLibName(libName), cNumberOfInstances(numberOfInstances)
             {
             }
 
@@ -53,22 +60,18 @@ namespace interface
                 SharedLibraryHelper::HelperPtr helper;
 
                 if (mModuleInfos.empty())
-                    helper = SharedLibraryHelper::createInstance(/*cLibName*/"liboplkmn-sim_d", /*cNumberOfInstances*/1);
+                    helper = SharedLibraryHelper::createInstance(cLibName, cNumberOfInstances);
                 else
                     helper = mModuleInfos.back().helper->getNextLibrary();
 
                 // add info object
-                ModuleInfo info =
-                {
-                        module,
-                        helper
-                };
+                ModuleInfo info = { module, helper };
                 mModuleInfos.push_back(info);
 
                 // set function pointer of interface
                 try
                 {
-                    setFunctions(helper, mModuleInfos.size() -1);
+                    setFunctions(helper, mModuleInfos.size() - 1);
                 }
                 catch (std::exception const & e)
                 {
@@ -93,6 +96,10 @@ namespace interface
             // Member
         protected:
             InfoCont mModuleInfos;
+
+        private:
+            const std::string cLibName;
+            const int cNumberOfInstances;
     };
 
 } /* namespace interface */
