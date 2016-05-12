@@ -19,4 +19,6 @@ simple Edrv
 {
     parameters:
         @display("t=Uninitialized,r,black;i=block/network,red");
+    gates:
+        inout ethernetIf;
 }

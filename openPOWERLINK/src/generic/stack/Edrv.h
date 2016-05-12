@@ -54,6 +54,7 @@ class Edrv : public OPP::cSimpleModule
         MacCont mMac;
         RxCallbackType mRxCallback;
         HwInfoType mHwInfo;
+        OPP::cGate* mEthernetIfGate;
 };
 
 #endif

@@ -25,7 +25,11 @@ Define_Module(Edrv);
 
 void Edrv::initialize()
 {
+    // init stub
     interface::OplkEdrv::getInstance().initModule(this);
+
+    // resolve gate
+    mEthernetIfGate = gate("ethernetIf");
 }
 
 void Edrv::handleMessage(cMessage *msg)
