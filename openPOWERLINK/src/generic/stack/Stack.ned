@@ -17,12 +17,15 @@ package openpowerlink.generic.stack;
 
 module Stack
 {
-    @display("bgb=248,475");
+    parameters:
+        @display("bgb=248,475,,,0;i=plk,,0;is=n");
     gates:
         input apiCall;
         output apiReturn;
         output event;
         input eventReturn;
+        input ethernetIn;
+        output ethernetOut;
     submodules:
         api: Api {
             @display("p=119,46");
@@ -47,4 +50,6 @@ module Stack
         apiCall --> api.functionCall;
         api.event --> event;
         eventReturn --> api.eventReturn;
+        edrv.ethernetOut --> ethernetOut;
+        ethernetIn --> edrv.ethernetIn;
 }

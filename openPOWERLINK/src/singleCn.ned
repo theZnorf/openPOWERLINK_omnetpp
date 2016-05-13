@@ -15,6 +15,7 @@
 
 package openpowerlink;
 
+import inet.linklayer.ethernet.EtherBus;
 import openpowerlink.CN.CN;
 import openpowerlink.MN.MN;
 
@@ -25,9 +26,11 @@ network singleCn
         @display("bgb=323,249");
     submodules:
         mn: MN {
-            @display("p=60,100");
+            @display("p=150,56");
         }
         cn: CN {
-            @display("p=202,96");
+            @display("p=150,180");
         }
+    connections:
+        mn.ethernetIf <--> cn.ethernetIf;
 }

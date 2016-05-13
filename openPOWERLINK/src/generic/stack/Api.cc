@@ -35,6 +35,9 @@ void Api::initialize()
     mReturnGate = gate("return");
     mEventGate = gate("event");
 
+    // register signals
+    mInvokedApiFunctionSignal = registerSignal("invokedFunctionType");
+
     // init dispatcher
     mDispatcher.registerFunction(gate("functionCall"), std::bind(&Api::handleApiCall, this, std::placeholders::_1));
     mDispatcher.registerFunction(gate("eventReturn"), std::bind(&Api::handleEventReturn, this, std::placeholders::_1));
@@ -54,6 +57,8 @@ void Api::handleApiCall(RawMessagePtr msg)
 {
     interface::api::ErrorType ret = interface::api::Error::kErrorInvalidOperation;
     cMessage* retPtr = nullptr;
+
+    emit(mInvokedApiFunctionSignal, msg->getKind());
 
     switch (static_cast<ApiCallType>(msg->getKind()))
     {

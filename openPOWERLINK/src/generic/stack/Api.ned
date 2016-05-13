@@ -18,6 +18,11 @@ package openpowerlink.generic.stack;
 
 simple Api
 {
+    parameters:
+        @signal[invokedFunctionType](type="short"); // enum=Api::ApiCallType
+        
+        @statistic[apiFunctions](title="Invoked API functions";record=count,vector;source=invokedFunctionType);
+    
     gates:
         input functionCall;
         output return;

@@ -15,24 +15,43 @@
 
 package openpowerlink.generic;
 
+import inet.common.LayeredProtocolBase;
+import inet.linklayer.ethernet.EtherEncap;
+import inet.linklayer.ethernet.EtherEncapDummy;
+import inet.linklayer.ethernet.EtherMACFullDuplex;
+import inet.linklayer.ethernet.EthernetInterface;
+import inet.networklayer.common.InterfaceTable;
+import inet.networklayer.contract.INetworkLayer;
+import inet.physicallayer.contract.packetlevel.IPhysicalLayer;
 import openpowerlink.generic.stack.Stack;
 
 
 module GenericNode
 {
-    @display("bgb=282,253");
+    parameters:
+        @display("bgb=282,429");
+        @networkNode();
+    gates:
+        inout ethernetIf;
     submodules:
         stack: Stack {
-            @display("p=71,168;is=vl");
+            @display("p=71,268");
         }
         event: EventBase {
-            @display("p=196,168");
+            @display("p=196,154");
         }
         app: AppBase {
-            @display("p=196,61");
+            @display("p=71,53");
         }
         demo: DemoBase {
-            @display("p=71,61");
+            @display("p=71,154");
+        }
+        ethernetInterface: EthernetInterface {
+            @display("p=71,355");
+            interfaceTableModule = "/../../interfaceTable";
+        }
+        interfaceTable: InterfaceTable {
+            @display("p=196,355");
         }
     connections:
         demo.apiCall --> stack.apiCall;
@@ -44,4 +63,7 @@ module GenericNode
         event.stackShutdown --> demo.stackShutdown;
         demo.appApiReturn --> app.apiReturn;
         app.apiCall --> demo.appApiCall;
+        stack.ethernetOut --> ethernetInterface.upperLayerIn;
+        ethernetInterface.upperLayerOut --> stack.ethernetIn;
+        ethernetIf <--> ethernetInterface.phys;
 }

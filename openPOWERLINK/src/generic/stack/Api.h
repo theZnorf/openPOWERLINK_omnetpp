@@ -106,6 +106,7 @@ class Api : public OPP::cSimpleModule
     interface::api::ApiFunctions mApi;
     OPP::cGate* mReturnGate;
     OPP::cGate* mEventGate;
+    OPP::simsignal_t mInvokedApiFunctionSignal;
 };
 
 #endif
