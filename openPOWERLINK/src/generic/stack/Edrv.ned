@@ -20,6 +20,6 @@ simple Edrv
     parameters:
         @display("t=Uninitialized,r,black;i=block/network,red");
     gates:
-        input ethernetIn;
-        output ethernetOut;
+        //input ethernetIn;
+        //output ethernetOut;
 }

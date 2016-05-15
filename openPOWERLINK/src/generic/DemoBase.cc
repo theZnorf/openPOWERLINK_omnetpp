@@ -64,7 +64,7 @@ void DemoBase::handleOtherMessage(MessagePtr msg)
         {
 
             //TODO fix
-            auto mMainInterval = simtime_t::parse("1s");
+            auto mMainInterval = simtime_t::parse("1ms");
 
             switch (static_cast<DemoState>(msg->getKind()))
             {
@@ -83,11 +83,8 @@ void DemoBase::handleOtherMessage(MessagePtr msg)
 
                 case DemoState::mainloop: {
 
-                    // send process sync of app
-                    auto processMsg = new cMessage();
-                    processMsg->setKind(static_cast<short>(AppBase::AppCallType::processSync));
-
-                    send(processMsg, mAppCallGate);
+                    // process stack
+                    stackProcess();
 
                     // schedule following main message
                     scheduleAt(simTime() + mMainInterval,
@@ -104,7 +101,7 @@ void DemoBase::handleOtherMessage(MessagePtr msg)
 
 void DemoBase::initPowerlink()
 {
-    BYTE macAddr[] = { 0x01, 0x23, 0x45, 0x67, 0x89, 0x00 };
+    BYTE macAddr[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     char cdcFile[] = "mnobd.cdc";
 
     static interface::api::ApiInitParam initParam;

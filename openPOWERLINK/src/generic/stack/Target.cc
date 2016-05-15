@@ -50,7 +50,7 @@ void Target::setDefaultGateway(AddressType defaultGateway)
 
 Target::TickType Target::getTickCount()
 {
-    return static_cast<TickType>(simTime().raw());
+    return static_cast<TickType>(simTime().inUnit(SimTimeUnit::SIMTIME_MS));
 }
 
 void Target::setLed(LedType ledType, bool ledOn)

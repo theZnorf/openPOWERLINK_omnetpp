@@ -16,6 +16,7 @@
 #ifndef __OPENPOWERLINK_API_H_
 #define __OPENPOWERLINK_API_H_
 
+#include <string>
 #include <omnetpp.h>
 #include "interface/OplkApi.h"
 #include "interface/ApiDef.h"
@@ -25,9 +26,10 @@ class Api : public OPP::cSimpleModule
 {
         // Definitions
     public:
-        enum class ApiCallType : short
-        {
-            undefined = 0,
+        enum class ApiCallType
+            : short
+            {
+                undefined = 0u,
             init,
             create,
             destroy,
@@ -80,33 +82,46 @@ class Api : public OPP::cSimpleModule
         };
 
     private:
+        static const constexpr char* const cApiCallNames[] = { "undefined", "init", "create", "destroy", "exit",
+                "execNmtCommand", "cbGenericObdAccess", "linkObject", "readObject", "writeObject",
+                "finishUserObdAccess", "enableUserObdAccess", "freeSdoChannel", "abortSdoChannel", "readLocalObject",
+                "writeLocalObject", "sendAsndFrame", "sendEthFrame", "setAsndForward", "setNonPlkForward",
+                "postUserEvent", "triggerMnStateChange", "setCdcBuffer", "setOdArchivePath", "setCdcFilename",
+                "process", "getIdentResponse", "getEthMacAddr", "checkKernelStack", "waitSyncEvent", "getVersion",
+                "getVersionString", "getStackConfiguration", "getStackInfo", "getSocTime", "allocProcessImage",
+                "freeProcessImage", "linkProcessImageObject", "exchangeProcessImageIn", "exchangeProcessImageOut",
+                "getProcessImageIn", "getProcessImageOut", "setupProcessImage", "triggerPresForward", "getRetStr" };
+
+    private:
         using RawMessagePtr = MessageDispatcher::RawMessagePtr;
 
-  protected:
-    virtual void initialize();
-    virtual void handleMessage(OPP::cMessage *rawMsg);
+        // Methods
+    public:
+        static const char* getApiCallString(ApiCallType type);
 
-  private:
-    void handleApiCall(RawMessagePtr msg);
-    void handleEventReturn(RawMessagePtr msg);
+    protected:
+        virtual void initialize();
+        virtual void handleMessage(OPP::cMessage *rawMsg);
 
+    private:
+        void handleApiCall(RawMessagePtr msg);
+        void handleEventReturn(RawMessagePtr msg);
 
-    interface::api::ErrorType processEvent(interface::api::ApiEventType eventType_p,
+        interface::api::ErrorType processEvent(interface::api::ApiEventType eventType_p,
                 interface::api::ApiEventArg* pEventArg_p);
 
-    static interface::api::ErrorType processEvent(interface::api::ApiEventType eventType_p,
-            interface::api::ApiEventArg* pEventArg_p, void* pUserArg_p);
+        static interface::api::ErrorType processEvent(interface::api::ApiEventType eventType_p,
+                interface::api::ApiEventArg* pEventArg_p, void* pUserArg_p);
 
+        void sendReturnMessage(OPP::cMessage* msg);
 
-    void sendReturnMessage(OPP::cMessage* msg);
-
-    // Member
-  private:
-    MessageDispatcher mDispatcher;
-    interface::api::ApiFunctions mApi;
-    OPP::cGate* mReturnGate;
-    OPP::cGate* mEventGate;
-    OPP::simsignal_t mInvokedApiFunctionSignal;
+        // Member
+    private:
+        MessageDispatcher mDispatcher;
+        interface::api::ApiFunctions mApi;OPP
+        ::cGate* mReturnGate;OPP
+        ::cGate* mEventGate;OPP
+        ::simsignal_t mInvokedApiFunctionSignal;
 };
 
 #endif

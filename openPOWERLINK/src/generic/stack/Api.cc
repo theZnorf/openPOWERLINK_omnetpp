@@ -24,6 +24,15 @@ using namespace std;
 USING_NAMESPACE
 Define_Module(Api);
 
+constexpr const char* const Api::cApiCallNames[];
+
+static interface::api::ErrorType handleSyncCb(void)
+{
+    EV << "######## Sync Cb called" << std::endl;
+
+    return interface::api::Error::kErrorOk;
+}
+
 void Api::initialize()
 {
     interface::api::ApiFunctions & functions = mApi;
@@ -58,9 +67,12 @@ void Api::handleApiCall(RawMessagePtr msg)
     interface::api::ErrorType ret = interface::api::Error::kErrorInvalidOperation;
     cMessage* retPtr = nullptr;
 
+
     emit(mInvokedApiFunctionSignal, msg->getKind());
 
-    switch (static_cast<ApiCallType>(msg->getKind()))
+    auto callType = static_cast<ApiCallType>(msg->getKind());
+
+    switch (callType)
     {
         case ApiCallType::init:
             ret = mApi.initialize();
@@ -77,6 +89,7 @@ void Api::handleApiCall(RawMessagePtr msg)
                 initParam.pfnCbEvent = processEvent;
                 // set event callback user arg to this pointer
                 initParam.pEventUserArg = static_cast<void*>(this);
+                initParam.pfnCbSync = handleSyncCb;
 
                 ret = mApi.create(&initParam);
             }
@@ -639,6 +652,8 @@ void Api::handleApiCall(RawMessagePtr msg)
             error("%s - unknown message kind received %d", __PRETTY_FUNCTION__, msg->getKind());
     }
 
+    EV << "Executed " << getApiCallString(callType) << std::endl;
+
     // check if alternative return message was not set
     if (retPtr == nullptr)
     {
@@ -692,4 +707,9 @@ interface::api::ErrorType Api::processEvent(interface::api::ApiEventType eventTy
 void Api::sendReturnMessage(cMessage* msg)
 {
     send(msg, mReturnGate);
+}
+
+const char* Api::getApiCallString(ApiCallType type)
+{
+    return cApiCallNames[static_cast<size_t>(type)];
 }

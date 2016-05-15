@@ -29,8 +29,8 @@ void Edrv::initialize()
     interface::OplkEdrv::getInstance().initModule(this);
 
     // resolve gate
-    mEthernetInGate = gate("ethernetIn");
-    mEthernetOutGate = gate("ethernetOut");
+    //mEthernetInGate = gate("ethernetIn");
+    //mEthernetOutGate = gate("ethernetOut");
 }
 
 void Edrv::handleMessage(cMessage *msg)

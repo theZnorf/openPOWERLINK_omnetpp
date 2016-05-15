@@ -32,7 +32,7 @@ module GenericNode
         @display("bgb=282,429");
         @networkNode();
     gates:
-        inout ethernetIf;
+        //inout ethernetIf;
     submodules:
         stack: Stack {
             @display("p=71,268");
@@ -46,13 +46,6 @@ module GenericNode
         demo: DemoBase {
             @display("p=71,154");
         }
-        ethernetInterface: EthernetInterface {
-            @display("p=71,355");
-            interfaceTableModule = "/../../interfaceTable";
-        }
-        interfaceTable: InterfaceTable {
-            @display("p=196,355");
-        }
     connections:
         demo.apiCall --> stack.apiCall;
         stack.apiReturn --> demo.apiReturn;
@@ -63,7 +56,4 @@ module GenericNode
         event.stackShutdown --> demo.stackShutdown;
         demo.appApiReturn --> app.apiReturn;
         app.apiCall --> demo.appApiCall;
-        stack.ethernetOut --> ethernetInterface.upperLayerIn;
-        ethernetInterface.upperLayerOut --> stack.ethernetIn;
-        ethernetIf <--> ethernetInterface.phys;
 }

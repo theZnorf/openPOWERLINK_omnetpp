@@ -24,8 +24,8 @@ module Stack
         output apiReturn;
         output event;
         input eventReturn;
-        input ethernetIn;
-        output ethernetOut;
+        //input ethernetIn;
+        //output ethernetOut;
     submodules:
         api: Api {
             @display("p=119,46");
@@ -50,6 +50,6 @@ module Stack
         apiCall --> api.functionCall;
         api.event --> event;
         eventReturn --> api.eventReturn;
-        edrv.ethernetOut --> ethernetOut;
-        ethernetIn --> edrv.ethernetIn;
+        //edrv.ethernetOut --> ethernetOut;
+        //ethernetIn --> edrv.ethernetIn;
 }

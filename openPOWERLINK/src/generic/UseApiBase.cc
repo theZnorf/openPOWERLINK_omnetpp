@@ -5,6 +5,7 @@
  *      Author: franz
  */
 
+#include <string>
 #include <UseApiBase.h>
 #include "oplkMessages/ApiMessages.h"
 #include "OplkException.h"
@@ -74,6 +75,8 @@ UseApiBase::MessagePtr UseApiBase::sendMessageWithCallTypeAndWaitForReturn(RawMe
 {
     // set kind of message
     msg->setKind(static_cast<Kind>(calltype));
+    std::string setName(msg->getName());
+    msg->setName((((!setName.empty())? (setName + "-"): "") + Api::getApiCallString(calltype)).c_str());
 
     // set awaited call type
     mReturnValues[calltype] = nullptr;
@@ -81,7 +84,7 @@ UseApiBase::MessagePtr UseApiBase::sendMessageWithCallTypeAndWaitForReturn(RawMe
     // send message
     send(msg, mSendGate);
 
-    auto ret = mReturnValues[CallType::setupProcessImage];
+    auto ret = mReturnValues[calltype];
 
     // receive until return value was received
     while (ret == nullptr)

@@ -28,9 +28,5 @@ network singleCn
         mn: MN {
             @display("p=150,56");
         }
-        cn: CN {
-            @display("p=150,180");
-        }
     connections:
-        mn.ethernetIf <--> cn.ethernetIf;
 }
