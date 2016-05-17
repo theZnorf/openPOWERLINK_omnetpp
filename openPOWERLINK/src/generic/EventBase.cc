@@ -17,6 +17,7 @@
 #include "EventMessage_m.h"
 #include "ReturnMessage_m.h"
 #include "MsgPtr.h"
+#include "debugstr.h"
 
 using namespace std;
 USING_NAMESPACE
@@ -27,8 +28,13 @@ void EventBase::initialize()
 {
     // resolve return gate
     mReturnGate = gate("eventReturn");
-    if (mReturnGate == nullptr)
-        error("%s - unable to resolve gate", __PRETTY_FUNCTION__);
+
+    // register signals
+    mEventTypeSignal = registerSignal("eventType");
+    mNmtStateSignal = registerSignal("nmtState");
+
+    // resolve parameter
+    mPrintEventType = par("printEventType");
 }
 
 void EventBase::handleMessage(cMessage *rawMsg)
@@ -53,8 +59,110 @@ void EventBase::handleMessage(cMessage *rawMsg)
 
 interface::api::ErrorType EventBase::processEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg)
 {
-    EV << "Process event:" << endl;
-    EV << " EventType: " << eventType << endl;
+    if (mPrintEventType)
+    {
+        EV << "Process event:" << endl;
+        EV << " EventType: " << interface::debug::getApiEventStr(eventType) << endl;
+    }
+
+    emit(mEventTypeSignal, eventType);
+
+    interface::api::ErrorType ret = interface::api::Error::kErrorOk;
+
+    switch (eventType)
+    {
+        case interface::api::ApiEvent::kOplkApiEventNmtStateChange:
+            emit(mNmtStateSignal, eventArg.nmtStateChange.newNmtState);
+            ret = processNmtStateChangeEvent(eventType, eventArg);
+            break;
+
+        case interface::api::ApiEvent::kOplkApiEventCriticalError:
+            ret = processErrorEvent(eventType, eventArg);
+            break;
+
+        case interface::api::ApiEvent::kOplkApiEventWarning:
+            ret = processWarningEvent(eventType, eventArg);
+            break;
+
+        case interface::api::ApiEvent::kOplkApiEventHistoryEntry:
+            ret = processHistoryEvent(eventType, eventArg);
+            break;
+
+        case interface::api::ApiEvent::kOplkApiEventNode:
+            ret = processNodeEvent(eventType, eventArg);
+            break;
+
+        case interface::api::ApiEvent::kOplkApiEventPdoChange:
+            ret = processPdoChangeEvent(eventType, eventArg);
+            break;
+
+        case interface::api::ApiEvent::kOplkApiEventCfmProgress:
+            ret = processCfmProgressEvent(eventType, eventArg);
+            break;
+
+        case interface::api::ApiEvent::kOplkApiEventCfmResult:
+            ret = processCfmResultEvent(eventType, eventArg);
+            break;
+
+        default:
+            break;
+    }
+    return ret;
+}
+
+interface::api::ErrorType EventBase::processNmtStateChangeEvent(interface::api::ApiEventType eventType,
+        interface::api::ApiEventArg eventArg)
+{
+    EV << "NMT State change from " << interface::debug::getNmtStateStr(eventArg.nmtStateChange.oldNmtState) << " to " << interface::debug::getNmtStateStr(eventArg.nmtStateChange.newNmtState) << endl;
+
+    return interface::api::Error::kErrorOk;
+}
+
+interface::api::ErrorType EventBase::processErrorEvent(interface::api::ApiEventType eventType,
+        interface::api::ApiEventArg eventArg)
+{
+
+    return interface::api::Error::kErrorOk;
+}
+
+interface::api::ErrorType EventBase::processWarningEvent(interface::api::ApiEventType eventType,
+        interface::api::ApiEventArg eventArg)
+{
+
+    return interface::api::Error::kErrorOk;
+}
+
+interface::api::ErrorType EventBase::processHistoryEvent(interface::api::ApiEventType eventType,
+        interface::api::ApiEventArg eventArg)
+{
+
+    return interface::api::Error::kErrorOk;
+}
+
+interface::api::ErrorType EventBase::processNodeEvent(interface::api::ApiEventType eventType,
+        interface::api::ApiEventArg eventArg)
+{
+
+    return interface::api::Error::kErrorOk;
+}
+
+interface::api::ErrorType EventBase::processPdoChangeEvent(interface::api::ApiEventType eventType,
+        interface::api::ApiEventArg eventArg)
+{
+
+    return interface::api::Error::kErrorOk;
+}
+
+interface::api::ErrorType EventBase::processCfmProgressEvent(interface::api::ApiEventType eventType,
+        interface::api::ApiEventArg eventArg)
+{
+
+    return interface::api::Error::kErrorOk;
+}
+
+interface::api::ErrorType EventBase::processCfmResultEvent(interface::api::ApiEventType eventType,
+        interface::api::ApiEventArg eventArg)
+{
 
     return interface::api::Error::kErrorOk;
 }

@@ -6,6 +6,7 @@
  */
 
 #include <OplkException.h>
+#include "debugstr.h"
 
 namespace interface
 {
@@ -19,7 +20,7 @@ namespace interface
 
     const char* OplkException::what() const noexcept
     {
-        return ("OplkException: " + mMsg + " with error number " + std::to_string(mError)).c_str();
+        return ("OplkException: " + mMsg + " with error number " + std::to_string(mError) + " and message " + debug::getRetValStr(mError)).c_str();
     }
 
     OplkException::ErrorType  OplkException::errorNumber() const

@@ -31,12 +31,23 @@ class EventBase : public OPP::cSimpleModule
 
     virtual interface::api::ErrorType processEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
 
+    virtual interface::api::ErrorType processNmtStateChangeEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processErrorEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processWarningEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processHistoryEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processNodeEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processPdoChangeEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processCfmProgressEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processCfmResultEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+
     void sendReturnMessage(interface::api::ErrorType returnValue);
 
     // Member
   protected:
     OPP::cGate* mReturnGate;
-
+    OPP::simsignal_t mEventTypeSignal;
+    OPP::simsignal_t mNmtStateSignal;
+    bool mPrintEventType;
 };
 
 #endif

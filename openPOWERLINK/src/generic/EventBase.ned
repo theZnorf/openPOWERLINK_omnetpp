@@ -15,11 +15,16 @@
 
 package openpowerlink.generic;
 
-//
-// TODO auto-generated module
-//
 simple EventBase
 {
+    parameters:
+        bool printEventType = default(false);
+        
+        @signal[eventType];
+        @signal[nmtState] (type="unsigned long");
+        
+        @statistic[processedEventType](title="Processed Event Type";record=sum,vector);
+        
     gates:
         input event;
         output eventReturn;

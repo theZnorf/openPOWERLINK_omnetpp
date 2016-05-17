@@ -13,11 +13,10 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.generic.stack;
+package openpowerlink.generic;
 
-
-simple Target
+simple NmtState
 {
     parameters:
-        @display("i=device/device,green;t=,r,black");
+        @display("t=Uninitialized,r,black");
 }

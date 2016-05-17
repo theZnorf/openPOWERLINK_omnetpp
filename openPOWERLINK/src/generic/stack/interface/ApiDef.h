@@ -32,8 +32,10 @@ namespace interface
         using ApiStackInfo = OPLK::tOplkApiStackInfo;
         using SocTimeInfo = OPLK::tOplkApiSocTimeInfo;
         using NmtNodeCommand = OPLK::tNmtNodeCommand;
+        using NmtNodeCommandE = OPLK::eNmtNodeCommand;
         using AsndFilter = OPLK::tOplkApiAsndFilter;
         using ApiEventType = OPLK::tOplkApiEventType;
+        using ApiEvent = OPLK::eOplkApiEventType;
         using ApiEventArg = OPLK::tOplkApiEventArg;
         using EventNmtStateChange = OPLK::tEventNmtStateChange;
         using EventError = OPLK::tEventError;
@@ -60,6 +62,15 @@ namespace interface
         using NetTime = OPLK::tNetTime;
         using AsySdoCom = OPLK::tAsySdoCom;
         using NmtEventType = OPLK::eNmtEvent;
+        using LedType = OPLK::eLedType;
+        using EventType = OPLK::tEventType;
+        using EventSource = OPLK::tEventSource;
+        using EventSink = OPLK::tEventSink;
+        using NmtState = OPLK::tNmtState;
+        using NmtStateE = OPLK::eNmtState;
+        using NmtNodeEvent = OPLK::tNmtNodeEvent;
+        using NmtBootEvent = OPLK::tNmtBootEvent;
+        using SdoComConState = OPLK::tSdoComConState;
 
         struct ApiFunctions
         {
@@ -111,8 +122,6 @@ namespace interface
                 std::function<ErrorType(void)> setupProcessImage;
 
                 std::function<ErrorType(UINT)> triggerPresForward;
-
-                std::function<char*(ErrorType)> getRetStr;
         };
     }
 }

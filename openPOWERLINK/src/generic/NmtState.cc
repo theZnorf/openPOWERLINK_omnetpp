@@ -13,11 +13,20 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.generic.stack;
+#include "NmtState.h"
+#include "debugstr.h"
 
+USING_NAMESPACE
 
-simple Target
+Define_Module(NmtState);
+
+void NmtState::initialize()
 {
-    parameters:
-        @display("i=device/device,green;t=,r,black");
+    // subscribe listener to nmt state signal
+    getParentModule()->subscribe("nmtState", this);
+}
+
+void NmtState::receiveSignal(::cComponent* source, ::simsignal_t signalID, unsigned long l)
+{
+    getDisplayString().setTagArg("t", 0, interface::debug::getNmtStateStr(static_cast<interface::api::NmtState>(l)));
 }

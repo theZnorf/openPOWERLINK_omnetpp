@@ -19,6 +19,7 @@
 #include "interface/oplkinc.h"
 #include "MsgPtr.h"
 #include "ApiMessages.h"
+#include "debugstr.h"
 
 using namespace std;
 USING_NAMESPACE
@@ -670,11 +671,15 @@ void Api::handleApiCall(RawMessagePtr msg)
 
 void Api::handleEventReturn(RawMessagePtr msg)
 {
-    EV << "EventCall returned";
     auto eventMsg = dynamic_cast<oplkMessages::ReturnMessage*>(msg);
     if (eventMsg != nullptr)
-        EV << " with " << eventMsg->getReturnValue();
-    EV << std::endl;
+    {
+        auto retVal = eventMsg->getReturnValue();
+        if (retVal != interface::api::Error::kErrorOk)
+        {
+            EV << "EventCall returned  with " << interface::debug::getRetValStr(retVal) << std::endl;
+        }
+    }
 }
 
 interface::api::ErrorType Api::processEvent(interface::api::ApiEventType eventType_p,

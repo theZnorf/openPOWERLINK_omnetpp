@@ -46,6 +46,9 @@ module GenericNode
         demo: DemoBase {
             @display("p=71,154");
         }
+        nmtState: NmtState {
+            @display("p=133,352");
+        }
     connections:
         demo.apiCall --> stack.apiCall;
         stack.apiReturn --> demo.apiReturn;

@@ -14,8 +14,10 @@
 // 
 
 #include <string>
+#include <sstream>
 #include "Target.h"
 #include "interface/OplkTarget.h"
+#include "interface/ApiDef.h"
 
 using namespace std;
 USING_NAMESPACE
@@ -26,6 +28,8 @@ Define_Module(Target);
 void Target::initialize()
 {
     interface::OplkTarget::getInstance().initModule(this);
+
+    refreshDisplay();
 }
 
 void Target::handleMessage(cMessage *msg)
@@ -56,4 +60,29 @@ Target::TickType Target::getTickCount()
 void Target::setLed(LedType ledType, bool ledOn)
 {
     bubble("setLed called");
+
+    switch(ledType)
+    {
+        case interface::api::LedType::kLedTypeError:
+            mErrorLed = ledOn;
+            break;
+        case interface::api::LedType::kLedTypeStatus:
+            mStatusLed = ledOn;
+            break;
+        default:
+            error("invalid led type: %d", ledType);
+            break;
+
+        refreshDisplay();
+    }
+}
+
+void Target::refreshDisplay()
+{
+    std::stringstream strStream;
+
+    strStream << "StatusLed: " << (mStatusLed? "On" : "Off") << std::endl;
+    strStream << "ErrorLed: " << (mErrorLed? "On" : "Off");
+
+    getDisplayString().setTagArg("t",0,strStream.str().c_str());
 }

@@ -42,6 +42,14 @@ class Target : public OPP::cSimpleModule
         void setDefaultGateway(AddressType defaultGateway);
         TickType getTickCount();
         void setLed(LedType ledType, bool ledOn);
+
+    private:
+        void refreshDisplay();
+
+        // Member
+    private:
+        bool mStatusLed = false;
+        bool mErrorLed = false;
 };
 
 #endif

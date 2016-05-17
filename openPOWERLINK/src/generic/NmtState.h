@@ -13,11 +13,18 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.generic.stack;
+#ifndef __OPENPOWERLINK_NMTSTATE_H_
+#define __OPENPOWERLINK_NMTSTATE_H_
+
+#include <omnetpp.h>
 
 
-simple Target
+class NmtState : public OPP::cSimpleModule, OPP::cListener
 {
-    parameters:
-        @display("i=device/device,green;t=,r,black");
-}
+  protected:
+    virtual void initialize();
+
+    virtual void receiveSignal(OPP::cComponent* source, OPP::simsignal_t signalID, unsigned long l);
+};
+
+#endif

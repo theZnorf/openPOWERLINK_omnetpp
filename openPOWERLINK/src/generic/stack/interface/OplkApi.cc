@@ -89,6 +89,4 @@ void interface::OplkApi::setFunctions(SharedLibraryHelper::HelperPtr helper, Ins
     functions->setupProcessImage = helper->getFunction < ErrorType > ("oplk_setupProcessImage");
 
     functions->triggerPresForward = helper->getFunction<ErrorType, UINT >("oplk_triggerPresForward");
-
-    functions->getRetStr = helper->getFunction<char*, ErrorType>("debugstr_getRetValStr");
 }
