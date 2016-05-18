@@ -39,9 +39,9 @@ class AppBase : public UseApiBase
         virtual void initialize();
         virtual void handleOtherMessage(MessagePtr msg);
 
-        virtual interface::api::ErrorType initApp();
-        virtual interface::api::ErrorType processSync();
-        virtual void shutdownApp();
+        virtual interface::api::ErrorType initApp() = 0;
+        virtual interface::api::ErrorType processSync() = 0;
+        virtual void shutdownApp() = 0;
 
         // Member
     private:

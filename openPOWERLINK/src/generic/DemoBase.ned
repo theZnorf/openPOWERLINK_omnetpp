@@ -15,10 +15,7 @@
 
 package openpowerlink.generic;
 
-//
-// TODO auto-generated module
-//
-simple DemoBase
+simple DemoBase like IDemo
 {
     gates:
         output apiCall;

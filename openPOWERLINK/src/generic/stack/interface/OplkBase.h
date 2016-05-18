@@ -104,4 +104,4 @@ namespace interface
 
 } /* namespace interface */
 
-#endif /* OPLKBASE_H_ */
+#endif

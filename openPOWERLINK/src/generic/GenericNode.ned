@@ -29,25 +29,32 @@ import openpowerlink.generic.stack.Stack;
 module GenericNode
 {
     parameters:
-        @display("bgb=282,429");
-        @networkNode();
+        @display("bgb=282,347");
+        
+        string DemoType;
+        string AppType;
+        string EventType;
+        
     gates:
-        //inout ethernetIf;
+        input ethernetIn;
+        output ethernetOut;
+        input udpIn;
+        output udpOut;
     submodules:
         stack: Stack {
             @display("p=71,268");
         }
-        event: EventBase {
+        event: <EventType> like IEvent {
             @display("p=196,154");
         }
-        app: AppBase {
+        app: <AppType> like IApp {
             @display("p=71,53");
         }
-        demo: DemoBase {
+        demo: <DemoType> like IDemo {
             @display("p=71,154");
         }
         nmtState: NmtState {
-            @display("p=133,352");
+            @display("p=157,268");
         }
     connections:
         demo.apiCall --> stack.apiCall;
@@ -59,4 +66,8 @@ module GenericNode
         event.stackShutdown --> demo.stackShutdown;
         demo.appApiReturn --> app.apiReturn;
         app.apiCall --> demo.appApiCall;
+        ethernetIn --> stack.ethernetIn;
+        stack.ethernetOut --> ethernetOut;
+        stack.udpOut --> udpOut;
+        udpIn --> stack.udpIn;
 }

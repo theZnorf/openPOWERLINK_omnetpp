@@ -56,4 +56,4 @@ namespace interface
 
 } /* namespace interface */
 
-#endif /* OPLKEDRV_H_ */
+#endif

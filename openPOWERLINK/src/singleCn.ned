@@ -26,7 +26,15 @@ network singleCn
         @display("bgb=323,249");
     submodules:
         mn: MN {
-            @display("p=150,56");
+            @display("p=79,114");
+        }
+        cn: CN {
+            @display("p=176,114");
         }
     connections:
+
+        cn.ethernetOut --> mn.ethernetIn;
+        mn.ethernetOut --> cn.ethernetIn;
+        cn.udpOut --> mn.udpIn;
+        mn.udpOut --> cn.udpIn;
 }

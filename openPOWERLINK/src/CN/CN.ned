@@ -19,6 +19,7 @@ import openpowerlink.generic.GenericNode;
 
 module CN extends GenericNode
 {    
-    @display("bgb=348,401");
-    submodules:
+    parameters:
+    	@display("bgb=348,401");
+    	AppType = "CnApp";
 }

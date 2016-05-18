@@ -13,13 +13,24 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.generic;
+#ifndef MNAPP_H_
+#define MNAPP_H_
 
-simple AppBase
+#include <AppBase.h>
+
+class MnApp : public AppBase
 {
-    gates:
-        input functionCall;
-        output return;
-        output apiCall;
-        input apiReturn;
-}
+        // C-Tor / D-Tor
+    public:
+        MnApp();
+        virtual ~MnApp();
+
+        // Methods
+    protected:
+        virtual interface::api::ErrorType initApp();
+        virtual interface::api::ErrorType processSync();
+        virtual void shutdownApp();
+
+};
+
+#endif /* MNAPP_H_ */

@@ -15,18 +15,17 @@
 
 package openpowerlink.generic;
 
-simple EventBase like IEvent
+//
+// Interface for Demo modules used within a openPOWERLINK node derived from GenericNode
+//
+moduleinterface IDemo
 {
-    parameters:
-        bool printEventType = default(false);
-        
-        @signal[eventType];
-        @signal[nmtState] (type="unsigned long");
-        
-        @statistic[processedEventType](title="Processed Event Type";record=sum,vector);
-        
-    gates:
-        input event;
-        output eventReturn;
-        output stackShutdown;
+        gates:
+        output apiCall;
+        input apiReturn;
+        output appCall;
+        input appReturn;
+        input appApiCall;
+        output appApiReturn;
+        input stackShutdown;
 }

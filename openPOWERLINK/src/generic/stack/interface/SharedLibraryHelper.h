@@ -179,4 +179,4 @@ namespace interface
     };
 }
 
-#endif /* _INC_shared_library_H_ */
+#endif

@@ -13,20 +13,22 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.generic;
+#include "CnApp.h"
 
-simple EventBase like IEvent
+USING_NAMESPACE
+
+Define_Module(CnApp);
+
+interface::api::ErrorType CnApp::initApp()
 {
-    parameters:
-        bool printEventType = default(false);
-        
-        @signal[eventType];
-        @signal[nmtState] (type="unsigned long");
-        
-        @statistic[processedEventType](title="Processed Event Type";record=sum,vector);
-        
-    gates:
-        input event;
-        output eventReturn;
-        output stackShutdown;
+    return 0;
+}
+
+interface::api::ErrorType CnApp::processSync()
+{
+    return 0;
+}
+
+void CnApp::shutdownApp()
+{
 }

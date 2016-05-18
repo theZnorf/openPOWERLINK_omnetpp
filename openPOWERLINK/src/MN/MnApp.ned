@@ -13,20 +13,15 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.generic;
+package openpowerlink.MN;
 
-simple EventBase like IEvent
+import openpowerlink.generic.IApp;
+
+simple MnApp like IApp
 {
-    parameters:
-        bool printEventType = default(false);
-        
-        @signal[eventType];
-        @signal[nmtState] (type="unsigned long");
-        
-        @statistic[processedEventType](title="Processed Event Type";record=sum,vector);
-        
-    gates:
-        input event;
-        output eventReturn;
-        output stackShutdown;
+        gates:
+        input functionCall;
+        output return;
+        output apiCall;
+        input apiReturn;
 }

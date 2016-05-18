@@ -19,4 +19,7 @@ simple SdoUdp
 {
     parameters:
         @display("i=block/transport,green");
+    gates:
+        input udpIn;
+        output udpOut;
 }
