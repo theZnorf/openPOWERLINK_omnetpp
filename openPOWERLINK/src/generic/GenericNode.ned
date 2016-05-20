@@ -15,14 +15,6 @@
 
 package openpowerlink.generic;
 
-import inet.common.LayeredProtocolBase;
-import inet.linklayer.ethernet.EtherEncap;
-import inet.linklayer.ethernet.EtherEncapDummy;
-import inet.linklayer.ethernet.EtherMACFullDuplex;
-import inet.linklayer.ethernet.EthernetInterface;
-import inet.networklayer.common.InterfaceTable;
-import inet.networklayer.contract.INetworkLayer;
-import inet.physicallayer.contract.packetlevel.IPhysicalLayer;
 import openpowerlink.generic.stack.Stack;
 
 

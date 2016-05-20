@@ -13,16 +13,20 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.generic;
+#ifndef __OPENPOWERLINK_CNDEMO_H_
+#define __OPENPOWERLINK_CNDEMO_H_
 
-simple DemoBase like IDemo
+#include "DemoBase.h"
+
+/**
+ * TODO - Generated class
+ */
+class CnDemo : public DemoBase
 {
-    gates:
-        output apiCall;
-        input apiReturn;
-        output appCall;
-        input appReturn;
-        input appApiCall;
-        output appApiReturn;
-        input stackShutdown;
-}
+        // Methods
+    protected:
+        virtual void initPowerlink();
+        virtual void shutdownPowerlink();
+};
+
+#endif

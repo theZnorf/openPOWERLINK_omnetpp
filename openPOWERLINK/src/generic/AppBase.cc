@@ -63,20 +63,3 @@ void AppBase::handleOtherMessage(MessagePtr msg)
             mRet->sendReturnValue(ret, msg->getKind());
     }
 }
-
-//interface::api::ErrorType AppBase::initApp()
-//{
-//    error("initApp from base class called");
-//    return interface::api::Error::kErrorGeneralError;
-//}
-//
-//interface::api::ErrorType AppBase::processSync()
-//{
-//    error("processSync from base class called");
-//    return interface::api::Error::kErrorGeneralError;
-//}
-//
-//void AppBase::shutdownApp()
-//{
-//    error("shutdownApp from base class called");
-//}

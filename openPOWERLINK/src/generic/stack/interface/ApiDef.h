@@ -78,7 +78,7 @@ namespace interface
                 std::function<ErrorType(void)> initialize;
                 std::function<ErrorType(ApiInitParam*)> create;
                 std::function<ErrorType(void)> destroy;
-                std::function<ErrorType(void)> exit;
+                std::function<void(void)> exit;
                 std::function<ErrorType(NmtEvent)> execNmtCommand;
                 std::function<ErrorType(ObdCallbackParam*)> cbGenericObdAccess;
                 std::function<ErrorType(UINT, void*, UINT*, ObdSize*, UINT)> linkObject;

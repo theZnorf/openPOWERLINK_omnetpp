@@ -8,6 +8,8 @@
 #ifndef USEAPIBASE_H_
 #define USEAPIBASE_H_
 
+#include "SendAwaitedReturnBase.h"
+
 #include <string>
 #include <memory>
 #include <map>
@@ -16,28 +18,19 @@
 #include "Api.h"
 #include "ReturnMessage_m.h"
 
-class UseApiBase : public OPP::cSimpleModule
+class UseApiBase : public SendAwaitedReturnBase<Api::ApiCallType>
 {
         // Definitions
     protected:
-        using MessagePtr = std::shared_ptr<OPP::cMessage>;
-        using RawMessagePtr = OPP::cMessage*;
         using ErrorType = interface::api::ErrorType;
         using Error = interface::api::Error;
         using CallType = Api::ApiCallType;
-        using Kind = short;
-        using ReturnCont = std::map<CallType, MessagePtr>;
 
-        // C-Tor / D-Tor
+        // C-Tor
     public:
         UseApiBase(std::string const & sendGateName);
-        virtual ~UseApiBase();
 
         // Methods
-    public:
-        virtual void initialize();
-        virtual void activity();
-
     protected:
         void initStack();
         void createStack(interface::api::ApiInitParam& param);
@@ -61,7 +54,7 @@ class UseApiBase : public OPP::cSimpleModule
         void postUserEvent(void* userArg);
         void triggerMnStateChange(UINT nodeId, interface::api::NmtNodeCommand nodeCommand);
         void setCdcBuffer(BYTE* cdc, UINT cdcSize);
-        void setCdcFilename(std::string const & fileName);
+        void setCdcFilename(const char* fileName);
         void setOdArchivePath(std::string const & backUpPath);
         void stackProcess();
         void getIdentResponse(UINT nodeId, interface::api::IdentResponse ** identResponse);
@@ -87,11 +80,7 @@ class UseApiBase : public OPP::cSimpleModule
         void triggerPresForward(UINT nodeId);
 
     protected:
-        virtual void handleOtherMessage(MessagePtr msg) = 0;
-
         static void checkReturnMessage(MessagePtr msg, std::string const & errorMessage);
-
-        void receiveMessage();
 
         MessagePtr sendMessageWithCallTypeAndWaitForReturn(RawMessagePtr msg, CallType calltype);
 
@@ -99,7 +88,6 @@ class UseApiBase : public OPP::cSimpleModule
     private:
         std::string mSendGateName;
         OPP::cGate* mSendGate;
-        ReturnCont mReturnValues;
 };
 
 #endif /* USEAPIBASE_H_ */

@@ -58,12 +58,19 @@ namespace oplkMessages
         b->unpack(param.pDevName);
         b->unpack(param.pHwVersion);
         b->unpack(param.pSwVersion);
-        auto eventCb = (PointerCont) param.pfnCbEvent;
-        b->unpack(eventCb);
-        auto userArg = (PointerCont) param.pEventUserArg;
+
+        PointerCont cbEvent = 0;
+        PointerCont userArg = 0;
+        PointerCont cbSync = 0;
+
+        b->unpack(cbEvent);
         b->unpack(userArg);
-        auto cbSync = (PointerCont) param.pfnCbSync;
         b->unpack(cbSync);
+
+        param.pfnCbEvent = reinterpret_cast<decltype(param.pfnCbEvent)>(cbEvent);
+        param.pEventUserArg = reinterpret_cast<decltype(param.pEventUserArg)>(userArg);
+        param.pfnCbSync = reinterpret_cast<decltype(param.pfnCbSync)>(cbSync);
+
         doUnpacking(b, param.hwParam);
         b->unpack(param.syncResLatency);
         b->unpack(param.syncNodeId);
@@ -112,18 +119,12 @@ namespace oplkMessages
         b->pack(param.pHwVersion);
         b->pack(param.pSwVersion);
 
-        PointerCont cbEvent = 0;
-        PointerCont userArg = 0;
-        PointerCont cbSync = 0;
-
-        b->pack(cbEvent);
+        auto eventCb = (PointerCont) param.pfnCbEvent;
+        b->pack(eventCb);
+        auto userArg = (PointerCont) param.pEventUserArg;
         b->pack(userArg);
+        auto cbSync = (PointerCont) param.pfnCbSync;
         b->pack(cbSync);
-
-        param.pfnCbEvent = reinterpret_cast<decltype(param.pfnCbEvent)>(cbEvent);
-        param.pEventUserArg = reinterpret_cast<decltype(param.pEventUserArg)>(userArg);
-        param.pfnCbSync = reinterpret_cast<decltype(param.pfnCbSync)>(cbSync);
-
 
         doPacking(b, param.hwParam);
         b->pack(param.syncResLatency);

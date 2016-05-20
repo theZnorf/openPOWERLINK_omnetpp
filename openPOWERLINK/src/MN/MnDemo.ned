@@ -13,16 +13,21 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.CN;
+package openpowerlink.MN;
 
-import openpowerlink.generic.GenericNode;
+import openpowerlink.generic.IDemo;
 
-module CN extends GenericNode
-{    
+simple MnDemo like IDemo
+{
     parameters:
-    	@display("bgb=348,401");
-    	
-    	DemoType = "CnDemo";
-    	EventType = "EventBase";
-    	AppType = "CnApp";
+        double startUpDelay @unit(ns) = default(0s);
+        double mainLoopInterval @unit(ns) = default(1ms);
+    gates:
+        output apiCall;
+        input apiReturn;
+        output appCall;
+        input appReturn;
+        input appApiCall;
+        output appApiReturn;
+        input stackShutdown;
 }

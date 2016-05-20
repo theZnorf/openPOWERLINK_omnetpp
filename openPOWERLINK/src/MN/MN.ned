@@ -22,6 +22,7 @@ module MN extends GenericNode
     parameters:    
     	@display("bgb=348,401");
     	
+    	DemoType = "MnDemo";
+    	EventType = "EventBase";
     	AppType = "MnApp";
-
 }

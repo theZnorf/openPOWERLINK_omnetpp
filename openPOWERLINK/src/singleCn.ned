@@ -15,7 +15,6 @@
 
 package openpowerlink;
 
-import inet.linklayer.ethernet.EtherBus;
 import openpowerlink.CN.CN;
 import openpowerlink.MN.MN;
 

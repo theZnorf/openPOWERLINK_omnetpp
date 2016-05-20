@@ -19,9 +19,6 @@
 #include <omnetpp.h>
 #include "ApiDef.h"
 
-/**
- * TODO - Generated class
- */
 class EventBase : public OPP::cSimpleModule
 {
         // Methods
@@ -40,11 +37,10 @@ class EventBase : public OPP::cSimpleModule
     virtual interface::api::ErrorType processCfmProgressEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
     virtual interface::api::ErrorType processCfmResultEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
 
-    void sendReturnMessage(interface::api::ErrorType returnValue);
-
     // Member
   protected:
     OPP::cGate* mReturnGate;
+    OPP::cGate* mShutdownGate;
     OPP::simsignal_t mEventTypeSignal;
     OPP::simsignal_t mNmtStateSignal;
     bool mPrintEventType;

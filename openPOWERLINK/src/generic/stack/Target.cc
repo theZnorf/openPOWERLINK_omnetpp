@@ -54,7 +54,11 @@ void Target::setDefaultGateway(AddressType defaultGateway)
 
 Target::TickType Target::getTickCount()
 {
-    return static_cast<TickType>(simTime().inUnit(SimTimeUnit::SIMTIME_MS));
+    auto currTickTime = simTime().inUnit(SimTimeUnit::SIMTIME_MS);
+
+    EV <<"Current Tick: " << currTickTime << std::endl;
+
+    return static_cast<TickType>(currTickTime);
 }
 
 void Target::setLed(LedType ledType, bool ledOn)

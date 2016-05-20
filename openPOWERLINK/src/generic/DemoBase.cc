@@ -25,8 +25,6 @@
 using namespace std;
 USING_NAMESPACE
 
-Define_Module(DemoBase);
-
 DemoBase::DemoBase() :
         UseApiBase("apiCall")
 {
@@ -35,6 +33,10 @@ DemoBase::DemoBase() :
 void DemoBase::initialize()
 {
     UseApiBase::initialize();
+
+    // resovle parameters
+    mStartUpDelay = simtime_t(par("startUpDelay").doubleValue(), SimTimeUnit::SIMTIME_NS);
+    mMainLoopInterval = simtime_t(par("mainLoopInterval").doubleValue(), SimTimeUnit::SIMTIME_NS);
 
     // resolve gates
     mApiCallGate = gate("apiCall");
@@ -45,10 +47,14 @@ void DemoBase::initialize()
     mDispatcher.registerFunction(gate("apiReturn"), std::bind(&DemoBase::processApiReturn, this, placeholders::_1));
     mDispatcher.registerFunction(gate("appReturn"), std::bind(&DemoBase::processAppReturn, this, placeholders::_1));
     mDispatcher.registerFunction(gate("appApiCall"), std::bind(&DemoBase::processAppApiCall, this, placeholders::_1));
+    mDispatcher.registerFunction(gate("stackShutdown"),
+            std::bind(&DemoBase::processStackShutdown, this, placeholders::_1));
+
+    // init state
+    mState = DemoState::initializePowerlink;
 
     // schedule init message
-    scheduleAt(simTime() + simtime_t::parse("1s"),
-            new cMessage("Init demo", static_cast<short>(DemoState::initializing)));
+    scheduleAt(simTime() + mStartUpDelay, new cMessage("Init demo"));
 }
 
 void DemoBase::handleOtherMessage(MessagePtr msg)
@@ -58,130 +64,81 @@ void DemoBase::handleOtherMessage(MessagePtr msg)
         // check if external message
         if (!msg->isSelfMessage())
         {
+            // process message according to arrival gate via dispatcher
             mDispatcher.dispatch(msg.get());
         }
         else // handle self messages
         {
-
-            //TODO fix
-            auto mMainInterval = simtime_t::parse("1ms");
-
-            switch (static_cast<DemoState>(msg->getKind()))
-            {
-                case DemoState::initializing:
-                    // init demo
-                    initPowerlink();
-                    initApp();
-
-                    // perform sw reset
-                    execNmtCommand(interface::api::NmtEventType::kNmtEventSwReset);
-
-                    // schedule first main message
-                    scheduleAt(simTime() + mMainInterval,
-                            new cMessage("first demo main loop message", static_cast<short>(DemoState::mainloop)));
-                    break;
-
-                case DemoState::mainloop: {
-
-                    // process stack
-                    stackProcess();
-
-                    // schedule following main message
-                    scheduleAt(simTime() + mMainInterval,
-                            new cMessage("demo main loop message", static_cast<short>(DemoState::mainloop)));
-                    break;
-                }
-
-                default:
-                    error("DemoBase - invalid message kind: %d", msg->getKind());
-            }
+            handleSelfMessage(msg);
         }
     }
 }
 
-void DemoBase::initPowerlink()
+void DemoBase::handleSelfMessage(MessagePtr msg)
 {
-    BYTE macAddr[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    char cdcFile[] = "mnobd.cdc";
+    // check current state
+    switch (mState)
+    {
+        case DemoState::initializePowerlink: {
+            // init powerlink stack by derived class
+            initPowerlink();
 
-    static interface::api::ApiInitParam initParam;
-    static char devName[128] = { 0 };
+            // create and send init message for app module
+            send(new cMessage("initialize app", static_cast<short>(AppBase::AppCallType::init)), mAppCallGate);
 
-    EV << "Initializing openPOWERLINK stack..." << std::endl;
+            // advance to next init state
+            mState = DemoState::initializeApp;
+            break;
+        }
+        case DemoState::initializeApp:
+            EV << "Unexpected message (" << *msg << ") received within initializeApp state" << endl;
+            break;
 
-    memset(&initParam, 0, sizeof(initParam));
-    initParam.sizeOfInitParam = sizeof(initParam);
+        case DemoState::swReset: {
+            // perform sw reset
+            execNmtCommand(interface::api::NmtEventType::kNmtEventSwReset);
 
-    // pass selected device name to Edrv
-    initParam.hwParam.pDevName = devName;
-    initParam.nodeId = 0xF0;
-    initParam.ipAddress = (0xFFFFFF00 & 0xc0a86401) | initParam.nodeId;
+            // advance to mainloop state
+            mState = DemoState::mainloop;
 
-    /* write 00:00:00:00:00:00 to MAC address, so that the driver uses the real hardware address */
-    memcpy(initParam.aMacAddress, macAddr, sizeof(initParam.aMacAddress));
+            // send self message
+            scheduleAt(simTime() + mMainLoopInterval, new cMessage("first demo main loop message"));
 
-    initParam.fAsyncOnly = FALSE;
-    initParam.featureFlags = UINT_MAX;
-    initParam.cycleLen = UINT_MAX;       // required for error detection
-    initParam.isochrTxMaxPayload = 256;              // const
-    initParam.isochrRxMaxPayload = 256;              // const
-    initParam.presMaxLatency = 50000;            // const; only required for IdentRes
-    initParam.preqActPayloadLimit = 36;               // required for initialisation (+28 bytes)
-    initParam.presActPayloadLimit = 36;               // required for initialisation of Pres frame (+28 bytes)
-    initParam.asndMaxLatency = 150000;           // const; only required for IdentRes
-    initParam.multiplCylceCnt = 0;                // required for error detection
-    initParam.asyncMtu = 1500;             // required to set up max frame size
-    initParam.prescaler = 2;                // required for sync
-    initParam.lossOfFrameTolerance = 500000;
-    initParam.asyncSlotTimeout = 3000000;
-    initParam.waitSocPreq = 1000;
-    initParam.deviceType = UINT_MAX;         // NMT_DeviceType_U32
-    initParam.vendorId = UINT_MAX;         // NMT_IdentityObject_REC.VendorId_U32
-    initParam.productCode = UINT_MAX;         // NMT_IdentityObject_REC.ProductCode_U32
-    initParam.revisionNumber = UINT_MAX;         // NMT_IdentityObject_REC.RevisionNo_U32
-    initParam.serialNumber = UINT_MAX;         // NMT_IdentityObject_REC.SerialNo_U32
+            EV << "App initialized advancing to main loop state" << endl;
+            break;
+        }
 
-    initParam.subnetMask = 0xFFFFFF00;
-    initParam.defaultGateway = 0xC0A864FE;
-    sprintf((char*) initParam.sHostname, "%02x-%08x", initParam.nodeId, initParam.vendorId);
-    initParam.syncNodeId = C_ADR_SYNC_ON_SOA;
-    initParam.fSyncOnPrcNode = FALSE;
+        case DemoState::mainloop: {
+            // process stack
+            stackProcess();
+            // schedule following main message
+            scheduleAt(simTime() + mMainLoopInterval, new cMessage("demo main loop message"));
+            break;
+        }
+        case DemoState::shuttingDown: {
+            // shutdown powerlink
+            shutdownPowerlink();
 
-    // set callback functions to null for seperation of modules
-    // (events will be transmmitted via messages)
-    initParam.pfnCbEvent = nullptr;
+            // shutdown app
+            send(new cMessage("shutdown app", static_cast<short>(AppBase::AppCallType::shutdown)), mAppCallGate);
 
-#if defined(CONFIG_KERNELSTACK_DIRECTLINK)
-    initParam.pfnCbSync = processSync;
-#else
-    initParam.pfnCbSync = NULL;
-#endif
+            // advance state
+            mState = DemoState::shuttingDownApp;
+            break;
+        }
 
-    // initialize POWERLINK stack
-    initStack();
-    //auto initMessage = new cMessage("Init Stack", static_cast<short>(Api::ApiCallType::init));
-    //send(initMessage, mApiCallGate);
+        case DemoState::shuttingDownApp:
+            EV << "Unexpected message (" << *msg << ") received within shuttingDownApp state" << endl;
+            break;
 
-    createStack(initParam);
-    //auto initMsg = new oplkMessages::InitMessage("Create Stack", static_cast<short>(Api::ApiCallType::create));
-    //initMsg->setInitParam(initParam);
-    //send(initMsg, mApiCallGate);
+        case DemoState::shutdown:
+            EV << "Stack shutdown succesfully" << endl;
+            mRunning = false;
+            break;
 
-    setCdcFilename(cdcFile);
-    //auto cdcMsg = new oplkMessages::StringMessage("Set cdc file", static_cast<short>(Api::ApiCallType::setCdcFilename));
-    //cdcMsg->setString(cdcFile);
-    //send(cdcMsg, mApiCallGate);
-
-    EV << "Initialization succeeded" << std::endl;
-}
-
-void DemoBase::initApp()
-{
-    // create init message for app module
-    auto msg = new cMessage();
-    msg->setKind(static_cast<short>(AppBase::AppCallType::init));
-
-    send(msg, mAppCallGate);
+        default:
+            error("DemoBase - invalid demo state: %d", static_cast<short>(mState));
+    }
 }
 
 void DemoBase::processApiReturn(RawMessagePtr msg)
@@ -192,35 +149,51 @@ void DemoBase::processApiReturn(RawMessagePtr msg)
 
 void DemoBase::processAppReturn(RawMessagePtr msg)
 {
-    EV << "App call returned";
-
     auto retMsg = dynamic_cast<oplkMessages::ReturnMessage*>(msg);
     if (retMsg != nullptr)
     {
-        EV << " with " << retMsg->getReturnValue();
-
         auto ret = retMsg->getReturnValue();
 
         // check if error
         if (ret != interface::api::Error::kErrorOk)
             throw interface::OplkException("Error in App call ocurred", ret);
 
-        // advance to next state
+        // check if initialization returned
+        auto kind = static_cast<AppBase::AppCallType>(retMsg->getKind());
+        switch (kind)
+        {
+            case AppBase::AppCallType::init: {
+                // advance to sw reset state
+                mState = DemoState::swReset;
 
+                // schedule immediate self message
+                scheduleAt(simTime(), new cMessage());
+                break;
+            }
+            case AppBase::AppCallType::processSync:
+                break;
+            case AppBase::AppCallType::shutdown: {
+                // advance to shutdown state
+                mState = DemoState::shutdown;
+
+                // schedule immediate self message
+                scheduleAt(simTime(), new cMessage());
+                break;
+            }
+            default:
+                error("HandleAppReturn - invalid message kind: %d", static_cast<short>(kind));
+        }
     }
-    EV << std::endl;
 }
 
 void DemoBase::processAppApiCall(RawMessagePtr msg)
 {
-    // forward api calls to stack
-    send(msg->dup(), mApiCallGate);
+// forward api calls to stack
+send(msg->dup(), mApiCallGate);
 }
 
-void DemoBase::processStackShutdown()
+void DemoBase::processStackShutdown(RawMessagePtr msg)
 {
-    EV << "Stack is shutting down" << endl;
-
-    // TODO: shutdown demo
-
+// advance to shutting down state
+mState = DemoState::shuttingDown;
 }

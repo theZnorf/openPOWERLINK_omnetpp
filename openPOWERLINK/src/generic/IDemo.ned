@@ -20,7 +20,10 @@ package openpowerlink.generic;
 //
 moduleinterface IDemo
 {
-        gates:
+    parameters:
+        double startUpDelay @unit(ns);
+        double mainLoopInterval @unit(ns);
+    gates:
         output apiCall;
         input apiReturn;
         output appCall;

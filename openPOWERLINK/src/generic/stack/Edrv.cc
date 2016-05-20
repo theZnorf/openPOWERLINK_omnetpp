@@ -27,21 +27,14 @@ void Edrv::initialize()
 {
     // init stub
     interface::OplkEdrv::getInstance().initModule(this);
-
-    // resolve gate
-    //mEthernetInGate = gate("ethernetIn");
-    //mEthernetOutGate = gate("ethernetOut");
 }
 
 void Edrv::handleMessage(cMessage *msg)
 {
-    // TODO - Generated method body
 }
-
 
 void Edrv::finish()
 {
-
 }
 
 void Edrv::initEdrv(EdrvInitParamType* initParam)

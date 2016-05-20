@@ -13,16 +13,12 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.CN;
+cplusplus {{
+    USING_NAMESPACE
+}}
 
-import openpowerlink.generic.GenericNode;
+namespace oplkMessages;
 
-module CN extends GenericNode
-{    
-    parameters:
-    	@display("bgb=348,401");
-    	
-    	DemoType = "CnDemo";
-    	EventType = "EventBase";
-    	AppType = "CnApp";
+message BufferMessage {
+    uint8_t buffer[];
 }

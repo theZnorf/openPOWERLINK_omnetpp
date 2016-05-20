@@ -13,16 +13,23 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.CN;
+cplusplus {{
+    #include "stack/interface/ApiDef.h"
+    #include "OplkPacking.h"
+    #include "ReturnMessage_m.h"
+}}
 
-import openpowerlink.generic.GenericNode;
+class interface::api::ApiEventType extends void;
+class interface::api::ApiEventArg extends void;
+message oplkMessages::ReturnMessage;
+    
+cplusplus {{
+    USING_NAMESPACE
+}}
 
-module CN extends GenericNode
-{    
-    parameters:
-    	@display("bgb=348,401");
-    	
-    	DemoType = "CnDemo";
-    	EventType = "EventBase";
-    	AppType = "CnApp";
+namespace oplkMessages;
+
+message EventReturnMessage extends ReturnMessage {
+    interface::api::ApiEventType eventType;
+    interface::api::ApiEventArg eventArg;
 }

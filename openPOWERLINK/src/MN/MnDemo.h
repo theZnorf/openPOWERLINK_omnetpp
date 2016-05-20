@@ -13,16 +13,18 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.CN;
+#ifndef __OPENPOWERLINK_MNDEMO_H_
+#define __OPENPOWERLINK_MNDEMO_H_
 
-import openpowerlink.generic.GenericNode;
+#include "DemoBase.h"
 
-module CN extends GenericNode
-{    
-    parameters:
-    	@display("bgb=348,401");
-    	
-    	DemoType = "CnDemo";
-    	EventType = "EventBase";
-    	AppType = "CnApp";
-}
+class MnDemo : public DemoBase
+{
+        // Methods
+    protected:
+        virtual void initPowerlink();
+        virtual void shutdownPowerlink();
+
+};
+
+#endif

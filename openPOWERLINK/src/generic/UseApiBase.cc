@@ -13,50 +13,19 @@
 USING_NAMESPACE
 
 UseApiBase::UseApiBase(std::string const & sendGateName) :
-        cSimpleModule(1), mSendGateName(sendGateName)
+        SendAwaitedReturnBase(sendGateName, [](UseApiBase::RawMessagePtr msg, UseApiBase::Kind kind)
+        {   msg->setKind(static_cast<short>(kind));}, [](UseApiBase::RawMessagePtr msg)
+        {   return static_cast<UseApiBase::Kind>(msg->getKind());})
 {
 }
 
-UseApiBase::~UseApiBase()
+UseApiBase::MessagePtr UseApiBase::sendMessageWithCallTypeAndWaitForReturn(RawMessagePtr msg, CallType calltype)
 {
-}
+    // send awaited message with call type
+    sendAwaitedMessage(msg, calltype);
 
-void UseApiBase::initialize()
-{
-    // resolve gate
-    mSendGate = gate(mSendGateName.c_str());
-}
-
-void UseApiBase::activity()
-{
-    bool running = true;
-
-    while (running)
-    {
-        // receive message
-        receiveMessage();
-    }
-}
-
-void UseApiBase::receiveMessage()
-{
-    // receive message
-    MessagePtr msg(receive());
-
-    if (msg != nullptr)
-    {
-        // check kind
-        auto kind = static_cast<CallType>(msg->getKind());
-
-        // check if kind is awaited
-        if (mReturnValues.find(kind) != mReturnValues.end())
-        {
-            mReturnValues[kind] = msg;
-        }
-        else
-            // forward unexpected message
-            handleOtherMessage(msg);
-    }
+    // receive and return awaited message
+    return waitForReturnMessage(calltype);
 }
 
 void UseApiBase::checkReturnMessage(MessagePtr msg, std::string const & errorMessage)
@@ -66,45 +35,21 @@ void UseApiBase::checkReturnMessage(MessagePtr msg, std::string const & errorMes
     if (retMsg != nullptr)
     {
         if (retMsg->getReturnValue() != Error::kErrorOk)
-            throw interface::OplkException(errorMessage, retMsg->getReturnValue());
+        {
+            auto except = interface::OplkException(errorMessage, retMsg->getReturnValue());
+
+            EV << except.what() << std::endl;
+
+            throw except;
+        }
     }
-    //TODO: error handling
-}
-
-UseApiBase::MessagePtr UseApiBase::sendMessageWithCallTypeAndWaitForReturn(RawMessagePtr msg, CallType calltype)
-{
-    // set kind of message
-    msg->setKind(static_cast<Kind>(calltype));
-    std::string setName(msg->getName());
-    msg->setName((((!setName.empty())? (setName + "-"): "") + Api::getApiCallString(calltype)).c_str());
-
-    // set awaited call type
-    mReturnValues[calltype] = nullptr;
-
-    // send message
-    send(msg, mSendGate);
-
-    auto ret = mReturnValues[calltype];
-
-    // receive until return value was received
-    while (ret == nullptr)
-    {
-        receiveMessage();
-
-        ret = mReturnValues[calltype];
-    }
-
-    // remove message
-    mReturnValues.erase(calltype);
-
-    // return message
-    return ret;
 }
 
 void UseApiBase::initStack()
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::init);
 
@@ -115,6 +60,7 @@ void UseApiBase::createStack(interface::api::ApiInitParam& param)
 {
     // create message
     auto msg = new oplkMessages::InitMessage();
+    msg->setName(__FUNCTION__);
     msg->setInitParam(param);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::create);
@@ -126,17 +72,18 @@ void UseApiBase::setupProcessImage()
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::setupProcessImage);
 
     checkReturnMessage(ret, "setup process image");
 }
 
-
 void UseApiBase::destroyStack()
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::destroy);
 
@@ -147,6 +94,7 @@ void UseApiBase::exitStack()
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::exit);
 
@@ -157,6 +105,7 @@ void UseApiBase::execNmtCommand(interface::api::NmtEvent event)
 {
     // create message
     auto msg = new oplkMessages::NmtMessage();
+    msg->setName(__FUNCTION__);
     msg->setNmtEvent(event);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::execNmtCommand);
@@ -168,6 +117,7 @@ void UseApiBase::cbGenericObdAccess(interface::api::ObdCallbackParam* param)
 {
     // create message
     auto msg = new oplkMessages::ObdCbMessage();
+    msg->setName(__FUNCTION__);
     msg->setObdCbParam(*param);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::cbGenericObdAccess);
@@ -180,8 +130,9 @@ void UseApiBase::linkObject(unsigned int objIndex, void* var, unsigned int* varE
 {
     // create message
     auto msg = new oplkMessages::LinkMessage();
+    msg->setName(__FUNCTION__);
     msg->setObjIndex(objIndex);
-    msg->setVariable((oplkMessages::PointerCont)var);
+    msg->setVariable((oplkMessages::PointerCont) var);
     msg->setVarEntries(*varEntries);
     msg->setEntrySize(*entrySize);
     msg->setFirstSubIndex(firstSubIndex);
@@ -204,13 +155,14 @@ void UseApiBase::readObject(interface::api::SdoComConHdl* hdl, unsigned int node
 {
     // create message
     auto msg = new oplkMessages::ObjectMessage();
+    msg->setName(__FUNCTION__);
     msg->setSdoComConHdl(*hdl);
     msg->setNodeId(nodeId);
     msg->setIndex(index);
     msg->setSubIndex(subIndex);
     msg->setObjDataArraySize(*size);
     msg->setSdoType(sdoType);
-    msg->setUserArg((oplkMessages::PointerCont)userArg);
+    msg->setUserArg((oplkMessages::PointerCont) userArg);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::readObject);
 
@@ -232,6 +184,7 @@ void UseApiBase::writeObject(interface::api::SdoComConHdl* hdl, unsigned int nod
 {
     // create message
     auto msg = new oplkMessages::ObjectMessage();
+    msg->setName(__FUNCTION__);
     msg->setSdoComConHdl(*hdl);
     msg->setNodeId(nodeId);
     msg->setIndex(index);
@@ -240,7 +193,7 @@ void UseApiBase::writeObject(interface::api::SdoComConHdl* hdl, unsigned int nod
     for (auto i = 0u; i < size; i++)
         msg->setObjData(i, static_cast<BYTE*>(srcDataLe)[i]);
     msg->setSdoType(sdoType);
-    msg->setUserArg((oplkMessages::PointerCont)userArg);
+    msg->setUserArg((oplkMessages::PointerCont) userArg);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::writeObject);
 
@@ -258,6 +211,7 @@ void UseApiBase::finishUserAccess(interface::api::ObdAlConnHdl* userObdConHdl)
 {
     // create message
     auto msg = new oplkMessages::ObdAlConnectionMessage();
+    msg->setName(__FUNCTION__);
     msg->setObdAlConnHdl(*userObdConHdl);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::finishUserObdAccess);
@@ -276,6 +230,7 @@ void UseApiBase::enableUserAccess(bool enable)
 {
     // create message
     auto msg = new oplkMessages::BoolMessage();
+    msg->setName(__FUNCTION__);
     msg->setValue(enable);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::enableUserObdAccess);
@@ -287,6 +242,7 @@ void UseApiBase::freeSdoChannel(interface::api::SdoComConHdl sdoComConHdl)
 {
     // create message
     auto msg = new oplkMessages::SdoMessage();
+    msg->setName(__FUNCTION__);
     msg->setComConHdl(sdoComConHdl);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::freeSdoChannel);
@@ -298,6 +254,7 @@ void UseApiBase::abortSdo(interface::api::SdoComConHdl sdoComConHdl, unsigned in
 {
     // create message
     auto msg = new oplkMessages::SdoMessage();
+    msg->setName(__FUNCTION__);
     msg->setComConHdl(sdoComConHdl);
     msg->setAbortCode(abortCode);
 
@@ -310,6 +267,7 @@ void UseApiBase::readLocalObject(unsigned int index, unsigned int subIndex, void
 {
     // create message
     auto msg = new oplkMessages::LocalObjectMessage();
+    msg->setName(__FUNCTION__);
     msg->setIndex(index);
     msg->setSubIndex(subIndex);
     msg->setDataArraySize(*size);
@@ -332,6 +290,7 @@ void UseApiBase::writeLocalObject(unsigned int index, unsigned int subIndex, voi
 {
     // create message
     auto msg = new oplkMessages::LocalObjectMessage();
+    msg->setName(__FUNCTION__);
     msg->setIndex(index);
     msg->setSubIndex(subIndex);
     msg->setDataArraySize(size);
@@ -347,6 +306,7 @@ void UseApiBase::sendAsndFrame(unsigned char dstNodeId, interface::api::AsndFram
 {
     // create message
     auto pkt = new oplkMessages::SendAsndFramePacket();
+    pkt->setName(__FUNCTION__);
     pkt->setDestNodeId(dstNodeId);
     pkt->setAsndSize(asndSize);
 
@@ -368,6 +328,7 @@ void UseApiBase::sendEthFrame(interface::api::PlkFrame* frame, unsigned int fram
 {
     // create message
     auto pkt = new oplkMessages::SendPlkPacket();
+    pkt->setName(__FUNCTION__);
     pkt->setFrameSize(frameSize);
 
     // encapluslate plk frame packet
@@ -397,6 +358,7 @@ void UseApiBase::setAsndForward(unsigned char serviceId, interface::api::AsndFil
 {
     // create message
     auto msg = new oplkMessages::AsndFilterMessage();
+    msg->setName(__FUNCTION__);
     msg->setServiceId(serviceId);
     msg->setFilterType(filterType);
 
@@ -409,6 +371,7 @@ void UseApiBase::setNonPlkForward(bool enable)
 {
     // create message
     auto msg = new oplkMessages::BoolMessage();
+    msg->setName(__FUNCTION__);
     msg->setValue(enable);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::setNonPlkForward);
@@ -420,7 +383,8 @@ void UseApiBase::postUserEvent(void* userArg)
 {
     // create message
     auto msg = new oplkMessages::PointerContMessage();
-    msg->setPointer((oplkMessages::PointerCont)userArg);
+    msg->setName(__FUNCTION__);
+    msg->setPointer((oplkMessages::PointerCont) userArg);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::postUserEvent);
 
@@ -431,6 +395,7 @@ void UseApiBase::triggerMnStateChange(unsigned int nodeId, interface::api::NmtNo
 {
     // create message
     auto msg = new oplkMessages::NmtNodeMessage();
+    msg->setName(__FUNCTION__);
     msg->setNodeId(nodeId);
     msg->setNodeCommand(nodeCommand);
 
@@ -441,18 +406,26 @@ void UseApiBase::triggerMnStateChange(unsigned int nodeId, interface::api::NmtNo
 
 void UseApiBase::setCdcBuffer(unsigned char* cdc, unsigned int cdcSize)
 {
-    //TODO: check and implement
+    // create message
+    auto msg = new oplkMessages::BufferMessage();
+    msg->setName(__FUNCTION__);
+    msg->setBufferArraySize(cdcSize);
+    for (auto i = 0u; i < cdcSize; i++)
+        msg->setBuffer(i, cdc[i]);
+
+    auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::setCdcBuffer);
+
+    checkReturnMessage(ret, "set cdc buffer");
 }
 
-void UseApiBase::setCdcFilename(const std::string& fileName)
+void UseApiBase::setCdcFilename(const char * fileName)
 {
     // create message
-    auto msg = new oplkMessages::StringMessage();
-    msg->setString(fileName.c_str());
+    auto msg = new oplkMessages::PointerContMessage();
+    msg->setName(__FUNCTION__);
+    msg->setPointer((oplkMessages::PointerCont) fileName);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::setCdcFilename);
-
-    mReturnValues.erase(CallType::setCdcFilename);
 
     checkReturnMessage(ret, "set cdc filename");
 }
@@ -461,6 +434,7 @@ void UseApiBase::setOdArchivePath(const std::string& backUpPath)
 {
     // create message
     auto msg = new oplkMessages::StringMessage();
+    msg->setName(__FUNCTION__);
     msg->setString(backUpPath.c_str());
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::setOdArchivePath);
@@ -472,6 +446,7 @@ void UseApiBase::stackProcess()
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::process);
 
@@ -482,6 +457,7 @@ void UseApiBase::getIdentResponse(unsigned int nodeId, interface::api::IdentResp
 {
     // create message
     auto msg = new oplkMessages::UintMessage();
+    msg->setName(__FUNCTION__);
     msg->setValue(nodeId);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getIdentResponse);
@@ -501,6 +477,7 @@ void UseApiBase::getEthMacAddr(unsigned char* macAddr)
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getEthMacAddr);
 
@@ -519,6 +496,7 @@ bool UseApiBase::checkKernelStack()
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::checkKernelStack);
 
@@ -536,6 +514,7 @@ void UseApiBase::waitSyncEvent(unsigned long int timeout)
 {
     // create message
     auto msg = new oplkMessages::UlongMessage();
+    msg->setName(__FUNCTION__);
     msg->setValue(timeout);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::waitSyncEvent);
@@ -547,6 +526,7 @@ unsigned int UseApiBase::getVersion()
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getVersion);
 
@@ -561,6 +541,7 @@ std::string UseApiBase::getVersionString()
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getVersionString);
 
@@ -575,6 +556,7 @@ unsigned int UseApiBase::getStackConfiguration()
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getStackConfiguration);
 
@@ -589,6 +571,7 @@ void UseApiBase::getStackInfo(interface::api::ApiStackInfo* stackInfo)
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getStackConfiguration);
 
@@ -602,6 +585,7 @@ void UseApiBase::getSocTime(interface::api::SocTimeInfo* timeInfo)
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getSocTime);
 
@@ -617,6 +601,7 @@ void UseApiBase::allocProcessImage(unsigned int sizeProcessImageIn, unsigned int
 {
     // create message
     auto msg = new oplkMessages::ProcessImageSIzeMessage();
+    msg->setName(__FUNCTION__);
     msg->setSizeIn(sizeProcessImageIn);
     msg->setSizeOut(sizeProcessImageOut);
 
@@ -629,6 +614,7 @@ void UseApiBase::freeProcessImage()
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::freeProcessImage);
 
@@ -640,6 +626,7 @@ void UseApiBase::linkProcessImageObject(unsigned int objIndex, unsigned int firs
 {
     // create message
     auto msg = new oplkMessages::LinkProcessImageMessage();
+    msg->setName(__FUNCTION__);
     msg->setObjIndex(objIndex);
     msg->setFirstSubIndex(firstSubIndex);
     msg->setOffset(offsetPI);
@@ -663,6 +650,7 @@ void UseApiBase::exchangeProcessImageIn()
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::exchangeProcessImageIn);
 
@@ -673,6 +661,7 @@ void UseApiBase::exchangeProcessImageOut()
 {
     // create message
     auto msg = new OPP::cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::exchangeProcessImageOut);
 
@@ -683,6 +672,7 @@ void* UseApiBase::getProcessImageIn()
 {
     // create message
     auto msg = new cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getProcessImageIn);
 
@@ -701,6 +691,7 @@ void* UseApiBase::getProcessImageOut()
 {
     // create message
     auto msg = new cMessage();
+    msg->setName(__FUNCTION__);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::getProcessImageOut);
 
@@ -719,6 +710,7 @@ void UseApiBase::triggerPresForward(UINT nodeId)
 {
     // create message
     auto msg = new oplkMessages::UintMessage();
+    msg->setName(__FUNCTION__);
     msg->setValue(nodeId);
 
     auto ret = sendMessageWithCallTypeAndWaitForReturn(msg, CallType::triggerPresForward);

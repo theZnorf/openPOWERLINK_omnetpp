@@ -14,13 +14,10 @@ namespace interface
 
     OplkEdrv::OplkEdrv()
     {
-        // TODO Auto-generated constructor stub
-
     }
 
     OplkEdrv::~OplkEdrv()
     {
-        // TODO Auto-generated destructor stub
     }
 
     void OplkEdrv::setFunctions(SharedLibraryHelper::HelperPtr helper, InstanceHandle handle)

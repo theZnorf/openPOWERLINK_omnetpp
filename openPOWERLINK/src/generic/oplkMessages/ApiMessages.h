@@ -10,6 +10,7 @@
 
 #include "ReturnMessage_m.h"
 #include "EventMessage_m.h"
+#include "EventReturnMessage_m.h"
 #include "InitMessage_m.h"
 #include "NmtMessage_m.h"
 #include "ObdCbMessage_m.h"
@@ -41,5 +42,6 @@
 #include "ProcessImageSIzeMessage_m.h"
 #include "LinkProcessImageMessage_m.h"
 #include "LinkProcessImageReturnMessage_m.h"
+#include "BufferMessage_m.h"
 
 #endif /* APIMESSAGES_H_ */

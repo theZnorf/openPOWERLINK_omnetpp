@@ -16,13 +16,15 @@
 #ifndef __OPENPOWERLINK_API_H_
 #define __OPENPOWERLINK_API_H_
 
+#include "SendAwaitedReturnBase.h"
+
 #include <string>
 #include <omnetpp.h>
 #include "interface/OplkApi.h"
 #include "interface/ApiDef.h"
 #include "MessageDispatcher.h"
 
-class Api : public OPP::cSimpleModule
+class Api : public SendAwaitedReturnBase<interface::api::ApiEventType>
 {
         // Definitions
     public:
@@ -76,9 +78,7 @@ class Api : public OPP::cSimpleModule
 
             setupProcessImage,
 
-            triggerPresForward,
-
-            getRetStr
+            triggerPresForward
         };
 
     private:
@@ -95,17 +95,20 @@ class Api : public OPP::cSimpleModule
     private:
         using RawMessagePtr = MessageDispatcher::RawMessagePtr;
 
+        // C-Tor
+    public:
+        Api();
+
         // Methods
     public:
         static const char* getApiCallString(ApiCallType type);
 
     protected:
         virtual void initialize();
-        virtual void handleMessage(OPP::cMessage *rawMsg);
+        virtual void handleOtherMessage(MessagePtr msg) override;
 
     private:
         void handleApiCall(RawMessagePtr msg);
-        void handleEventReturn(RawMessagePtr msg);
 
         interface::api::ErrorType processEvent(interface::api::ApiEventType eventType_p,
                 interface::api::ApiEventArg* pEventArg_p);
@@ -115,13 +118,16 @@ class Api : public OPP::cSimpleModule
 
         void sendReturnMessage(OPP::cMessage* msg);
 
+        static void setEventType(RawMessagePtr msg, Kind kind);
+        static Kind getEventType(RawMessagePtr msg);
+
         // Member
     private:
         MessageDispatcher mDispatcher;
-        interface::api::ApiFunctions mApi;OPP
-        ::cGate* mReturnGate;OPP
-        ::cGate* mEventGate;OPP
-        ::simsignal_t mInvokedApiFunctionSignal;
+        interface::api::ApiFunctions mApi;
+        OPP::cGate* mReturnGate;
+        OPP::cGate* mEventGate;
+        OPP::simsignal_t mInvokedApiFunctionSignal;
 };
 
 #endif

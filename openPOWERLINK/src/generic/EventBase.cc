@@ -14,10 +14,10 @@
 // 
 
 #include "EventBase.h"
-#include "EventMessage_m.h"
-#include "ReturnMessage_m.h"
+#include "ApiMessages.h"
 #include "MsgPtr.h"
 #include "debugstr.h"
+#include "OplkException.h"
 
 using namespace std;
 USING_NAMESPACE
@@ -26,8 +26,9 @@ Define_Module(EventBase);
 
 void EventBase::initialize()
 {
-    // resolve return gate
+    // resolve gates
     mReturnGate = gate("eventReturn");
+    mShutdownGate = gate("stackShutdown");
 
     // register signals
     mEventTypeSignal = registerSignal("eventType");
@@ -51,8 +52,14 @@ void EventBase::handleMessage(cMessage *rawMsg)
             // process Event
             auto ret = processEvent(eventMsg->getEventType(), eventMsg->getEventArg());
 
-            // send return value
-            sendReturnMessage(ret);
+            // create event return message
+            auto retMsg = new oplkMessages::EventReturnMessage();
+            retMsg->setName(("return - " + std::string(msg->getName())).c_str());
+            retMsg->setReturnValue(ret);
+            retMsg->setEventType(eventMsg->getEventType());
+            retMsg->setEventArg(eventMsg->getEventArg());
+
+            send(retMsg, mReturnGate);
         }
     }
 }
@@ -115,21 +122,37 @@ interface::api::ErrorType EventBase::processNmtStateChangeEvent(interface::api::
 {
     EV << "NMT State change from " << interface::debug::getNmtStateStr(eventArg.nmtStateChange.oldNmtState) << " to " << interface::debug::getNmtStateStr(eventArg.nmtStateChange.newNmtState) << endl;
 
+    // check shutdown
+    if (eventArg.nmtStateChange.newNmtState == interface::api::NmtStateE::kNmtGsOff)
+    {
+        EV << "Stack received kNmtGsOff!" << endl;
+        send(new cMessage(), mShutdownGate);
+    }
+
     return interface::api::Error::kErrorOk;
 }
 
 interface::api::ErrorType EventBase::processErrorEvent(interface::api::ApiEventType eventType,
         interface::api::ApiEventArg eventArg)
 {
+    EV << "Error event: " ;
+    EV << "  Error:       "<< interface::debug::getRetValStr(eventArg.internalError.oplkError) << endl;
+    EV << "  EventSource: "<< interface::debug::getEventSourceStr(eventArg.internalError.eventSource) << endl;
+    EV << "  ErrorArg:    "<< eventArg.internalError.errorArg.uintArg << endl;
 
-    return interface::api::Error::kErrorOk;
+    error(interface::debug::getRetValStr(eventArg.internalError.oplkError));
+
+    throw interface::OplkException("ErrorEvent", eventArg.internalError.oplkError);
+
+    return eventArg.internalError.oplkError;
 }
 
 interface::api::ErrorType EventBase::processWarningEvent(interface::api::ApiEventType eventType,
         interface::api::ApiEventArg eventArg)
 {
+    EV << "Warning event: " << interface::debug::getRetValStr(eventArg.internalError.oplkError) << endl;
 
-    return interface::api::Error::kErrorOk;
+    return eventArg.internalError.oplkError;
 }
 
 interface::api::ErrorType EventBase::processHistoryEvent(interface::api::ApiEventType eventType,
@@ -167,10 +190,3 @@ interface::api::ErrorType EventBase::processCfmResultEvent(interface::api::ApiEv
     return interface::api::Error::kErrorOk;
 }
 
-void EventBase::sendReturnMessage(interface::api::ErrorType returnValue)
-{
-    auto retMsg = new oplkMessages::ReturnMessage();
-    retMsg->setReturnValue(returnValue);
-
-    send(retMsg, mReturnGate);
-}

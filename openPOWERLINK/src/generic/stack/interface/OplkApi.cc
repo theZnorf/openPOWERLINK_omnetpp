@@ -40,7 +40,7 @@ void interface::OplkApi::setFunctions(SharedLibraryHelper::HelperPtr helper, Ins
     functions->initialize = helper->getFunction < ErrorType > ("oplk_initialize");
     functions->create = helper->getFunction<ErrorType, ApiInitParam*>("oplk_create");
     functions->destroy = helper->getFunction < ErrorType > ("oplk_destroy");
-    functions->exit = helper->getFunction < ErrorType > ("oplk_exit");
+    functions->exit = helper->getFunction < void > ("oplk_exit");
     functions->execNmtCommand = helper->getFunction<ErrorType, NmtEvent>("oplk_execNmtCommand");
     functions->cbGenericObdAccess = helper->getFunction<ErrorType, ObdCallbackParam*>("oplk_cbGenericObdAccess");
     functions->linkObject = helper->getFunction<ErrorType, UINT, void*, UINT*, ObdSize*, UINT>("oplk_linkObject");

@@ -21,17 +21,16 @@
 #include "ReturnMessage_m.h"
 #include "MessageDispatcher.h"
 
-
 class DemoBase : public UseApiBase
 {
         // Definitions
     private:
         using RawMessagePtr = MessageDispatcher::RawMessagePtr;
 
-        enum class DemoState : short
-        {
-                initializing,
-                mainloop
+        enum class DemoState
+            : short
+            {
+                undefined, initializePowerlink, initializeApp, swReset, mainloop, shuttingDown, shuttingDownApp, shutdown
         };
 
         // C-Tor
@@ -41,23 +40,30 @@ class DemoBase : public UseApiBase
         // Methods
     protected:
         virtual void initialize();
-        virtual void handleOtherMessage(MessagePtr msg);
+        virtual void handleOtherMessage(MessagePtr msg) override;
+        virtual void handleSelfMessage(MessagePtr msg);
+
+        virtual void initPowerlink() = 0;
+        virtual void shutdownPowerlink() = 0;
 
     private:
-        void initPowerlink();
-        void initApp();
-
         void processApiReturn(RawMessagePtr msg);
         void processAppReturn(RawMessagePtr msg);
         void processAppApiCall(RawMessagePtr msg);
-        void processStackShutdown();
+        void processStackShutdown(RawMessagePtr msg);
 
         // Member
-    private:
+    protected:
         OPP::cGate* mApiCallGate;
         OPP::cGate* mAppCallGate;
         OPP::cGate* mAppApiReturnGate;
+
         MessageDispatcher mDispatcher;
+
+        simtime_t mStartUpDelay;
+        simtime_t mMainLoopInterval;
+
+        DemoState mState;
 };
 
 #endif

@@ -15,14 +15,19 @@
 
 package openpowerlink.CN;
 
-import openpowerlink.generic.GenericNode;
+import openpowerlink.generic.IDemo;
 
-module CN extends GenericNode
-{    
+simple CnDemo like IDemo
+{
     parameters:
-    	@display("bgb=348,401");
-    	
-    	DemoType = "CnDemo";
-    	EventType = "EventBase";
-    	AppType = "CnApp";
+        double startUpDelay @unit(ns) = default(2000ms);
+        double mainLoopInterval @unit(ns) = default(1ms);
+    gates:
+        output apiCall;
+        input apiReturn;
+        output appCall;
+        input appReturn;
+        input appApiCall;
+        output appApiReturn;
+        input stackShutdown;
 }

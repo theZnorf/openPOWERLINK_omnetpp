@@ -20,7 +20,7 @@ namespace interface
 
     const char* OplkException::what() const noexcept
     {
-        return ("OplkException: " + mMsg + " with error number " + std::to_string(mError) + " and message " + debug::getRetValStr(mError)).c_str();
+        return (std::string("OplkException: ") + mMsg + std::string(" with error number ") + std::to_string(mError) + std::string(" and message ") + std::string(debug::getRetValStr(mError))).c_str();
     }
 
     OplkException::ErrorType  OplkException::errorNumber() const
