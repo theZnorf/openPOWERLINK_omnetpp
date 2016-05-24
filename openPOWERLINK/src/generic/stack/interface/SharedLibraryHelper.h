@@ -48,6 +48,7 @@
 
 #if defined(__linux__)
 #include <dlfcn.h>
+#include <link.h>
 #elif defined(_WIN32)
 #include <Windows.h>
 #include <Winbase.h>
@@ -126,6 +127,8 @@ namespace interface
 
             static void closeShareLibrary(LibraryHandle handle);
 
+            static bool isSharedLibraryLoaded(std::string const & libname);
+
             static std::string getError();
 
             // Static helper methods
@@ -164,6 +167,10 @@ namespace interface
 
             static void closeShareLibraryLinux(LibraryHandle handle);
             static void closeShareLibraryWindows(LibraryHandle handle);
+
+
+            static bool isSharedLibraryLoadedLinux(std::string const & libname);
+            static bool isSharedLibraryLoadedWindows(std::string const & libname);
 
             static std::string getErrorLinux();
             static std::string getErrorWindows();

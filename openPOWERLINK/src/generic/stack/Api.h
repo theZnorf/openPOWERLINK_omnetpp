@@ -108,7 +108,7 @@ class Api : public SendAwaitedReturnBase<interface::api::ApiEventType>
         virtual void handleOtherMessage(MessagePtr msg) override;
 
     private:
-        void handleApiCall(RawMessagePtr msg);
+        void handleApiCall(MessagePtr msg);
 
         interface::api::ErrorType processEvent(interface::api::ApiEventType eventType_p,
                 interface::api::ApiEventArg* pEventArg_p);

@@ -13,6 +13,9 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
+#include <algorithm>
+#include <functional>
+#include <iostream>
 #include "Trace.h"
 #include "interface/OplkTrace.h"
 
@@ -32,6 +35,9 @@ void Trace::handleMessage(cMessage *msg)
 
 void Trace::trace(std::string msg)
 {
-    EV << "TRACE: " << msg << std::endl;
+    //msg.erase(std::remove_if(msg.begin(), msg.end(), [](char c)
+    //{   return !std::isalnum(c) && (c != ' ');}), msg.end());
+
+    std::cout << "TRACE: " << msg << std::endl;
     bubble(msg.c_str());
 }

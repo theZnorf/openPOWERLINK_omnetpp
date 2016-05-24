@@ -49,10 +49,6 @@ OPLK::ErrorType OplkHresTimer::modifyTimer(InstanceHandle instanceHandle, HresTi
     {
         return e.errorNumber();
     }
-    catch (exception & e)
-    {
-        return OPLK::kErrorGeneralError;
-    }
 
     return OPLK::kErrorOk;
 }
@@ -68,10 +64,6 @@ OPLK::ErrorType interface::OplkHresTimer::initTimer(InstanceHandle instanceHandl
     {
         return e.errorNumber();
     }
-    catch (exception & e)
-    {
-        return OPLK::kErrorGeneralError;
-    }
 
     return OPLK::kErrorOk;
 }
@@ -86,10 +78,6 @@ OPLK::ErrorType interface::OplkHresTimer::exitTimer(InstanceHandle instanceHandl
     catch (OplkException & e)
     {
         return e.errorNumber();
-    }
-    catch (exception & e)
-    {
-        return OPLK::kErrorGeneralError;
     }
 
     return OPLK::kErrorOk;
@@ -109,10 +97,6 @@ OplkHresTimer::ErrorType OplkHresTimer::deleteTimer(InstanceHandle instanceHandl
     catch (OplkException & e)
     {
         return e.errorNumber();
-    }
-    catch (exception & e)
-    {
-        return OPLK::kErrorGeneralError;
     }
 
     return OPLK::kErrorOk;

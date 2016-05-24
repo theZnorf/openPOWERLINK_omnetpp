@@ -28,6 +28,7 @@ struct HresTimerInfo
         HresTimer::ArgumentType argument;
         bool cont;
         HresTimer::TimerEventArgs eventArgs;
+        bool expired;
 };
 
 void HresTimer::initialize()
@@ -68,21 +69,33 @@ void HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallb
         EV << "HresTimer::modifyTimer invalid handle" << std::endl;
     }
 
-    // build info struct
     HresTimerInfo info;
-    info.handle = getNewHandle();
-    info.time = simtime_t(timeNs, SimTimeUnit::SIMTIME_NS);
-    info.callback = callback;
-    info.argument = arg;
-    info.cont = cont;
+    // find timer
+    auto infoPtr = this->getTimerInfo(*handle);
+
+    // check if timer already exists
+    if (infoPtr == nullptr)
+    {
+        // create new handle
+        info.handle = getNewHandle();
+        infoPtr = &info;
+    }
+
+    // fill info
+    infoPtr->time = simtime_t(timeNs, SimTimeUnit::SIMTIME_NS);
+    infoPtr->callback = callback;
+    infoPtr->argument = arg;
+    infoPtr->cont = cont;
+    infoPtr->expired = false;
 
     // configure timer
-    if (!configureTimer(&info))
+    if (!configureTimer(infoPtr))
     {
         EV << "HresTimer::modifyTimer configuration failed" << std::endl;
         throw interface::OplkException("timer not valid", OPLK::kErrorTimerNoTimerCreated);
     }
-    *handle = info.handle;
+
+    *handle = infoPtr->handle;
 
     bubble("Timer modified");
 
@@ -97,8 +110,7 @@ void HresTimer::deleteTimer(HresTimerHandle* handle)
         throw interface::OplkException("invalid handle", OPLK::kErrorTimerInvalidHandle);
     }
 
-    if (!removeTimer(*handle))
-        throw interface::OplkException("timer not valid", OPLK::kErrorTimerNoTimerCreated);
+    removeTimer(*handle);
 
     refreshDisplay();
 }
@@ -113,18 +125,34 @@ void HresTimer::handleMessage(cMessage *rawMsg)
 
         if (timerMsg != nullptr)
         {
-
             bubble("Timer expired");
 
             // get timer
             auto timer = getTimerInfo(timerMsg->getTimerHandle());
             if (timer != nullptr)
             {
+                timer->expired = true;
+
                 // create timer event arg
                 TimerEventArgs arg;
+                arg.timerHdl.handle = timer->handle;
+                arg.argument.value = timer->argument;
 
                 // call callback
                 timer->callback(&arg);
+
+                // check if continous timer
+                if (timer->cont)
+                {
+                    // reschedule timer
+                    scheduleTimer(timer);
+                }
+                else if (timer->expired) // remove timer info when not rescheduled by callback
+                {
+                    removeTimer(timer->handle);
+
+                    refreshDisplay();
+                }
             }
         }
     }

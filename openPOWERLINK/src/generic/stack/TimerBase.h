@@ -32,7 +32,12 @@ class TimerBase : public OPP::cSimpleModule
     protected:
         void scheduleTimer(TInfo* info)
         {
+            auto oldCtx = simulation.getContext();
+            simulation.setContext(this);
+
             scheduleAt(simTime() + info->time, createTimerMessage(info->handle));
+
+            simulation.setContext(oldCtx);
         }
 
         void scheduleTimer(TInfo info)
@@ -88,7 +93,7 @@ class TimerBase : public OPP::cSimpleModule
     protected:
         TimerCont mTimers;
     private:
-        THandle mNextHandle;
+        THandle mNextHandle = 1234;
 };
 
 #endif /* TIMERBASE_H_ */

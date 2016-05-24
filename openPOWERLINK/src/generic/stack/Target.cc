@@ -30,11 +30,14 @@ void Target::initialize()
     interface::OplkTarget::getInstance().initModule(this);
 
     refreshDisplay();
+
+    // resolver parameter
+    mPrintCurrentTick = par("printCurrentTick");
 }
 
 void Target::handleMessage(cMessage *msg)
 {
-    // TODO - Generated method body
+    // empty method, no messages used
 }
 
 void Target::msleep(MilliSecondsType milliseconds)
@@ -56,7 +59,8 @@ Target::TickType Target::getTickCount()
 {
     auto currTickTime = simTime().inUnit(SimTimeUnit::SIMTIME_MS);
 
-    EV <<"Current Tick: " << currTickTime << std::endl;
+    if (mPrintCurrentTick)
+        EV <<"Current Tick: " << currTickTime << std::endl;
 
     return static_cast<TickType>(currTickTime);
 }

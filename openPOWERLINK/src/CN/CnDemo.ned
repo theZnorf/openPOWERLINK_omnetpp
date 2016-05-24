@@ -20,7 +20,7 @@ import openpowerlink.generic.IDemo;
 simple CnDemo like IDemo
 {
     parameters:
-        double startUpDelay @unit(ns) = default(2000ms);
+        double startUpDelay @unit(ns) = default(1000000ms);
         double mainLoopInterval @unit(ns) = default(1ms);
     gates:
         output apiCall;

@@ -50,6 +50,8 @@ class Target : public OPP::cSimpleModule
     private:
         bool mStatusLed = false;
         bool mErrorLed = false;
+
+        bool mPrintCurrentTick;
 };
 
 #endif

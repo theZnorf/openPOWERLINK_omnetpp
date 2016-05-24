@@ -30,9 +30,13 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
         // C-Tor
     protected:
         SendAwaitedReturnBase(std::string const & sendGateName, ApplyKindFunc applyKind, GetKind getKind) :
-                cSimpleModule(1), mSendGateName(sendGateName), mApplyKind(applyKind), mGetKind(getKind)
+                cSimpleModule(512), mSendGateName(sendGateName), mApplyKind(applyKind), mGetKind(getKind)
         {
         }
+
+    public:
+        virtual ~SendAwaitedReturnBase()
+        {}
 
         // Methods
     protected:

@@ -126,7 +126,7 @@ interface::api::ErrorType EventBase::processNmtStateChangeEvent(interface::api::
     if (eventArg.nmtStateChange.newNmtState == interface::api::NmtStateE::kNmtGsOff)
     {
         EV << "Stack received kNmtGsOff!" << endl;
-        send(new cMessage(), mShutdownGate);
+        send(new cMessage("shutdown demo"), mShutdownGate);
     }
 
     return interface::api::Error::kErrorOk;
@@ -140,9 +140,10 @@ interface::api::ErrorType EventBase::processErrorEvent(interface::api::ApiEventT
     EV << "  EventSource: "<< interface::debug::getEventSourceStr(eventArg.internalError.eventSource) << endl;
     EV << "  ErrorArg:    "<< eventArg.internalError.errorArg.uintArg << endl;
 
-    error(interface::debug::getRetValStr(eventArg.internalError.oplkError));
+    send(new cMessage("shutdown demo"), mShutdownGate);
+    //error(interface::debug::getRetValStr(eventArg.internalError.oplkError));
 
-    throw interface::OplkException("ErrorEvent", eventArg.internalError.oplkError);
+    //throw interface::OplkException("ErrorEvent", eventArg.internalError.oplkError);
 
     return eventArg.internalError.oplkError;
 }

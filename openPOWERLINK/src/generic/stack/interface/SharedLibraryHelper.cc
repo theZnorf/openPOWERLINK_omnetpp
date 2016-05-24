@@ -6,10 +6,23 @@
  */
 
 #include "SharedLibraryHelper.h"
+#include <cstdio>
+#include <iostream>
 
 using namespace std;
 using namespace interface;
 
+
+#if defined(__linux__)
+// Linux types
+using UnknownStruct = struct unknown_struct {
+   void*  pointers[3];
+   struct unknown_struct* ptr;
+};
+using LinkMap = struct link_map;
+#elif defined(_WIN32)
+// Windows types
+#endif
 
 SharedLibraryHelper::SharedLibraryHelper(const std::string& libname)
     : SharedLibraryHelper(libname, 0)
@@ -35,6 +48,18 @@ SharedLibraryHelper::~SharedLibraryHelper()
     {
         // close shared library
         SharedLibraryHelper::closeShareLibrary(mLibHandle);
+
+        // check if the library was a created copy
+        if (cMaxInstanceId > 0)
+        {
+            auto name = getLibraryName();
+            // check if library is not loaded anymore (all other instances are already destroyed)
+            if (!SharedLibraryHelper::isSharedLibraryLoaded(name))
+            {
+                std::cout << "Remove library " << name << std::endl;
+                std::remove(name.c_str());
+            }
+        }
     }
     catch (exception const & e)
     {
@@ -187,5 +212,43 @@ std::string SharedLibraryHelper::getExtension()
     return ".so";
 #elif defined(_WIN32)
     return ".dll";
+#endif
+}
+
+bool interface::SharedLibraryHelper::isSharedLibraryLoaded(const std::string& libname)
+{
+#if defined(__linux__)
+    return SharedLibraryHelper::isSharedLibraryLoadedLinux(libname);
+#elif defined(_WIN32)
+    return SharedLibraryHelper::isSharedLibraryLoadedWindows(libname);
+#endif
+}
+
+bool interface::SharedLibraryHelper::isSharedLibraryLoadedLinux(const std::string& libname)
+{
+#if defined(__linux__)
+    auto* handle = dlopen(NULL, RTLD_NOW);
+    auto* p = reinterpret_cast<UnknownStruct*>(handle)->ptr;
+    auto* map = reinterpret_cast<LinkMap*>(p->ptr);
+
+    for (; map; map = map->l_next)
+    {
+        if (libname.compare(map->l_name) == 0)
+            return true;
+    }
+
+    return false;
+
+#else
+    throw runtime_error("error linux function called under different OS");
+#endif
+}
+
+bool interface::SharedLibraryHelper::isSharedLibraryLoadedWindows(const std::string& libname)
+{
+#if defined(_WIN32)
+    //TODO implement Windows version
+#else
+    throw runtime_error("error windows function called under different OS");
 #endif
 }
