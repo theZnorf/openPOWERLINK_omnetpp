@@ -118,3 +118,4 @@ gcc-release
 out
 results/
 doc/
+*.bin

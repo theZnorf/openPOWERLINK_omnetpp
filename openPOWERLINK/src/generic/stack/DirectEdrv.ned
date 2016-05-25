@@ -15,23 +15,23 @@
 
 package openpowerlink.generic.stack;
 
-simple Edrv
+simple DirectEdrv like IEdrv
 {
     parameters:
         @display("t=Uninitialized,r,black;i=block/network,red");
         int numberOfInstances = default(1);
         string libName;
-        
+
         @signal[sentEtherType];
         @signal[receivedEtherType];
         @signal[sentOplkMessageType];
         @signal[receivedOplkMessageType];
-        
-        @statistic[sentEtherTypes](title="Sent EtherTypes";record=count,vector;source=sentEtherType);
-        @statistic[receivedEtherTypes](title="Received EtherTypes";record=count,vector;source=receivedEtherType);
-        @statistic[sentOplkTypes](title="Sent Oplk Message Types";record=count,vector;source=sentOplkMessageType);
-        @statistic[receivedOplkTypes](title="Received Oplk Message Types";record=count,vector;source=receivedOplkMessageType);
-        
+
+        @statistic[sentEtherTypes](title="Sent EtherTypes"; record=count,vector; source=sentEtherType);
+        @statistic[receivedEtherTypes](title="Received EtherTypes"; record=count,vector; source=receivedEtherType);
+        @statistic[sentOplkTypes](title="Sent Oplk Message Types"; record=count,vector; source=sentOplkMessageType);
+        @statistic[receivedOplkTypes](title="Received Oplk Message Types"; record=count,vector; source=receivedOplkMessageType);
+
     gates:
         input ethernetIn;
         output ethernetOut;

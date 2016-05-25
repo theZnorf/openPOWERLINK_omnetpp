@@ -22,7 +22,7 @@
 #include <omnetpp.h>
 #include "interface/OplkEdrv.h"
 
-class Edrv : public OPP::cSimpleModule
+class DirectEdrv : public OPP::cSimpleModule
 {
         // Definitions
     public:

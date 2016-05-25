@@ -13,21 +13,17 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.CN;
+package openpowerlink.generic.stack;
 
-import openpowerlink.generic.IDemo;
-
-simple CnDemo like IDemo
+//
+// Interface for Ethernet driver modules used in Stack module
+//
+moduleinterface IEdrv
 {
     parameters:
-        double startUpDelay @unit(ns) = default(5000ms);
-        double mainLoopInterval @unit(ns) = default(1ms);
+        int numberOfInstances;
+        string libName;
     gates:
-        output apiCall;
-        input apiReturn;
-        output appCall;
-        input appReturn;
-        input appApiCall;
-        output appApiReturn;
-        input stackShutdown;
+        input ethernetIn;
+        output ethernetOut;
 }

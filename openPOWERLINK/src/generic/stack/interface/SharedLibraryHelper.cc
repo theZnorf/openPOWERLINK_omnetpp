@@ -68,9 +68,14 @@ SharedLibraryHelper::~SharedLibraryHelper()
 
 SharedLibraryHelper::HelperPtr SharedLibraryHelper::getNextLibrary()
 {
+    return getNextLibrary(cLibName);
+}
+
+SharedLibraryHelper::HelperPtr SharedLibraryHelper::getNextLibrary(std::string const & libname)
+{
     if (mInstanceId + 1 <= cMaxInstanceId)
     {
-        HelperPtr helper(new SharedLibraryHelper(cLibName, cMaxInstanceId +1, mInstanceId + 1));
+        HelperPtr helper(new SharedLibraryHelper(libname, cMaxInstanceId +1, mInstanceId + 1));
         return helper;
     }
     throw runtime_error("SharedLibraryHelper::getNextLibrary - maximum number of instances reached");

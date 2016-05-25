@@ -7,7 +7,7 @@
 
 #include <OplkEdrv.h>
 #include "OplkException.h"
-#include "Edrv.h"
+#include "DirectEdrv.h"
 
 namespace interface
 {

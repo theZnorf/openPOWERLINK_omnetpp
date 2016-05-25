@@ -11,13 +11,12 @@
 #include <OplkBase.h>
 
 // forward declaration
-class Edrv;
-
+class DirectEdrv;
 
 namespace interface
 {
 
-    class OplkEdrv : public OplkBase<Edrv*>
+    class OplkEdrv : public OplkBase<DirectEdrv*>
     {
             // Definitions
         public:

@@ -8,6 +8,7 @@
 #ifndef OPLKBASE_H_
 #define OPLKBASE_H_
 
+#include <omnetpp.h>
 #include <vector>
 #include <string>
 #include "SharedLibraryHelper.h"
@@ -62,7 +63,7 @@ namespace interface
                 if (mModuleInfos.empty())
                     helper = SharedLibraryHelper::createInstance(mLibName, mNumberOfInstances);
                 else
-                    helper = mModuleInfos.back().helper->getNextLibrary();
+                    helper = mModuleInfos.back().helper->getNextLibrary(mLibName);
 
                 // add info object
                 ModuleInfo info = { module, helper };

@@ -95,6 +95,7 @@ namespace interface
             // Methods
         public:
             HelperPtr getNextLibrary();
+            HelperPtr getNextLibrary(std::string const & libraryName);
 
             template<typename TRet, typename ... TArgs>
             std::function<TRet(TArgs...)> getFunction(std::string const & functionName)
@@ -143,11 +144,7 @@ namespace interface
                 auto cName = functionName.c_str();
 
                 auto rawFunc = dlsym(handle, cName);
-                if (rawFunc == nullptr)
-                    throw std::runtime_error("resolveFunctionLinux - error resolving function " + functionName + " with error " + getError());
                 std::function<TRet(TArgs...)> func = reinterpret_cast<TRet (*)(TArgs...)>(rawFunc);
-                if (func == nullptr)
-                    throw std::runtime_error("getFunctionLinux - error casting function " + functionName);
 
                 return func;
             }

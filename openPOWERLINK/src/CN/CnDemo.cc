@@ -29,7 +29,7 @@ void CnDemo::initPowerlink()
 {
     static BYTE macAddr[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     static interface::api::ApiInitParam initParam;
-    static char devName[128];
+    static char devName[128] = {0};
 
     EV << "Initializing openPOWERLINK stack..." << std::endl;
 

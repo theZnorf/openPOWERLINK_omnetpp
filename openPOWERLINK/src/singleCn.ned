@@ -23,7 +23,7 @@ network singleCn
 {
     parameters:
         @display("bgb=323,249");
-        int numberOfInstances = default(2);
+        int numberOfInstances = 2;
     submodules:
         mn: MN {
             @display("p=79,114");
@@ -33,7 +33,7 @@ network singleCn
         cn: CN {
             @display("p=176,114");
             numberOfInstances = numberOfInstances;
-            libName = "../openPOWERLINK_V2/stack/lib/linux/x86_64/liboplkmn-sim_d"; //TODO: change to cn lib
+            libName = "../openPOWERLINK_V2/stack/lib/linux/x86_64/liboplkcn-sim_d";
         }
     connections:
 

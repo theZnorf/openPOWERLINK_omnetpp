@@ -14,7 +14,7 @@
 // 
 
 #include <sstream>
-#include "Edrv.h"
+#include "DirectEdrv.h"
 #include "interface/OplkException.h"
 #include "interface/OplkEdrv.h"
 #include "BufferMessage_m.h"
@@ -24,9 +24,9 @@
 using namespace std;
 USING_NAMESPACE
 
-Define_Module(Edrv);
+Define_Module(DirectEdrv);
 
-void Edrv::initialize()
+void DirectEdrv::initialize()
 {
     // resolve library info parameter
     std::string libName = par("libName");
@@ -46,7 +46,7 @@ void Edrv::initialize()
     mReceivedOplkTypeSignal = registerSignal("receivedOplkMessageType");
 }
 
-void Edrv::handleMessage(cMessage *rawMsg)
+void DirectEdrv::handleMessage(cMessage *rawMsg)
 {
     MsgPtr msg(rawMsg);
 
@@ -73,6 +73,8 @@ void Edrv::handleMessage(cMessage *rawMsg)
             if (etherType == cOplKEtherType)
                 emit(mReceivedOplkTypeSignal, rxBuffer->pBuffer[cOplkTypePos]);
 
+            bubble("Frame received");
+
             // forward received frame
             auto ret = mRxCallback(rxBuffer.get());
 
@@ -86,7 +88,7 @@ void Edrv::handleMessage(cMessage *rawMsg)
     }
 }
 
-void Edrv::initEdrv(EdrvInitParamType* initParam)
+void DirectEdrv::initEdrv(EdrvInitParamType* initParam)
 {
     // check parameter
     if (initParam == nullptr)
@@ -112,17 +114,17 @@ void Edrv::initEdrv(EdrvInitParamType* initParam)
     refreshDisplay();
 }
 
-void Edrv::exitEdrv()
+void DirectEdrv::exitEdrv()
 {
     setInitialized(false);
 }
 
-Edrv::MacType Edrv::getMacAddr()
+DirectEdrv::MacType DirectEdrv::getMacAddr()
 {
     return mMac.data();
 }
 
-void Edrv::sendTxBuffer(TxBufferType* txBuffer)
+void DirectEdrv::sendTxBuffer(TxBufferType* txBuffer)
 {
     // check parameter
     if (txBuffer == nullptr)
@@ -158,7 +160,7 @@ void Edrv::sendTxBuffer(TxBufferType* txBuffer)
     txBuffer->pfnTxHandler(txBuffer);
 }
 
-void Edrv::allocTxBuffer(TxBufferType* txBuffer)
+void DirectEdrv::allocTxBuffer(TxBufferType* txBuffer)
 {
     // check parameter
     if (txBuffer == nullptr)
@@ -172,7 +174,7 @@ void Edrv::allocTxBuffer(TxBufferType* txBuffer)
     txBuffer->txBufferNumber.pArg = nullptr;
 }
 
-void Edrv::freeTxBuffer(TxBufferType* txBuffer)
+void DirectEdrv::freeTxBuffer(TxBufferType* txBuffer)
 {
     if (txBuffer->pBuffer != nullptr)
     {
@@ -181,7 +183,7 @@ void Edrv::freeTxBuffer(TxBufferType* txBuffer)
     }
 }
 
-void Edrv::changeRxFilter(FilterType* filter, unsigned int count, unsigned int entryChanged, unsigned int changeFlags)
+void DirectEdrv::changeRxFilter(FilterType* filter, unsigned int count, unsigned int entryChanged, unsigned int changeFlags)
 {
     // check parameter
     if (filter == nullptr)
@@ -190,17 +192,17 @@ void Edrv::changeRxFilter(FilterType* filter, unsigned int count, unsigned int e
     bubble("change filter");
 }
 
-void Edrv::clearRxMulticastMacAddr(MacType macAddr)
+void DirectEdrv::clearRxMulticastMacAddr(MacType macAddr)
 {
     bubble("clear rx multicast mac addr");
 }
 
-void Edrv::setRxMulticastMacAddr(MacType macAddr)
+void DirectEdrv::setRxMulticastMacAddr(MacType macAddr)
 {
     bubble("set rx multicast mac addr");
 }
 
-void Edrv::refreshDisplay()
+void DirectEdrv::refreshDisplay()
 {
     if (mInitialized)
     {
@@ -222,19 +224,19 @@ void Edrv::refreshDisplay()
     }
 }
 
-void Edrv::setInitialized(bool initialized)
+void DirectEdrv::setInitialized(bool initialized)
 {
     mInitialized = initialized;
 
     refreshDisplay();
 }
 
-Edrv::Timestamp* Edrv::getCurrentTimestamp()
+DirectEdrv::Timestamp* DirectEdrv::getCurrentTimestamp()
 {
     return new Timestamp(simTime().inUnit(SimTimeUnit::SIMTIME_NS));
 }
 
-void Edrv::deleteRxBuffer(RxBuffer* rxBuffer)
+void DirectEdrv::deleteRxBuffer(RxBuffer* rxBuffer)
 {
     if (rxBuffer != nullptr)
     {

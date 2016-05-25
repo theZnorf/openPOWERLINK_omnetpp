@@ -21,6 +21,8 @@ module Stack
         @display("bgb=248,475,,,0;i=plk,,0;is=n");
         int numberOfInstances = default(1);
         string libName;
+        
+        string edrvType = default("DirectEdrv");
     gates:
         input apiCall;
         output apiReturn;
@@ -36,7 +38,7 @@ module Stack
             libName = libName;
             numberOfInstances = numberOfInstances;
         }
-        edrv: Edrv {
+        edrv: <edrvType> like IEdrv {
             @display("p=38,144");
             libName = libName;
             numberOfInstances = numberOfInstances;
