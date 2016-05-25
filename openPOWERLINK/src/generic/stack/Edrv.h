@@ -17,6 +17,8 @@
 #define __OPENPOWERLINK_EDRV_H_
 
 #include <array>
+#include <vector>
+#include <memory>
 #include <omnetpp.h>
 #include "interface/OplkEdrv.h"
 
@@ -31,12 +33,16 @@ class Edrv : public OPP::cSimpleModule
         using MacCont = std::array<UINT8, 6>;
         using RxCallbackType = interface::OplkEdrv::RxCallbackType;
         using HwInfoType = interface::OplkEdrv::HwInfoType;
+        using RxBuffer = interface::OplkEdrv::RxBufferType;
+        using RxBufferPtr = std::shared_ptr<RxBuffer>;
+        using RxBufferCont = std::vector<RxBufferPtr>;
+        using Timestamp = unsigned int;
+        using ReleaseRxBuffer = OPLK::eEdrvReleaseRxBuffer;
 
         // Methods
     protected:
         virtual void initialize();
-        virtual void handleMessage(OPP::cMessage *msg);
-        virtual void finish();
+        virtual void handleMessage(OPP::cMessage *rawMsg);
 
     public:
         void initEdrv(EdrvInitParamType* initParam);
@@ -49,13 +55,33 @@ class Edrv : public OPP::cSimpleModule
         void clearRxMulticastMacAddr(MacType macAddr);
         void setRxMulticastMacAddr(MacType macAddr);
 
+    private:
+        void refreshDisplay();
+        void setInitialized(bool initialized);
+        Timestamp* getCurrentTimestamp();
+
+        // static Methods
+    public:
+        static void deleteRxBuffer(RxBuffer* rxBuffer);
+
         // Member
     private:
         MacCont mMac;
         RxCallbackType mRxCallback;
         HwInfoType mHwInfo;
+        bool mInitialized;
         OPP::cGate* mEthernetOutGate;
         OPP::cGate* mEthernetInGate;
+        RxBufferCont mRxBufferCont;
+
+        OPP::simsignal_t mSentEtherTypeSignal;
+        OPP::simsignal_t mReceivedEtherTypeSignal;
+        OPP::simsignal_t mSentOplkTypeSignal;
+        OPP::simsignal_t mReceivedOplkTypeSignal;
+
+        size_t const cEtherTypePos = 12;
+        size_t const cOplkTypePos = 14;
+        unsigned short cOplKEtherType = 0xAB88;
 };
 
 #endif

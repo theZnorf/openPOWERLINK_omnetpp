@@ -35,7 +35,12 @@ void HresTimer::initialize()
 {
     try
     {
-        // initialze dispatcher for this module
+        // resolve library info parameter
+        std::string libName = par("libName");
+        interface::OplkHresTimer::Instance numberOfInstances = par("numberOfInstances");
+
+        // init stub
+        interface::OplkHresTimer::setLibraryInfo(libName, numberOfInstances);
         interface::OplkHresTimer::getInstance().initModule(this);
     }
     catch (std::exception const & e)

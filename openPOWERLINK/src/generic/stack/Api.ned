@@ -19,6 +19,9 @@ package openpowerlink.generic.stack;
 simple Api
 {
     parameters:
+        int numberOfInstances = default(1);
+        string libName;
+        
         @signal[invokedFunctionType](type="short"); // enum=Api::ApiCallType
         
         @statistic[apiFunctions](title="Invoked API functions";record=count,vector;source=invokedFunctionType);

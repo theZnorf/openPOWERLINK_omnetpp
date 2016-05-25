@@ -22,6 +22,8 @@ module GenericNode
 {
     parameters:
         @display("bgb=282,347");
+        int numberOfInstances = default(1);
+        string libName;
         
         string DemoType;
         string AppType;
@@ -35,6 +37,8 @@ module GenericNode
     submodules:
         stack: Stack {
             @display("p=71,268");
+            libName = libName;
+            numberOfInstances = numberOfInstances;
         }
         event: <EventType> like IEvent {
             @display("p=196,154");

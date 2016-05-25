@@ -18,6 +18,7 @@
 
 #include <omnetpp.h>
 #include <map>
+#include <string>
 
 #include "TimerMsg_m.h"
 
@@ -35,7 +36,11 @@ class TimerBase : public OPP::cSimpleModule
             auto oldCtx = simulation.getContext();
             simulation.setContext(this);
 
-            scheduleAt(simTime() + info->time, createTimerMessage(info->handle));
+            auto msg = createTimerMessage(info->handle);
+
+            msg->setName(("Timer Message: " + std::to_string(info->time.inUnit(SimTimeUnit::SIMTIME_US)) + " us").c_str());
+
+            scheduleAt(simTime() + info->time, msg);
 
             simulation.setContext(oldCtx);
         }

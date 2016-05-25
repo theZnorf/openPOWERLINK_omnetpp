@@ -45,7 +45,12 @@ void Api::initialize()
 
     interface::api::ApiFunctions & functions = mApi;
 
-    // init interface
+    // resolve library info parameter
+    std::string libName = par("libName");
+    interface::OplkApi::Instance numberOfInstances = par("numberOfInstances");
+
+    // init stub
+    interface::OplkApi::setLibraryInfo(libName, numberOfInstances);
     interface::OplkApi::getInstance().initModule(&functions);
 
     // resolve return gate

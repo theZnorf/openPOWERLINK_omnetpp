@@ -27,6 +27,12 @@ Define_Module(Target);
 
 void Target::initialize()
 {
+    // resolve library info parameter
+    std::string libName = par("libName");
+    interface::OplkTarget::Instance numberOfInstances = par("numberOfInstances");
+
+    // init stub
+    interface::OplkTarget::setLibraryInfo(libName, numberOfInstances);
     interface::OplkTarget::getInstance().initModule(this);
 
     refreshDisplay();

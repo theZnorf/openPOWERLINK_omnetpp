@@ -19,4 +19,6 @@ simple HresTimer
 {
     parameters:
         @display("i=device/clock,red;t=,r,black");
+        int numberOfInstances = default(1);
+        string libName;
 }

@@ -21,4 +21,6 @@ simple Target
     parameters:
         @display("i=device/device,green;t=,r,black");
         bool printCurrentTick = default(false);
+        int numberOfInstances = default(1);
+        string libName;
 }

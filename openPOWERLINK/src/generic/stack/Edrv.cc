@@ -13,10 +13,13 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
+#include <sstream>
 #include "Edrv.h"
 #include "interface/OplkException.h"
 #include "interface/OplkEdrv.h"
-#include <sstream>
+#include "BufferMessage_m.h"
+#include "MsgPtr.h"
+#include "ApiDef.h"
 
 using namespace std;
 USING_NAMESPACE
@@ -25,34 +28,80 @@ Define_Module(Edrv);
 
 void Edrv::initialize()
 {
+    // resolve library info parameter
+    std::string libName = par("libName");
+    interface::OplkEdrv::Instance numberOfInstances = par("numberOfInstances");
+
     // init stub
+    interface::OplkEdrv::setLibraryInfo(libName, numberOfInstances);
     interface::OplkEdrv::getInstance().initModule(this);
+
+    // resolve gates
+    mEthernetOutGate = gate("ethernetOut");
+
+    // resolve signals
+    mSentEtherTypeSignal = registerSignal("sentEtherType");
+    mReceivedEtherTypeSignal = registerSignal("receivedEtherType");
+    mSentOplkTypeSignal = registerSignal("sentOplkMessageType");
+    mReceivedOplkTypeSignal = registerSignal("receivedOplkMessageType");
 }
 
-void Edrv::handleMessage(cMessage *msg)
+void Edrv::handleMessage(cMessage *rawMsg)
 {
-}
+    MsgPtr msg(rawMsg);
 
-void Edrv::finish()
-{
+    if ((msg != nullptr) && mInitialized)
+    {
+        // cast message
+        auto buffMsg = dynamic_cast<oplkMessages::BufferMessage*>(msg.get());
+
+        if (buffMsg != nullptr)
+        {
+            bubble("Frame received");
+
+            // create rx buffer
+            RxBufferPtr rxBuffer(new RxBuffer(), deleteRxBuffer);
+            rxBuffer->rxFrameSize = buffMsg->getBufferArraySize();
+            rxBuffer->pBuffer = new UINT8[rxBuffer->rxFrameSize];
+            for (auto i = 0u; i < rxBuffer->rxFrameSize; i++)
+                rxBuffer->pBuffer[i] = buffMsg->getBuffer(i);
+            rxBuffer->pRxTimeStamp = nullptr; //getCurrentTimestamp();
+
+            // emit signals
+            auto etherType = *((unsigned short*)(&rxBuffer->pBuffer[cEtherTypePos]));
+            emit(mReceivedEtherTypeSignal, etherType);
+            if (etherType == cOplKEtherType)
+                emit(mReceivedOplkTypeSignal, rxBuffer->pBuffer[cOplkTypePos]);
+
+            // forward received frame
+            auto ret = mRxCallback(rxBuffer.get());
+
+            // check return
+            if (ret == ReleaseRxBuffer::kEdrvReleaseRxBufferLater)
+            {
+                // add rx buffer ptr to internal cont
+                mRxBufferCont.push_back(rxBuffer);
+            }
+        }
+    }
 }
 
 void Edrv::initEdrv(EdrvInitParamType* initParam)
 {
+    // check parameter
+    if (initParam == nullptr)
+        throw interface::OplkException("invalid init param", interface::api::Error::kErrorEdrvInvalidParam);
+
     bubble("Ethernet driver initialized");
     // init member
-    stringstream strStream;
 
     // copy mac addr
     mMac[0] = initParam->aMacAddr[0];
-    strStream << "MacAddress: " << std::hex << (int)mMac[0];
 
     for (auto i = 1u; i < mMac.size(); i++)
     {
         mMac[i] = initParam->aMacAddr[i];
-        strStream << ":" << (int)mMac[i];
     }
-    strStream << std::endl;
 
     // set rx handler
     mRxCallback = initParam->pfnRxHandler;
@@ -60,17 +109,12 @@ void Edrv::initEdrv(EdrvInitParamType* initParam)
     // save hw info
     mHwInfo = initParam->hwParam;
 
-    strStream << "Device Number: " << mHwInfo.devNum << std::endl;
-    strStream << "Device Name: " << mHwInfo.pDevName << std::endl;
-
-    getDisplayString().setTagArg("t", 0, strStream.str().c_str());
-    getDisplayString().setTagArg("i",1,"green");
+    refreshDisplay();
 }
 
 void Edrv::exitEdrv()
 {
-    getDisplayString().setTagArg("t", 0, "Uninitialized");
-    getDisplayString().setTagArg("i",1,"red");
+    setInitialized(false);
 }
 
 Edrv::MacType Edrv::getMacAddr()
@@ -80,7 +124,35 @@ Edrv::MacType Edrv::getMacAddr()
 
 void Edrv::sendTxBuffer(TxBufferType* txBuffer)
 {
+    // check parameter
+    if (txBuffer == nullptr)
+        throw interface::OplkException("invalid tx buffer", interface::api::Error::kErrorEdrvInvalidParam);
+
     bubble("Send Tx given buffer");
+
+    // save simulation ctx
+    auto oldCtx = simulation.getContext();
+    simulation.setContext(this);
+
+    // create buffer message
+    auto msg = new oplkMessages::BufferMessage();
+
+    // fill message
+    msg->setBufferArraySize(txBuffer->txFrameSize);
+    for (auto i = 0u; i < txBuffer->txFrameSize; i++)
+        msg->setBuffer(i, txBuffer->pBuffer[i]);
+
+    // emit signals
+    auto etherType = *((unsigned short*)(&txBuffer->pBuffer[cEtherTypePos]));
+    emit(mSentEtherTypeSignal, etherType);
+    if (etherType == cOplKEtherType)
+        emit(mSentOplkTypeSignal, txBuffer->pBuffer[cOplkTypePos]);
+
+    // send message
+    send(msg, mEthernetOutGate);
+
+    // restore ctx
+    simulation.setContext(oldCtx);
 
     // call tx handler
     txBuffer->pfnTxHandler(txBuffer);
@@ -88,6 +160,10 @@ void Edrv::sendTxBuffer(TxBufferType* txBuffer)
 
 void Edrv::allocTxBuffer(TxBufferType* txBuffer)
 {
+    // check parameter
+    if (txBuffer == nullptr)
+        throw interface::OplkException("invalid tx buffer", interface::api::Error::kErrorEdrvInvalidParam);
+
     // allocate buffer with new
     txBuffer->pBuffer = new UINT8[txBuffer->maxBufferSize];
     if (txBuffer->pBuffer == nullptr)
@@ -107,6 +183,10 @@ void Edrv::freeTxBuffer(TxBufferType* txBuffer)
 
 void Edrv::changeRxFilter(FilterType* filter, unsigned int count, unsigned int entryChanged, unsigned int changeFlags)
 {
+    // check parameter
+    if (filter == nullptr)
+        throw interface::OplkException("invalid filter", interface::api::Error::kErrorEdrvInvalidParam);
+
     bubble("change filter");
 }
 
@@ -118,4 +198,56 @@ void Edrv::clearRxMulticastMacAddr(MacType macAddr)
 void Edrv::setRxMulticastMacAddr(MacType macAddr)
 {
     bubble("set rx multicast mac addr");
+}
+
+void Edrv::refreshDisplay()
+{
+    if (mInitialized)
+    {
+        stringstream strStream;
+        strStream << "MacAddress: " << std::hex << (int) mMac[0];
+        for (auto i = 1u; i < mMac.size(); i++)
+            strStream << ":" << std::hex << (int) mMac[i];
+        strStream << std::endl;
+        strStream << "Device Number: " << mHwInfo.devNum << std::endl;
+        strStream << "Device Name: " << mHwInfo.pDevName << std::endl;
+
+        getDisplayString().setTagArg("t", 0, strStream.str().c_str());
+        getDisplayString().setTagArg("i", 1, "green");
+    }
+    else
+    {
+        getDisplayString().setTagArg("t", 0, "Uninitialized");
+        getDisplayString().setTagArg("i", 1, "red");
+    }
+}
+
+void Edrv::setInitialized(bool initialized)
+{
+    mInitialized = initialized;
+
+    refreshDisplay();
+}
+
+Edrv::Timestamp* Edrv::getCurrentTimestamp()
+{
+    return new Timestamp(simTime().inUnit(SimTimeUnit::SIMTIME_NS));
+}
+
+void Edrv::deleteRxBuffer(RxBuffer* rxBuffer)
+{
+    if (rxBuffer != nullptr)
+    {
+        if (rxBuffer->pBuffer != nullptr)
+        {
+            delete[] rxBuffer->pBuffer;
+            rxBuffer->pBuffer = nullptr;
+        }
+        if (rxBuffer->pRxTimeStamp != nullptr)
+        {
+            delete rxBuffer->pRxTimeStamp;
+            rxBuffer->pRxTimeStamp = nullptr;
+        }
+        delete rxBuffer;
+    }
 }

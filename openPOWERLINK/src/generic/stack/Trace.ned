@@ -19,4 +19,6 @@ simple Trace
 {
     parameters:
         @display("i=status/question,green");
+        int numberOfInstances = default(1);
+        string libName;
 }

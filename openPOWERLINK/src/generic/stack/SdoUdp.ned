@@ -19,6 +19,8 @@ simple SdoUdp
 {
     parameters:
         @display("i=block/transport,green");
+        int numberOfInstances = default(1);
+        string libName;
     gates:
         input udpIn;
         output udpOut;

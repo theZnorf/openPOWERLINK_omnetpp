@@ -24,6 +24,7 @@ namespace interface
             using EdrvInitParamType = OPLK::tEdrvInitParam;
             using MacType = UINT8*;
             using TxBufferType = OPLK::tEdrvTxBuffer;
+            using RxBufferType = OPLK::tEdrvRxBuffer;
             using FilterType = OPLK::tEdrvFilter;
             using RxCallbackType = OPLK::tEdrvRxHandler;
             using HwInfoType = OPLK::tHwParam;

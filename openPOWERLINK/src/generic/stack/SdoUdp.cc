@@ -22,12 +22,17 @@ Define_Module(SdoUdp);
 
 void SdoUdp::initialize()
 {
+    // resolve library info parameter
+    std::string libName = par("libName");
+    interface::OplkSdoUdp::Instance numberOfInstances = par("numberOfInstances");
+
+    // init stub
+    interface::OplkSdoUdp::setLibraryInfo(libName, numberOfInstances);
     interface::OplkSdoUdp::getInstance().initModule(this);
 }
 
 void SdoUdp::handleMessage(cMessage *msg)
 {
-    // TODO - Generated method body
 }
 
 void SdoUdp::createSocket(ConnectionType* connection)

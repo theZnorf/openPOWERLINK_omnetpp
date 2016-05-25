@@ -25,12 +25,18 @@ Define_Module(Trace);
 
 void Trace::initialize()
 {
+    // resolve library info parameter
+    std::string libName = par("libName");
+    interface::OplkTrace::Instance numberOfInstances = par("numberOfInstances");
+
+    // init stub
+    interface::OplkTrace::setLibraryInfo(libName, numberOfInstances);
     interface::OplkTrace::getInstance().initModule(this);
 }
 
 void Trace::handleMessage(cMessage *msg)
 {
-    // TODO - Generated method body
+    // empty method, no message communication supported
 }
 
 void Trace::trace(std::string msg)

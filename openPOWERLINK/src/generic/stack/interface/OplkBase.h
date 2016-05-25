@@ -8,7 +8,6 @@
 #ifndef OPLKBASE_H_
 #define OPLKBASE_H_
 
-#include <omnetpp.h>
 #include <vector>
 #include <string>
 #include "SharedLibraryHelper.h"
@@ -30,18 +29,19 @@ namespace interface
 
             using InfoCont = std::vector<ModuleInfo>;
             using InstanceHandle = SharedLibraryHelper::InstanceHandle;
+            using Instance = SharedLibraryHelper::InstanceType;
             using ErrorType = OPLK::ErrorType;
 
             // C-Tor / D-Tor
         protected:
-            OplkBase() :
-                    cLibName("../openPOWERLINK_V2/stack/lib/linux/x86_64/liboplkmn-sim_d"), cNumberOfInstances(2)
+            OplkBase()
             {
-            }
-
-            OplkBase(std::string const & libName, int numberOfInstances) :
-                    cLibName(libName), cNumberOfInstances(numberOfInstances)
-            {
+                // check static member
+                if (mLibName.empty())
+                {
+                    mLibName = "../openPOWERLINK_V2/stack/lib/linux/x86_64/liboplkmn-sim_d";
+                    mNumberOfInstances = 2;
+                }
             }
 
         public:
@@ -60,7 +60,7 @@ namespace interface
                 SharedLibraryHelper::HelperPtr helper;
 
                 if (mModuleInfos.empty())
-                    helper = SharedLibraryHelper::createInstance(cLibName, cNumberOfInstances);
+                    helper = SharedLibraryHelper::createInstance(mLibName, mNumberOfInstances);
                 else
                     helper = mModuleInfos.back().helper->getNextLibrary();
 
@@ -93,14 +93,29 @@ namespace interface
 
             virtual void setFunctions(SharedLibraryHelper::HelperPtr helper, InstanceHandle handle) = 0;
 
+            // static Methods
+        public:
+            static void setLibraryInfo(std::string const & libName, Instance numberOfInstances)
+            {
+                mLibName = libName;
+                mNumberOfInstances = numberOfInstances;
+            }
+
             // Member
         protected:
             InfoCont mModuleInfos;
 
+            // static member
         private:
-            const std::string cLibName;
-            const int cNumberOfInstances;
+            static std::string mLibName;
+            static Instance mNumberOfInstances;
     };
+
+    template<typename TModule>
+    std::string OplkBase<TModule>::mLibName = "";
+
+    template<typename TModule>
+    typename OplkBase<TModule>::Instance OplkBase<TModule>::mNumberOfInstances = 1;
 
 } /* namespace interface */
 

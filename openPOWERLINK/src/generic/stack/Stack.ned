@@ -19,6 +19,8 @@ module Stack
 {
     parameters:
         @display("bgb=248,475,,,0;i=plk,,0;is=n");
+        int numberOfInstances = default(1);
+        string libName;
     gates:
         input apiCall;
         output apiReturn;
@@ -31,21 +33,33 @@ module Stack
     submodules:
         api: Api {
             @display("p=119,46");
+            libName = libName;
+            numberOfInstances = numberOfInstances;
         }
         edrv: Edrv {
             @display("p=38,144");
+            libName = libName;
+            numberOfInstances = numberOfInstances;
         }
         hresTimer: HresTimer {
             @display("p=38,210");
+            libName = libName;
+            numberOfInstances = numberOfInstances;
         }
         sdoUdp: SdoUdp {
             @display("p=38,268");
+            libName = libName;
+            numberOfInstances = numberOfInstances;
         }
         target: Target {
             @display("p=38,331");
+            libName = libName;
+            numberOfInstances = numberOfInstances;
         }
         trace: Trace {
             @display("p=38,389");
+            libName = libName;
+            numberOfInstances = numberOfInstances;
         }
     connections:
         api.return --> apiReturn;
