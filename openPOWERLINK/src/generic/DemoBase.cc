@@ -14,6 +14,7 @@
 // 
 
 #include <functional>
+#include <string>
 #include "DemoBase.h"
 #include "MsgPtr.h"
 #include "stack/Api.h"
@@ -54,7 +55,7 @@ void DemoBase::initialize()
     mState = DemoState::initializePowerlink;
 
     // schedule init message
-    scheduleAt(simTime() + mStartUpDelay, new cMessage("Init demo"));
+    scheduleAt(simTime() + mStartUpDelay, new cMessage(("Init demo - " + string(getParentModule()->getName())).c_str()));
 }
 
 void DemoBase::handleOtherMessage(MessagePtr msg)

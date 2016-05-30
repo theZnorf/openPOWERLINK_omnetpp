@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <cctype>
 #include "Trace.h"
 #include "interface/OplkTrace.h"
 
@@ -41,8 +42,8 @@ void Trace::handleMessage(cMessage *msg)
 
 void Trace::trace(std::string msg)
 {
-    //msg.erase(std::remove_if(msg.begin(), msg.end(), [](char c)
-    //{   return !std::isalnum(c) && (c != ' ');}), msg.end());
+    msg.erase(std::remove_if(msg.begin(), msg.end(), [](char c)
+    {   return !std::isprint(c);}), msg.end());
 
     std::cout << "TRACE: " << msg << std::endl;
     bubble(msg.c_str());

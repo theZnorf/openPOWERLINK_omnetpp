@@ -690,6 +690,11 @@ interface::api::ErrorType Api::processEvent(interface::api::ApiEventType eventTy
     if (eventType_p == interface::api::ApiEvent::kOplkApiEventCriticalError)
         EV << "Critical error occured" << endl;
 
+    if (eventType_p == interface::api::ApiEvent::kOplkApiEventNmtStateChange)
+    {
+        EV << "State change occurred" << endl;
+    }
+
     // create event message
     auto eventMsg = new oplkMessages::EventMessage();
     eventMsg->setName(("event - " + std::string(interface::debug::getApiEventStr(eventType_p))).c_str());

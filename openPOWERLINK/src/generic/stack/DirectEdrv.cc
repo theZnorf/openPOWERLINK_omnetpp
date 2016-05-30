@@ -111,6 +111,7 @@ void DirectEdrv::initEdrv(EdrvInitParamType* initParam)
     // save hw info
     mHwInfo = initParam->hwParam;
 
+    setInitialized(true);
     refreshDisplay();
 }
 
@@ -157,7 +158,8 @@ void DirectEdrv::sendTxBuffer(TxBufferType* txBuffer)
     simulation.setContext(oldCtx);
 
     // call tx handler
-    txBuffer->pfnTxHandler(txBuffer);
+    if (txBuffer->pfnTxHandler != nullptr)
+        txBuffer->pfnTxHandler(txBuffer);
 }
 
 void DirectEdrv::allocTxBuffer(TxBufferType* txBuffer)

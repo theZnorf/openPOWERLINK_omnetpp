@@ -29,11 +29,13 @@ network singleCn
             @display("p=79,114");
             numberOfInstances = numberOfInstances;
             libName = "../openPOWERLINK_V2/stack/lib/linux/x86_64/liboplkmn-sim_d";
+            mainLoopInterval = 10us;
         }
         cn: CN {
             @display("p=176,114");
             numberOfInstances = numberOfInstances;
             libName = "../openPOWERLINK_V2/stack/lib/linux/x86_64/liboplkcn-sim_d";
+            mainLoopInterval = 10us;
         }
     connections:
 

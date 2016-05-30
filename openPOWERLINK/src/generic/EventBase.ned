@@ -23,7 +23,8 @@ simple EventBase like IEvent
         @signal[eventType];
         @signal[nmtState] (type="unsigned long");
         
-        @statistic[processedEventType](title="Processed Event Type";record=sum,vector);
+        @statistic[processedEventType](title="Processed Event Type";record=count,vector;source=eventType;);
+        @statistic[nmtStates](title="NMT States";record=count,vector;source=nmtState;);
         
     gates:
         input event;

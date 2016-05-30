@@ -28,6 +28,8 @@ module GenericNode
         string DemoType;
         string AppType;
         string EventType;
+    	
+        double mainLoopInterval @unit(ns) = default(1ms);
         
     gates:
         input ethernetIn;
@@ -48,6 +50,7 @@ module GenericNode
         }
         demo: <DemoType> like IDemo {
             @display("p=71,154");
+            mainLoopInterval = mainLoopInterval;
         }
         nmtState: NmtState {
             @display("p=157,268");
