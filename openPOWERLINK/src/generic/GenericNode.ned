@@ -21,16 +21,18 @@ import openpowerlink.generic.stack.Stack;
 module GenericNode
 {
     parameters:
-        @display("bgb=282,347");
+        @display("bgb=282,300");
         int numberOfInstances = default(1);
         string libName;
-        
+
         string DemoType;
         string AppType;
         string EventType;
-    	
+
         double mainLoopInterval @unit(ns) = default(1ms);
-        
+
+        int numberOfApiConnections = default(2);
+
     gates:
         input ethernetIn;
         output ethernetOut;
@@ -38,33 +40,43 @@ module GenericNode
         output udpOut;
     submodules:
         stack: Stack {
-            @display("p=71,268");
+            @display("p=138,151");
             libName = libName;
             numberOfInstances = numberOfInstances;
+            numberOfApiConnections = numberOfApiConnections;
         }
         event: <EventType> like IEvent {
-            @display("p=196,154");
+            @display("p=217,51");
         }
         app: <AppType> like IApp {
-            @display("p=71,53");
+            @display("p=52,51");
         }
         demo: <DemoType> like IDemo {
-            @display("p=71,154");
+            @display("p=138,51");
             mainLoopInterval = mainLoopInterval;
         }
         nmtState: NmtState {
-            @display("p=157,268");
+            @display("p=138,228");
         }
     connections:
-        demo.apiCall --> stack.apiCall;
-        stack.apiReturn --> demo.apiReturn;
+        // Demo Api connection
+        demo.apiCall --> stack.apiCall[0];
+        stack.apiReturn[0] --> demo.apiReturn;
+
+        // App Api connection
+        app.apiCall --> stack.apiCall[1];
+        stack.apiReturn[1] --> app.apiReturn;
+
+        // Event connection
         stack.event --> event.event;
         event.eventReturn --> stack.eventReturn;
+        event.stackShutdown --> demo.stackShutdown;
+
+        // App - Demo connection
         demo.appCall --> app.functionCall;
         app.return --> demo.appReturn;
-        event.stackShutdown --> demo.stackShutdown;
-        demo.appApiReturn --> app.apiReturn;
-        app.apiCall --> demo.appApiCall;
+
+        // Network connections
         ethernetIn --> stack.ethernetIn;
         stack.ethernetOut --> ethernetOut;
         stack.udpOut --> udpOut;

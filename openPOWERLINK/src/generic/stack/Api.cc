@@ -53,9 +53,11 @@ void Api::initialize()
     interface::OplkApi::setLibraryInfo(libName, numberOfInstances);
     interface::OplkApi::getInstance().initModule(&functions);
 
-    // resolve return gate
-    mReturnGate = gate("return");
+    // resolve return gates
     mEventGate = gate("event");
+
+    for (auto i = 0; i < gateSize("functionCallReturn"); i++)
+        mReturnGates.push_back(gate("functionCallReturn", i));
 
     // register signals
     mInvokedApiFunctionSignal = registerSignal("invokedFunctionType");
@@ -677,15 +679,15 @@ void Api::handleApiCall(MessagePtr msg)
 
     // set received message kind and send message
     retPtr->setKind(msg->getKind());
-    sendReturnMessage(retPtr);
+    sendReturnMessage(retPtr, msg->getArrivalGate()->getIndex());
 }
 
 interface::api::ErrorType Api::processEvent(interface::api::ApiEventType eventType_p,
         interface::api::ApiEventArg* pEventArg_p)
 {
     // apply event filer
-    if (eventType_p == interface::api::ApiEvent::kOplkApiEventObdAccess)
-        return interface::api::Error::kErrorOk;
+    //if (eventType_p == interface::api::ApiEvent::kOplkApiEventObdAccess)
+    //    return interface::api::Error::kErrorOk;
 
     if (eventType_p == interface::api::ApiEvent::kOplkApiEventCriticalError)
         EV << "Critical error occured" << endl;
@@ -727,9 +729,9 @@ interface::api::ErrorType Api::processEvent(interface::api::ApiEventType eventTy
     return api->processEvent(eventType_p, pEventArg_p);
 }
 
-void Api::sendReturnMessage(cMessage* msg)
+void Api::sendReturnMessage(cMessage* msg, size_t gateIdx)
 {
-    send(msg, mReturnGate);
+    send(msg, mReturnGates.at(gateIdx));
 }
 
 const char* Api::getApiCallString(ApiCallType type)

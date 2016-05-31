@@ -11,24 +11,27 @@
 // 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
-// 
+
 
 package openpowerlink.generic.stack;
 
-
+// Module representing and providing the openPOWERLINK API within the openPOWERLINK Stack module.
+// The different API functions are invoked via a cMessage or the according specific message from oplkMessages
+// with the according Api::ApiCallType as Type.
 simple Api
 {
     parameters:
-        int numberOfInstances = default(1);
-        string libName;
+        int numberOfInstances = default(1); // Number of Instances of Api modules, should be set by parent module/network
+        string libName; // Filename of shared library, should be set by parent module/network
         
-        @signal[invokedFunctionType](type="short"); // enum=Api::ApiCallType
+        int numberOfFunctionalConnections = default(3); // Number of functional connections using the Api
         
+        @signal[invokedFunctionType](type="short");
         @statistic[apiFunctions](title="Invoked API functions";record=count,vector;source=invokedFunctionType);
     
     gates:
-        input functionCall;
-        output return;
-        output event;
-        input eventReturn;
+        input functionCall[numberOfFunctionalConnections]; // Input vector for functional connections invoking the according API function
+        output functionCallReturn[numberOfFunctionalConnections]; // Return vector for return messages of invoked API functions
+        output event; // Output gate for event messages forwarded to the event module IEvent
+        input eventReturn; // Input gate for the return messages from the event module IEvent
 }

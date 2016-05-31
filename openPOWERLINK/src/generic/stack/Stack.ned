@@ -21,11 +21,11 @@ module Stack
         @display("bgb=248,475,,,0;i=plk,,0;is=n");
         int numberOfInstances = default(1);
         string libName;
-        
+        int numberOfApiConnections = default(3);
         string edrvType = default("DirectEdrv");
     gates:
-        input apiCall;
-        output apiReturn;
+        input apiCall[numberOfApiConnections];
+        output apiReturn[numberOfApiConnections];
         output event;
         input eventReturn;
         input ethernetIn;
@@ -37,6 +37,7 @@ module Stack
             @display("p=119,46");
             libName = libName;
             numberOfInstances = numberOfInstances;
+            numberOfFunctionalConnections = numberOfApiConnections;
         }
         edrv: <edrvType> like IEdrv {
             @display("p=38,144");
@@ -64,8 +65,13 @@ module Stack
             numberOfInstances = numberOfInstances;
         }
     connections:
-        api.return --> apiReturn;
-        apiCall --> api.functionCall;
+        for i = 0..numberOfApiConnections-1 {
+            api.functionCallReturn[i] --> apiReturn[i];
+        }
+        for i = 0..numberOfApiConnections-1 {
+            apiCall[i] --> api.functionCall[i];
+        }
+        
         api.event --> event;
         eventReturn --> api.eventReturn;
         edrv.ethernetOut --> ethernetOut;

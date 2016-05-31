@@ -42,12 +42,9 @@ void DemoBase::initialize()
     // resolve gates
     mApiCallGate = gate("apiCall");
     mAppCallGate = gate("appCall");
-    mAppApiReturnGate = gate("appApiReturn");
 
     // init dispatcher
-    mDispatcher.registerFunction(gate("apiReturn"), std::bind(&DemoBase::processApiReturn, this, placeholders::_1));
     mDispatcher.registerFunction(gate("appReturn"), std::bind(&DemoBase::processAppReturn, this, placeholders::_1));
-    mDispatcher.registerFunction(gate("appApiCall"), std::bind(&DemoBase::processAppApiCall, this, placeholders::_1));
     mDispatcher.registerFunction(gate("stackShutdown"),
             std::bind(&DemoBase::processStackShutdown, this, placeholders::_1));
 
@@ -142,12 +139,6 @@ void DemoBase::handleSelfMessage(MessagePtr msg)
     }
 }
 
-void DemoBase::processApiReturn(RawMessagePtr msg)
-{
-    // forward unexpected api returns to app module
-    send(msg->dup(), mAppApiReturnGate);
-}
-
 void DemoBase::processAppReturn(RawMessagePtr msg)
 {
     auto retMsg = dynamic_cast<oplkMessages::ReturnMessage*>(msg);
@@ -185,12 +176,6 @@ void DemoBase::processAppReturn(RawMessagePtr msg)
                 error("HandleAppReturn - invalid message kind: %d", static_cast<short>(kind));
         }
     }
-}
-
-void DemoBase::processAppApiCall(RawMessagePtr msg)
-{
-// forward api calls to stack
-send(msg->dup(), mApiCallGate);
 }
 
 void DemoBase::processStackShutdown(RawMessagePtr msg)

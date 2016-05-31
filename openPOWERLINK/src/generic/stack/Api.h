@@ -19,6 +19,7 @@
 #include "SendAwaitedReturnBase.h"
 
 #include <string>
+#include <vector>
 #include <omnetpp.h>
 #include "interface/OplkApi.h"
 #include "interface/ApiDef.h"
@@ -82,6 +83,8 @@ class Api : public SendAwaitedReturnBase<interface::api::ApiEventType>
         };
 
     private:
+            using GateCont = std::vector<OPP::cGate*>;
+
         static const constexpr char* const cApiCallNames[] = { "undefined", "init", "create", "destroy", "exit",
                 "execNmtCommand", "cbGenericObdAccess", "linkObject", "readObject", "writeObject",
                 "finishUserObdAccess", "enableUserObdAccess", "freeSdoChannel", "abortSdoChannel", "readLocalObject",
@@ -116,7 +119,7 @@ class Api : public SendAwaitedReturnBase<interface::api::ApiEventType>
         static interface::api::ErrorType processEvent(interface::api::ApiEventType eventType_p,
                 interface::api::ApiEventArg* pEventArg_p, void* pUserArg_p);
 
-        void sendReturnMessage(OPP::cMessage* msg);
+        void sendReturnMessage(OPP::cMessage* msg, size_t gateIdx);
 
         static void setEventType(RawMessagePtr msg, Kind kind);
         static Kind getEventType(RawMessagePtr msg);
@@ -126,6 +129,7 @@ class Api : public SendAwaitedReturnBase<interface::api::ApiEventType>
         MessageDispatcher mDispatcher;
         interface::api::ApiFunctions mApi;
         OPP::cGate* mReturnGate;
+        GateCont mReturnGates;
         OPP::cGate* mEventGate;
         OPP::simsignal_t mInvokedApiFunctionSignal;
 };

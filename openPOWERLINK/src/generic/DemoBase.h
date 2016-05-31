@@ -47,16 +47,13 @@ class DemoBase : public UseApiBase
         virtual void shutdownPowerlink() = 0;
 
     private:
-        void processApiReturn(RawMessagePtr msg);
         void processAppReturn(RawMessagePtr msg);
-        void processAppApiCall(RawMessagePtr msg);
         void processStackShutdown(RawMessagePtr msg);
 
         // Member
     protected:
         OPP::cGate* mApiCallGate;
         OPP::cGate* mAppCallGate;
-        OPP::cGate* mAppApiReturnGate;
 
         MessageDispatcher mDispatcher;
 

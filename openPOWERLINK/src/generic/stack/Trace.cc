@@ -45,6 +45,6 @@ void Trace::trace(std::string msg)
     msg.erase(std::remove_if(msg.begin(), msg.end(), [](char c)
     {   return !std::isprint(c);}), msg.end());
 
-    std::cout << "TRACE: " << msg << std::endl;
+    std::cout << "TRACE - " << getParentModule()->getParentModule()->getName() << " : " << msg << std::endl;
     bubble(msg.c_str());
 }

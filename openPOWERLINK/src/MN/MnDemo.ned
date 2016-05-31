@@ -27,7 +27,5 @@ simple MnDemo like IDemo
         input apiReturn;
         output appCall;
         input appReturn;
-        input appApiCall;
-        output appApiReturn;
         input stackShutdown;
 }
