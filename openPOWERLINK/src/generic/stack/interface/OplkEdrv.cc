@@ -36,6 +36,9 @@ namespace interface
         // set function pointer of interface
         auto setFunctions = helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tEdrvFunctions>("sim_setEdrvFunctions");
 
+        if (setFunctions == nullptr)
+            throw std::runtime_error("OplkEdrv::setFunctions - unable to resolve setFunctions function");
+
         auto ret = setFunctions(handle,functions);
 
         if (ret != TRUE)

@@ -30,6 +30,9 @@ namespace interface
         // set function pointer of interface
         auto setFunctions = helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tTraceFunctions>("sim_setTraceFunctions");
 
+        if (setFunctions == nullptr)
+            throw std::runtime_error("OplkTrace::setFunctions - unable to resolve setFunctions function");
+
         auto ret = setFunctions(handle,functions);
 
         if (ret != TRUE)

@@ -81,7 +81,7 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
             }
         }
 
-        void sendAwaitedMessage(RawMessagePtr msg, Kind kind)
+        void sendAwaitedMessage(RawMessagePtr msg, Kind kind, OPP::cGate* sendGate)
         {
             // apply kind to message
             mApplyKind(msg, kind);
@@ -90,7 +90,12 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
             mMsgCont[kind] = nullptr;
 
             // send message via sendgate
-            send(msg, mSendGate);
+            send(msg, sendGate);
+        }
+
+        void sendAwaitedMessage(RawMessagePtr msg, Kind kind)
+        {
+            sendAwaitedMessage(msg, kind, mSendGate);
         }
 
         MessagePtr waitForReturnMessage(Kind kind)

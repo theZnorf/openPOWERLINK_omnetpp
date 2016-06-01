@@ -34,6 +34,9 @@ namespace interface
         // set function pointer of interface
         auto setFunctions = helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tSdoUdpFunctions>("sim_setSdoUdpFunctions");
 
+        if (setFunctions == nullptr)
+            throw std::runtime_error("OplkSdoUdp::setFunctions - unable to resolve setFunctions function");
+
         auto ret = setFunctions(handle,functions);
 
         if (ret != TRUE)

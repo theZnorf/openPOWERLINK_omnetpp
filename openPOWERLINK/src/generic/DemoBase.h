@@ -50,6 +50,10 @@ class DemoBase : public UseApiBase
         void processAppReturn(RawMessagePtr msg);
         void processStackShutdown(RawMessagePtr msg);
 
+        // Static Methods
+    public:
+        static void dispatchProcessSync();
+
         // Member
     protected:
         OPP::cGate* mApiCallGate;

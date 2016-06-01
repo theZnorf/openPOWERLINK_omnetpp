@@ -183,3 +183,7 @@ void DemoBase::processStackShutdown(RawMessagePtr msg)
 // advance to shutting down state
 mState = DemoState::shuttingDown;
 }
+
+void DemoBase::dispatchProcessSync()
+{
+}

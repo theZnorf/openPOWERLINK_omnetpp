@@ -27,13 +27,6 @@ Define_Module(Api);
 
 constexpr const char* const Api::cApiCallNames[];
 
-static interface::api::ErrorType handleSyncCb(void)
-{
-    EV << "######## Sync Cb called" << std::endl;
-
-    return interface::api::Error::kErrorOk;
-}
-
 Api::Api()
 :   SendAwaitedReturnBase("event", Api::setEventType, Api::getEventType)
 {
@@ -101,7 +94,6 @@ void Api::handleApiCall(MessagePtr msg)
                 initParam.pfnCbEvent = processEvent;
                 // set event callback user arg to this pointer
                 initParam.pEventUserArg = static_cast<void*>(this);
-                initParam.pfnCbSync = handleSyncCb;
 
                 ret = mApi.create(&initParam);
             }
@@ -668,7 +660,6 @@ void Api::handleApiCall(MessagePtr msg)
     {
         // create return message
         auto retMsg = new oplkMessages::ReturnMessage();
-        retMsg->setReturnValue(ret);
         retPtr = retMsg;
     }
 
@@ -676,6 +667,16 @@ void Api::handleApiCall(MessagePtr msg)
 
     // set name of return message
     retPtr->setName(("Return - " + recvName).c_str());
+
+    auto retMsg = dynamic_cast<oplkMessages::ReturnMessage*>(retPtr);
+    if (retMsg != nullptr)
+        retMsg->setReturnValue(ret);
+    else
+    {
+        auto retPkt = dynamic_cast<oplkMessages::ReturnPacket*>(retPtr);
+        if (retPkt != nullptr)
+            retPkt->setReturnValue(ret);
+    }
 
     // set received message kind and send message
     retPtr->setKind(msg->getKind());

@@ -70,7 +70,11 @@ void MnDemo::initPowerlink()
     // set callback functions to null for seperation of modules
     // (events will be transmmitted via messages)
     initParam.pfnCbEvent = nullptr;
-    initParam.pfnCbSync = nullptr;
+    initParam.pfnCbSync = [&]() -> interface::api::ErrorType
+    {
+
+        return interface::api::Error::kErrorOk;
+    };
 
     // initialize POWERLINK stack
     initStack();

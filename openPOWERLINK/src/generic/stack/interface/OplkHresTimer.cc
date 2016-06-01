@@ -114,6 +114,9 @@ void OplkHresTimer::setFunctions(SharedLibraryHelper::HelperPtr helper, Instance
     auto setFunctions = helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tHresTimerFunctions>(
             "sim_setHresTimerFunctions");
 
+    if (setFunctions == nullptr)
+        throw std::runtime_error("OplkHresTimer::setFunctions - unable to resolve setFunctions function");
+
     auto ret = setFunctions(handle, functions);
 
     if (ret != TRUE)

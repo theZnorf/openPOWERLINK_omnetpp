@@ -35,10 +35,13 @@ namespace interface
         // set function pointer of interface
         auto setFunctions = helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tTargetFunctions>("sim_setTargetFunctions");
 
+        if (setFunctions == nullptr)
+            throw std::runtime_error("OplkTarget::setFunctions - unable to resolve setFunctions function");
+
         auto ret = setFunctions(handle,functions);
 
         if (ret != TRUE)
-            throw std::runtime_error("OplkHresTimer::setFunctions - unable to set function pointer");
+            throw std::runtime_error("OplkTarget::setFunctions - unable to set function pointer");
     }
 
     OplkTarget& OplkTarget::getInstance()

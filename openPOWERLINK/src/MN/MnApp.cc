@@ -32,7 +32,11 @@ Define_Module(MnApp)
 
 typedef struct
 {
-        UINT leds;UINT ledsOld;UINT input;UINT inputOld;UINT period;
+        UINT leds;
+        UINT ledsOld;
+        UINT input;
+        UINT inputOld;
+        UINT period;
         int toggle;
 } APP_NODE_VAR_T;
 
