@@ -24,6 +24,7 @@ struct TimerInfo
         simtime_t time;
         Timer::ShortArgumentType shortArg;
         Timer::LongArgumentType longArg;
+        OPP::cMessage* scheduledMsg;
 };
 
 void Timer::initialize()

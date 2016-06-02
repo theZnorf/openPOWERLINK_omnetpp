@@ -22,6 +22,7 @@ simple CnDemo like IDemo
     parameters:
         double startUpDelay @unit(ns) = default(5000ms);
         double mainLoopInterval @unit(ns) = default(1ms);
+        double shutdownTime @unit(ns) = default(10s);
     gates:
         output apiCall;
         input apiReturn;

@@ -38,6 +38,7 @@ void DemoBase::initialize()
     // resovle parameters
     mStartUpDelay = simtime_t(par("startUpDelay").doubleValue(), SimTimeUnit::SIMTIME_NS);
     mMainLoopInterval = simtime_t(par("mainLoopInterval").doubleValue(), SimTimeUnit::SIMTIME_NS);
+    mShutdownTime = simtime_t(par("shutdownTime").doubleValue(), SimTimeUnit::SIMTIME_NS);
 
     // resolve gates
     mApiCallGate = gate("apiCall");
@@ -74,6 +75,12 @@ void DemoBase::handleOtherMessage(MessagePtr msg)
 
 void DemoBase::handleSelfMessage(MessagePtr msg)
 {
+    // check sim time
+    if (simTime() > mShutdownTime)
+    {
+        mState = DemoState::shuttingDown;
+    }
+
     // check current state
     switch (mState)
     {
@@ -117,21 +124,14 @@ void DemoBase::handleSelfMessage(MessagePtr msg)
             // shutdown powerlink
             shutdownPowerlink();
 
-            // shutdown app
-            send(new cMessage("shutdown app", static_cast<short>(AppBase::AppCallType::shutdown)), mAppCallGate);
-
-            // advance state
-            mState = DemoState::shuttingDownApp;
+            EV << "Stack shutdown succesfully" << endl;
+            mRunning = false;
             break;
         }
 
         case DemoState::shuttingDownApp:
-            EV << "Unexpected message (" << *msg << ") received within shuttingDownApp state" << endl;
-            break;
-
-        case DemoState::shutdown:
-            EV << "Stack shutdown succesfully" << endl;
-            mRunning = false;
+            // shutdown app
+            send(new cMessage("shutdown app", static_cast<short>(AppBase::AppCallType::shutdown)), mAppCallGate);
             break;
 
         default:
@@ -166,7 +166,7 @@ void DemoBase::processAppReturn(RawMessagePtr msg)
                 break;
             case AppBase::AppCallType::shutdown: {
                 // advance to shutdown state
-                mState = DemoState::shutdown;
+                mState = DemoState::shuttingDown;
 
                 // schedule immediate self message
                 scheduleAt(simTime(), new cMessage());
@@ -181,7 +181,7 @@ void DemoBase::processAppReturn(RawMessagePtr msg)
 void DemoBase::processStackShutdown(RawMessagePtr msg)
 {
 // advance to shutting down state
-mState = DemoState::shuttingDown;
+mState = DemoState::shuttingDownApp;
 }
 
 void DemoBase::dispatchProcessSync()

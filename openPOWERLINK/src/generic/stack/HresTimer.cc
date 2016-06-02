@@ -28,7 +28,7 @@ struct HresTimerInfo
         HresTimer::ArgumentType argument;
         bool cont;
         HresTimer::TimerEventArgs eventArgs;
-        bool expired;
+        OPP::cMessage* scheduledMsg;
 };
 
 void HresTimer::initialize()
@@ -84,6 +84,7 @@ void HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallb
         // create new handle
         info.handle = getNewHandle();
         infoPtr = &info;
+        infoPtr->scheduledMsg = nullptr;
     }
 
     // fill info
@@ -91,7 +92,6 @@ void HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallb
     infoPtr->callback = callback;
     infoPtr->argument = arg;
     infoPtr->cont = cont;
-    infoPtr->expired = false;
 
     // configure timer
     if (!configureTimer(infoPtr))
@@ -136,7 +136,7 @@ void HresTimer::handleMessage(cMessage *rawMsg)
             auto timer = getTimerInfo(timerMsg->getTimerHandle());
             if (timer != nullptr)
             {
-                timer->expired = true;
+                timer->scheduledMsg = nullptr;
 
                 // create timer event arg
                 TimerEventArgs arg;
@@ -152,7 +152,7 @@ void HresTimer::handleMessage(cMessage *rawMsg)
                     // reschedule timer
                     scheduleTimer(timer);
                 }
-                else if (timer->expired) // remove timer info when not rescheduled by callback
+                else if (timer->scheduledMsg == nullptr) // remove timer info when not rescheduled by callback
                 {
                     removeTimer(timer->handle);
 

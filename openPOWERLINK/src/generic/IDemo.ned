@@ -23,6 +23,7 @@ moduleinterface IDemo
     parameters:
         double startUpDelay @unit(ns);
         double mainLoopInterval @unit(ns);
+        double shutdownTime @unit(ns);
     gates:
         output apiCall;
         input apiReturn;

@@ -40,14 +40,16 @@ class TimerBase : public OPP::cSimpleModule
 
             msg->setName(("Timer Message: " + std::to_string(info->time.inUnit(SimTimeUnit::SIMTIME_US)) + " us").c_str());
 
+            // check if old timer message is still scheduled
+            if (info->scheduledMsg != nullptr)
+                cancelEvent(info->scheduledMsg);
+
+            // save pointer to scheduled timer message
+            info->scheduledMsg = msg;
+
             scheduleAt(simTime() + info->time, msg);
 
             simulation.setContext(oldCtx);
-        }
-
-        void scheduleTimer(TInfo info)
-        {
-            scheduleTimer(&info);
         }
 
         THandle getNewHandle()
@@ -58,10 +60,10 @@ class TimerBase : public OPP::cSimpleModule
         bool configureTimer(TInfo* info)
         {
             // create time info structure in map, or modify if alread in use
-            auto ret = mTimers.emplace(info->handle, *info);
+            mTimers.emplace(info->handle, *info);
 
             // schedule timer
-            scheduleTimer(std::get < 1 > (*std::get < 0 > (ret)));
+            scheduleTimer(&mTimers.at(info->handle));
 
             return true;
         }

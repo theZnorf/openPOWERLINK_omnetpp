@@ -30,7 +30,7 @@ class DemoBase : public UseApiBase
         enum class DemoState
             : short
             {
-                undefined, initializePowerlink, initializeApp, swReset, mainloop, shuttingDown, shuttingDownApp, shutdown
+                undefined, initializePowerlink, initializeApp, swReset, mainloop, shuttingDownApp, shuttingDown
         };
 
         // C-Tor
@@ -63,6 +63,8 @@ class DemoBase : public UseApiBase
 
         simtime_t mStartUpDelay;
         simtime_t mMainLoopInterval;
+
+        simtime_t mShutdownTime;
 
         DemoState mState;
 };
