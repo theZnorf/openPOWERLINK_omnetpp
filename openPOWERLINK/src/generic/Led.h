@@ -13,21 +13,22 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.generic.stack;
+#ifndef __OPENPOWERLINK_LED_H_
+#define __OPENPOWERLINK_LED_H_
 
+#include <omnetpp.h>
 
-simple Target
+class Led : public OPP::cSimpleModule, OPP::cListener
 {
-    parameters:
-        int numberOfInstances = default(1);
-        string libName;
-        @display("i=device/device,green;t=,r,black");
-        bool printCurrentTick = default(false);
-        bool changeParentsIcon = default(true);
-        
-        @signal[statusLed](type="bool");
-        @signal[errorLed](type="bool");
-        
-        @statistic[statusLedValues](title="Status LED values";record=count,vector;source=statusLed);
-        @statistic[errorLedValues](title="Error LED values";record=count,vector;source=errorLed);
-}
+        // Methods
+    protected:
+        virtual void initialize();
+        virtual void receiveSignal(OPP::cComponent* source, OPP::simsignal_t signalID, bool b);
+
+        // Member
+    private:
+        const char * mActiveColor;
+        const char * mInactiveColor;
+};
+
+#endif

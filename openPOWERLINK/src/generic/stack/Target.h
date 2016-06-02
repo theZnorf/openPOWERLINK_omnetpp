@@ -52,6 +52,10 @@ class Target : public OPP::cSimpleModule
         bool mErrorLed = false;
 
         bool mPrintCurrentTick;
+        bool mChangeParentsIcon;
+
+        OPP::simsignal_t mStatusLedSig;
+        OPP::simsignal_t mErrorLedSig;
 };
 
 #endif

@@ -56,7 +56,17 @@ module GenericNode
             mainLoopInterval = mainLoopInterval;
         }
         nmtState: NmtState {
-            @display("p=138,228");
+            @display("p=138,235");
+        }
+        status: Led {
+            @display("p=197,151");
+            signalName="statusLed";
+            activeColor="green";
+        }
+        error: Led {
+            @display("p=238,151");
+            signalName="errorLed";
+            activeColor="red";
         }
     connections:
         // Demo Api connection

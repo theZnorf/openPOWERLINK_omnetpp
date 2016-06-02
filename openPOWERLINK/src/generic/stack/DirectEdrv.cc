@@ -209,12 +209,12 @@ void DirectEdrv::refreshDisplay()
     if (mInitialized)
     {
         stringstream strStream;
-        strStream << "MacAddress: " << std::hex << (int) mMac[0];
+        strStream << " MacAddress: " << std::hex << (int) mMac[0];
         for (auto i = 1u; i < mMac.size(); i++)
             strStream << ":" << std::hex << (int) mMac[i];
         strStream << std::endl;
-        strStream << "Device Number: " << mHwInfo.devNum << std::endl;
-        strStream << "Device Name: " << mHwInfo.pDevName << std::endl;
+        strStream << " Device Number: " << mHwInfo.devNum << std::endl;
+        strStream << " Device Name: " << mHwInfo.pDevName << std::endl;
 
         getDisplayString().setTagArg("t", 0, strStream.str().c_str());
         getDisplayString().setTagArg("i", 1, "green");

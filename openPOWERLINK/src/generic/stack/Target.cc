@@ -37,8 +37,13 @@ void Target::initialize()
 
     refreshDisplay();
 
-    // resolver parameter
+    // resolver parameters
     mPrintCurrentTick = par("printCurrentTick");
+    mChangeParentsIcon = par("changeParentsIcon");
+
+    // register signals
+    mStatusLedSig = registerSignal("statusLed");
+    mErrorLedSig = registerSignal("errorLed");
 }
 
 void Target::handleMessage(cMessage *msg)
@@ -79,24 +84,37 @@ void Target::setLed(LedType ledType, bool ledOn)
     {
         case interface::api::LedType::kLedTypeError:
             mErrorLed = ledOn;
+            emit(mErrorLedSig, ledOn);
             break;
         case interface::api::LedType::kLedTypeStatus:
             mStatusLed = ledOn;
+            emit(mStatusLedSig, ledOn);
             break;
         default:
             error("invalid led type: %d", ledType);
             break;
-
-        refreshDisplay();
     }
+
+    refreshDisplay();
 }
 
 void Target::refreshDisplay()
 {
     std::stringstream strStream;
 
-    strStream << "StatusLed: " << (mStatusLed? "On" : "Off") << std::endl;
-    strStream << "ErrorLed: " << (mErrorLed? "On" : "Off");
+    strStream << " StatusLed: " << (mStatusLed? "On" : "Off") << std::endl;
+    strStream << " ErrorLed: " << (mErrorLed? "On" : "Off");
 
     getDisplayString().setTagArg("t",0,strStream.str().c_str());
+
+    if (mChangeParentsIcon)
+    {
+        std::stringstream iconName;
+        iconName << "plk";
+        if (mStatusLed)
+            iconName << "_status";
+        if (mErrorLed)
+            iconName << "_error";
+        getParentModule()->getDisplayString().setTagArg('i', 0, iconName.str().c_str());
+    }
 }

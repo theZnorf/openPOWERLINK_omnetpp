@@ -13,6 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
+#include <sstream>
 #include <string>
 #include "HresTimer.h"
 #include "MsgPtr.h"
@@ -165,5 +166,11 @@ void HresTimer::handleMessage(cMessage *rawMsg)
 
 void HresTimer::refreshDisplay()
 {
-    getDisplayString().setTagArg("t",0,("Timers modified: " + std::to_string(mTimers.size())).c_str());
+    std::stringstream strStream;
+    for (auto& timer : mTimers)
+    {
+        strStream << " Timer - " << timer.second.time.str() << "s " << (timer.second.cont? "":"not ") << "continuos" << std::endl;
+    }
+
+    getDisplayString().setTagArg("t",0,strStream.str().c_str());
 }

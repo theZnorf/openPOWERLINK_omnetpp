@@ -186,4 +186,6 @@ mState = DemoState::shuttingDownApp;
 
 void DemoBase::dispatchProcessSync()
 {
+    // send process sync message to app module
+
 }

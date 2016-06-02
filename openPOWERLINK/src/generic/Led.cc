@@ -13,21 +13,27 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package openpowerlink.generic.stack;
+#include "Led.h"
 
+USING_NAMESPACE
 
-simple Target
+Define_Module(Led);
+
+void Led::initialize()
 {
-    parameters:
-        int numberOfInstances = default(1);
-        string libName;
-        @display("i=device/device,green;t=,r,black");
-        bool printCurrentTick = default(false);
-        bool changeParentsIcon = default(true);
-        
-        @signal[statusLed](type="bool");
-        @signal[errorLed](type="bool");
-        
-        @statistic[statusLedValues](title="Status LED values";record=count,vector;source=statusLed);
-        @statistic[errorLedValues](title="Error LED values";record=count,vector;source=errorLed);
+    // resolve parameter
+    mActiveColor = par("activeColor");
+    mInactiveColor = par("inactiveColor");
+    const char* signalName = par("signalName");
+
+    // register listener
+    getParentModule()->subscribe(signalName, this);
+}
+
+void Led::receiveSignal(::cComponent* source, ::simsignal_t signalID, bool b)
+{
+    if (b)
+        getDisplayString().setTagArg("b", 3, mActiveColor);
+    else
+        getDisplayString().setTagArg("b", 3, mInactiveColor);
 }
