@@ -17,14 +17,22 @@
 #define __OPENPOWERLINK_MNDEMO_H_
 
 #include "DemoBase.h"
+#include <memory>
 
 class MnDemo : public DemoBase
 {
+        // Definitions
+    private:
+        using CharPtr = std::unique_ptr<char[]>;
         // Methods
     protected:
+        virtual void initialize();
         virtual void initPowerlink();
         virtual void shutdownPowerlink();
 
+        // Member
+    private:
+        CharPtr mCdcFileName;
 };
 
 #endif

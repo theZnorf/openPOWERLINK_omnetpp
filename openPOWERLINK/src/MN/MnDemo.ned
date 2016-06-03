@@ -23,6 +23,8 @@ simple MnDemo like IDemo
         double startUpDelay @unit(ns) = default(0s);
         double mainLoopInterval @unit(ns) = default(1ms);
         double shutdownTime @unit(ns) = default(10s);
+        
+        string cdcFilename = default("mnobd.cdc");
     gates:
         output apiCall;
         input apiReturn;

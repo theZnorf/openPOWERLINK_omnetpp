@@ -23,18 +23,21 @@ network singleCn
 {
     parameters:
         @display("bgb=323,249");
-        int numberOfInstances = 2;
+        int numberOfInstances = default(2);
+        string libraryPath = default("../openPOWERLINK_V2/stack/lib/linux/x86_64/");
+        string mnLibName = default("liboplkmn-sim_d");
+        string cnLibName = default("liboplkcn-sim_d");
     submodules:
         mn: MN {
             @display("p=79,114");
             numberOfInstances = numberOfInstances;
-            libName = "../openPOWERLINK_V2/stack/lib/linux/x86_64/liboplkmn-sim_d";
+            libName = libraryPath + mnLibName;
             mainLoopInterval = 10us;
         }
         cn: CN {
             @display("p=176,114");
             numberOfInstances = numberOfInstances;
-            libName = "../openPOWERLINK_V2/stack/lib/linux/x86_64/liboplkcn-sim_d";
+            libName = libraryPath + cnLibName;
             mainLoopInterval = 10us;
         }
     connections:

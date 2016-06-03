@@ -7,7 +7,5 @@
 
 MAKEMAKE=opp_makemake $(MMOPT)
 
-INET_PROJ=../inet
-
 all:
-	$(MAKEMAKE) -f --deep -O out -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/stack/include -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/stack/proj/linux/liboplkmn-sim -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/sim/include -L../inet/out/$$\(CONFIGNAME\)/src -lINET -DINET_IMPORT -KINET_PROJ=../inet
+	$(MAKEMAKE) -f --deep --make-so -O out -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/stack/include -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/stack/proj/linux/liboplkmn-sim -I/home/franz/Documents/MasterThesis/src/simulations/openPOWERLINK_omnetpp/openPOWERLINK_V2/sim/include

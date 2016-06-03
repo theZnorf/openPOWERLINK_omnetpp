@@ -1,0 +1,24 @@
+%description:
+Run the singleCn simulation and check if either nodes reach operational state
+
+%testprog: opp_run
+
+%inifile: omnetpp.ini
+[General]
+network = openpowerlink.singleCn
+debug-on-errors = true
+ned-path = .;../../../src
+tkenv-image-path = ../../../images
+
+user-interface = Cmdenv
+cmdenv-express-mode = false
+
+singleCn.libraryPath = "../../../../openPOWERLINK_V2/stack/lib/linux/x86_64/"
+singleCn.mn.demo.cdcFilename = "../../../mnobd.cdc"
+
+eventlog-recording-intervals = 1.495s..1.655s, 5.05s..7.5s, 9s..
+
+include ../../../simulations/omnetpp.ini
+
+#%contains: results/General-0.elog
+#finished

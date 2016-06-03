@@ -42,7 +42,10 @@ class TimerBase : public OPP::cSimpleModule
 
             // check if old timer message is still scheduled
             if (info->scheduledMsg != nullptr)
+            {
                 cancelEvent(info->scheduledMsg);
+                delete info->scheduledMsg;
+            }
 
             // save pointer to scheduled timer message
             info->scheduledMsg = msg;

@@ -14,15 +14,29 @@
 // 
 
 #include "MnDemo.h"
+#include <cstring>
 
 USING_NAMESPACE
 
 Define_Module(MnDemo);
 
+
+void MnDemo::initialize()
+{
+    // call base method
+    DemoBase::initialize();
+
+    // resolve parameter
+    auto cdcPar = par("cdcFilename").stringValue();
+    CharPtr cdcFile(new char[std::strlen(cdcPar)]);
+    std::strcpy(cdcFile.get(), cdcPar);
+    mCdcFileName = std::move(cdcFile);
+}
+
 void MnDemo::initPowerlink()
 {
+
     static BYTE macAddr[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-    static char cdcFile[] = "mnobd.cdc";
 
     static interface::api::ApiInitParam initParam;
     static char devName[128] = { 0 };
@@ -79,7 +93,7 @@ void MnDemo::initPowerlink()
     // initialize POWERLINK stack
     initStack();
     createStack(initParam);
-    setCdcFilename(cdcFile);
+    setCdcFilename(mCdcFileName.get());
 
     EV << "Initialization succeeded" << std::endl;
 }
