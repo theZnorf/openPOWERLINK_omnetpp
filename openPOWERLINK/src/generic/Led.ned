@@ -22,9 +22,12 @@ package openpowerlink.generic;
 simple Led
 {
     parameters:
-        string signalName;
-        string activeColor = default("green");
-        string inactiveColor = default("grey50");
+        string signalName; // Name of the signal to subscribe within scope of parent module
+        string activeColor = default("green"); // Fill color in active state
+        string inactiveColor = default("grey50"); // Fill color in inactive state
+        int diameter = default(30); // Diameter of Leds shape
+        string borderColor = default("black"); // Border color of shape
+        int borderWidth = default(1); // Borderwidth of shape
         
-        @display("b=,30,39,oval,$inactiveColor,black,1");
+        @display("b=$diameter,$diameter,oval,$inactiveColor,$borderColor,$borderWidth");
 }
