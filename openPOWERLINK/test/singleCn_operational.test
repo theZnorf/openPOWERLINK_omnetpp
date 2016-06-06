@@ -6,7 +6,7 @@ Run the singleCn simulation and check if either nodes reach operational state
 %inifile: omnetpp.ini
 [General]
 network = openpowerlink.singleCn
-debug-on-errors = true
+debug-on-errors = false
 ned-path = .;../../../src
 tkenv-image-path = ../../../images
 
@@ -16,9 +16,23 @@ cmdenv-express-mode = false
 singleCn.libraryPath = "../../../../openPOWERLINK_V2/stack/lib/linux/x86_64/"
 singleCn.mn.demo.cdcFilename = "../../../mnobd.cdc"
 
-eventlog-recording-intervals = 1.495s..1.655s, 5.05s..7.5s, 9s..
+record-eventlog = true
+singleCn.mn.event.module-eventlog-recording = true
+singleCn.cn.event.module-eventlog-recording = true
+singleCn.mn.stack.edrv.module-eventlog-recording = true
+singleCn.mn.stack.hresTimer.module-eventlog-recording = true
+singleCn.cn.stack.hresTimer.module-eventlog-recording = true
+singleCn.mn.stack.trace.module-eventlog-recording = true
+singleCn.cn.stack.trace.module-eventlog-recording = true
+singleCn.cn.stack.edrv.module-eventlog-recording = true
+#singleCn.mn.api.module-eventlog-recording = true
+#singleCn.cn.api.module-eventlog-recording = true
+**.module-eventlog-recording = false
+#**.event.module-eventlog-recording = true
 
-include ../../../simulations/omnetpp.ini
+singleCn.cn.demo.startUpDelay = 3s
+singleCn.cn.demo.shutdownTime = 5s
+singleCn.mn.demo.shutdownTime = 6s
 
 #%contains: results/General-0.elog
 #finished

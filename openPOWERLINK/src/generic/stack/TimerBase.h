@@ -40,12 +40,8 @@ class TimerBase : public OPP::cSimpleModule
 
             msg->setName(("Timer Message: " + std::to_string(info->time.inUnit(SimTimeUnit::SIMTIME_US)) + " us").c_str());
 
-            // check if old timer message is still scheduled
-            if (info->scheduledMsg != nullptr)
-            {
-                cancelEvent(info->scheduledMsg);
-                delete info->scheduledMsg;
-            }
+            // cancel and delete previous scheduled message, or do nothing when nullptr is stored
+            cancelAndDelete(info->scheduledMsg);
 
             // save pointer to scheduled timer message
             info->scheduledMsg = msg;
@@ -86,6 +82,10 @@ class TimerBase : public OPP::cSimpleModule
 
         bool removeTimer(THandle handle)
         {
+            auto info = getTimerInfo(handle);
+            if (info != nullptr)
+                cancelAndDelete(info->scheduledMsg);
+
             auto ret = mTimers.erase(handle);
             return ret == 1;
         }

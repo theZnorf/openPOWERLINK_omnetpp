@@ -180,8 +180,8 @@ void DemoBase::processAppReturn(RawMessagePtr msg)
 
 void DemoBase::processStackShutdown(RawMessagePtr msg)
 {
-// advance to shutting down state
-mState = DemoState::shuttingDownApp;
+    // advance to shutting down state
+    mState = DemoState::shuttingDownApp;
 }
 
 void DemoBase::dispatchProcessSync()

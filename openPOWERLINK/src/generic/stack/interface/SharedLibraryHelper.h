@@ -176,7 +176,7 @@ namespace interface
 
             // Member
         private:
-            std::string const & cLibName;
+            std::string const cLibName;
             InstanceType mInstanceId;
             InstanceType const cMaxInstanceId;
             LibraryHandle mLibHandle;

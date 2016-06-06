@@ -8,6 +8,7 @@
 #ifndef SENDAWAITEDRETURNBASE_H_
 #define SENDAWAITEDRETURNBASE_H_
 
+#include <exception>
 #include <string>
 #include <functional>
 #include <memory>
@@ -30,13 +31,14 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
         // C-Tor
     protected:
         SendAwaitedReturnBase(std::string const & sendGateName, ApplyKindFunc applyKind, GetKind getKind) :
-                cSimpleModule(512), mSendGateName(sendGateName), mApplyKind(applyKind), mGetKind(getKind)
+                cSimpleModule(16000), mSendGateName(sendGateName), mApplyKind(applyKind), mGetKind(getKind)
         {
         }
 
-    public:
         virtual ~SendAwaitedReturnBase()
-        {}
+        {
+
+        }
 
         // Methods
     protected:

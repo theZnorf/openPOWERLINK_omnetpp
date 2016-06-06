@@ -29,7 +29,7 @@ struct HresTimerInfo
         HresTimer::ArgumentType argument;
         bool cont;
         HresTimer::TimerEventArgs eventArgs;
-        OPP::cMessage* scheduledMsg;
+        OPP::cMessage* scheduledMsg = nullptr;
 };
 
 void HresTimer::initialize()
@@ -51,19 +51,24 @@ void HresTimer::initialize()
     }
 }
 
-
 void HresTimer::initTimer()
 {
     bubble("HresTimer initialized");
-    getDisplayString().setTagArg("i",1,"green");
+    getDisplayString().setTagArg("i", 1, "green");
     refreshDisplay();
 }
 
 void HresTimer::exitTimer()
 {
     bubble("HresTimer exited");
-    getDisplayString().setTagArg("i",1,"red");
-    getDisplayString().setTagArg("t",0,"");
+    getDisplayString().setTagArg("i", 1, "red");
+    getDisplayString().setTagArg("t", 0, "");
+
+    // cancel all remaining timer messages
+    for (auto & info : mTimers)
+    {
+        cancelAndDelete(info.second.scheduledMsg);
+    }
 }
 
 void HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallback callback, ArgumentType arg,
@@ -147,17 +152,22 @@ void HresTimer::handleMessage(cMessage *rawMsg)
                 // call callback
                 timer->callback(&arg);
 
-                // check if continous timer
-                if (timer->cont)
+                // check if timer info still exists
+                timer = getTimerInfo(timerMsg->getTimerHandle());
+                if (timer != nullptr)
                 {
-                    // reschedule timer
-                    scheduleTimer(timer);
-                }
-                else if (timer->scheduledMsg == nullptr) // remove timer info when not rescheduled by callback
-                {
-                    removeTimer(timer->handle);
+                    // check if continous timer
+                    if (timer->cont)
+                    {
+                        // reschedule timer
+                        scheduleTimer(timer);
+                    }
+                    else if (timer->scheduledMsg == nullptr) // remove timer info when not rescheduled by callback
+                    {
+                        removeTimer(timer->handle);
 
-                    refreshDisplay();
+                        refreshDisplay();
+                    }
                 }
             }
         }
@@ -169,8 +179,9 @@ void HresTimer::refreshDisplay()
     std::stringstream strStream;
     for (auto& timer : mTimers)
     {
-        strStream << " Timer - " << timer.second.time.str() << "s " << (timer.second.cont? "":"not ") << "continuos" << std::endl;
+        strStream << " Timer - " << timer.second.time.str() << "s " << (timer.second.cont ? "" : "not ") << "continuos"
+                << std::endl;
     }
 
-    getDisplayString().setTagArg("t",0,strStream.str().c_str());
+    getDisplayString().setTagArg("t", 0, strStream.str().c_str());
 }
