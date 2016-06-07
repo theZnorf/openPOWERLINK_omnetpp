@@ -19,42 +19,18 @@
 #include "InitMessage_m.h"
 #include "OplkException.h"
 
-#include "xap.h"
 
 USING_NAMESPACE
 
 Define_Module(MnApp)
 
-#define DEFAULT_MAX_CYCLE_COUNT 20      // 6 is very fast
-#define APP_LED_COUNT_1         8       // number of LEDs for CN1
-#define APP_LED_MASK_1          (1 << (APP_LED_COUNT_1 - 1))
-#define MAX_NODES               255
-
-typedef struct
-{
-        UINT leds;
-        UINT ledsOld;
-        UINT input;
-        UINT inputOld;
-        UINT period;
-        int toggle;
-} APP_NODE_VAR_T;
-
-static int usedNodeIds_l[] = { 1, 32, 110, 0 };
-static UINT cnt_l;
-static APP_NODE_VAR_T nodeVar_l[MAX_NODES];
-static PI_IN* pProcessImageIn_l;
-static PI_OUT* pProcessImageOut_l;
 
 MnApp::MnApp()
 {
-    // TODO Auto-generated constructor stub
-
 }
 
 MnApp::~MnApp()
 {
-    // TODO Auto-generated destructor stub
 }
 
 interface::api::ErrorType MnApp::initApp()
@@ -62,18 +38,16 @@ interface::api::ErrorType MnApp::initApp()
     interface::api::ErrorType ret = interface::api::Error::kErrorOk;
     try
     {
-        int i;
+        mCnt = 0;
 
-        cnt_l = 0;
-
-        for (i = 0; (i < MAX_NODES) && (usedNodeIds_l[i] != 0); i++)
+        for (auto i = 0u; (i < cMaxNodes) && (mUsedNodeIds[i] != 0); i++)
         {
-            nodeVar_l[i].leds = 0;
-            nodeVar_l[i].ledsOld = 0;
-            nodeVar_l[i].input = 0;
-            nodeVar_l[i].inputOld = 0;
-            nodeVar_l[i].toggle = 0;
-            nodeVar_l[i].period = 0;
+            mNodeVar[i].leds = 0;
+            mNodeVar[i].ledsOld = 0;
+            mNodeVar[i].input = 0;
+            mNodeVar[i].inputOld = 0;
+            mNodeVar[i].toggle = 0;
+            mNodeVar[i].period = 0;
         }
 
         EV << "Initializing process image..." << std::endl;
@@ -82,10 +56,10 @@ interface::api::ErrorType MnApp::initApp()
 
         allocProcessImage(sizeof(PI_IN), sizeof(PI_OUT));
 
-        pProcessImageIn_l = (PI_IN*) getProcessImageIn();
-        pProcessImageOut_l = (PI_OUT*) getProcessImageOut();
+        mProcessImageIn = (PI_IN*) getProcessImageIn();
+        mProcessImageOut = (PI_OUT*) getProcessImageOut();
 
-        if ((pProcessImageIn_l == nullptr) || (pProcessImageOut_l == nullptr))
+        if ((mProcessImageIn == nullptr) || (mProcessImageOut == nullptr))
             throw interface::OplkException("Invalid process image returned", interface::api::Error::kErrorNoResource);
 
         setupProcessImage();
@@ -109,59 +83,59 @@ interface::api::ErrorType MnApp::processSync()
 
         exchangeProcessImageOut();
 
-        cnt_l++;
+        mCnt++;
 
-        nodeVar_l[0].input = pProcessImageOut_l->CN1_M00_DigitalInput_00h_AU8_DigitalInput;
-        nodeVar_l[1].input = pProcessImageOut_l->CN32_M00_DigitalInput_00h_AU8_DigitalInput;
-        nodeVar_l[2].input = pProcessImageOut_l->CN110_M00_DigitalInput_00h_AU8_DigitalInput;
+        mNodeVar[0].input = mProcessImageOut->CN1_M00_DigitalInput_00h_AU8_DigitalInput;
+        mNodeVar[1].input = mProcessImageOut->CN32_M00_DigitalInput_00h_AU8_DigitalInput;
+        mNodeVar[2].input = mProcessImageOut->CN110_M00_DigitalInput_00h_AU8_DigitalInput;
 
-        for (auto i = 0u; (i < MAX_NODES) && (usedNodeIds_l[i] != 0); i++)
+        for (auto i = 0u; (i < cMaxNodes) && (mUsedNodeIds[i] != 0); i++)
         {
             /* Running LEDs */
             /* period for LED flashing determined by inputs */
-            nodeVar_l[i].period = (nodeVar_l[i].input == 0) ? 1 : (nodeVar_l[i].input * 20);
-            if (cnt_l % nodeVar_l[i].period == 0)
+            mNodeVar[i].period = (mNodeVar[i].input == 0) ? 1 : (mNodeVar[i].input * 20);
+            if (mCnt % mNodeVar[i].period == 0)
             {
-                if (nodeVar_l[i].leds == 0x00)
+                if (mNodeVar[i].leds == 0x00)
                 {
-                    nodeVar_l[i].leds = 0x1;
-                    nodeVar_l[i].toggle = 1;
+                    mNodeVar[i].leds = 0x1;
+                    mNodeVar[i].toggle = 1;
                 }
                 else
                 {
-                    if (nodeVar_l[i].toggle)
+                    if (mNodeVar[i].toggle)
                     {
-                        nodeVar_l[i].leds <<= 1;
-                        if (nodeVar_l[i].leds == APP_LED_MASK_1)
+                        mNodeVar[i].leds <<= 1;
+                        if (mNodeVar[i].leds == cAppLedMask)
                         {
-                            nodeVar_l[i].toggle = 0;
+                            mNodeVar[i].toggle = 0;
                         }
                     }
                     else
                     {
-                        nodeVar_l[i].leds >>= 1;
-                        if (nodeVar_l[i].leds == 0x01)
+                        mNodeVar[i].leds >>= 1;
+                        if (mNodeVar[i].leds == 0x01)
                         {
-                            nodeVar_l[i].toggle = 1;
+                            mNodeVar[i].toggle = 1;
                         }
                     }
                 }
             }
 
-            if (nodeVar_l[i].input != nodeVar_l[i].inputOld)
+            if (mNodeVar[i].input != mNodeVar[i].inputOld)
             {
-                nodeVar_l[i].inputOld = nodeVar_l[i].input;
+                mNodeVar[i].inputOld = mNodeVar[i].input;
             }
 
-            if (nodeVar_l[i].leds != nodeVar_l[i].ledsOld)
+            if (mNodeVar[i].leds != mNodeVar[i].ledsOld)
             {
-                nodeVar_l[i].ledsOld = nodeVar_l[i].leds;
+                mNodeVar[i].ledsOld = mNodeVar[i].leds;
             }
         }
 
-        pProcessImageIn_l->CN1_M00_DigitalOutput_00h_AU8_DigitalOutput = nodeVar_l[0].leds;
-        pProcessImageIn_l->CN32_M00_DigitalOutput_00h_AU8_DigitalOutput = nodeVar_l[1].leds;
-        pProcessImageIn_l->CN110_M00_DigitalOutput_00h_AU8_DigitalOutput = nodeVar_l[2].leds;
+        mProcessImageIn->CN1_M00_DigitalOutput_00h_AU8_DigitalOutput = mNodeVar[0].leds;
+        mProcessImageIn->CN32_M00_DigitalOutput_00h_AU8_DigitalOutput = mNodeVar[1].leds;
+        mProcessImageIn->CN110_M00_DigitalOutput_00h_AU8_DigitalOutput = mNodeVar[2].leds;
 
         exchangeProcessImageIn();
     }

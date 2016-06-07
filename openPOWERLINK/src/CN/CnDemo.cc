@@ -72,9 +72,14 @@ void CnDemo::initPowerlink()
     initParam.syncNodeId = C_ADR_SYNC_ON_SOA;
     initParam.fSyncOnPrcNode = FALSE;
 
-    // set callback functions
+    // set callback function
     initParam.pfnCbEvent = nullptr;
-    initParam.pfnCbSync = nullptr;
+    initParam.pfnCbSync = (unsigned int(*)(void))([]() -> interface::api::ErrorType
+            {
+                std::cout << "Process Sync CN called" << std::endl;
+
+                return 0;
+            });
 
     // initialize POWERLINK stack
     initStack();

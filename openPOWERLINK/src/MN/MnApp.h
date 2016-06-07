@@ -17,9 +17,28 @@
 #define MNAPP_H_
 
 #include <AppBase.h>
+#include "xap.h"
 
 class MnApp : public AppBase
 {
+        // Definitions
+    private:
+        static constexpr size_t cDefaultMaxCycleCount = 20;
+        static constexpr size_t cAppLedCount = 8;
+        static constexpr unsigned int cAppLedMask = (1 << (cAppLedCount - 1));
+        static constexpr size_t cMaxNodes = 255;
+        static constexpr size_t cUsedNodes = 4;
+
+    struct AppNodeVar
+    {
+            UINT leds;
+            UINT ledsOld;
+            UINT input;
+            UINT inputOld;
+            UINT period;
+            int toggle;
+    };
+
         // C-Tor / D-Tor
     public:
         MnApp();
@@ -30,6 +49,15 @@ class MnApp : public AppBase
         virtual interface::api::ErrorType initApp();
         virtual interface::api::ErrorType processSync();
         virtual void shutdownApp();
+
+        // Member
+    private:
+
+        int mUsedNodeIds[cUsedNodes] = { 1, 32, 110, 0 };
+        unsigned int mCnt;
+        AppNodeVar mNodeVar[cMaxNodes];
+        PI_IN* mProcessImageIn;
+        PI_OUT* mProcessImageOut;
 
 };
 

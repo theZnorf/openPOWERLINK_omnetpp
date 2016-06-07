@@ -11,13 +11,19 @@
 #include <functional>
 #include "OplkBase.h"
 #include "ApiDef.h"
+#include "OplkException.h"
+
+// forward declarations
+class Api;
 
 namespace interface
 {
-    class OplkApi : public OplkBase<api::ApiFunctions*>
+    class OplkApi : public OplkBase<Api*>
     {
             // Definitions
         public:
+            using ApiEventType = api::ApiEventType;
+            using ApiEventArg = api::ApiEventArg;
 
             // C-Tor / D-Tor
         private:
@@ -32,6 +38,9 @@ namespace interface
             // Static Methods
         public:
             static OplkApi & getInstance();
+
+            static ErrorType processSyncCb(InstanceHandle handle);
+            static ErrorType eventCb(InstanceHandle handle, ApiEventType eventType, ApiEventArg* eventArg, void* userArg);
     };
 
 } /* namespace interface */

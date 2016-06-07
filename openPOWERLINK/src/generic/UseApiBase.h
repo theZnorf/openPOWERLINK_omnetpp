@@ -87,7 +87,6 @@ class UseApiBase : public SendAwaitedReturnBase<Api::ApiCallType>
         // Member
     private:
         std::string mSendGateName;
-        OPP::cGate* mSendGate;
 };
 
 #endif /* USEAPIBASE_H_ */

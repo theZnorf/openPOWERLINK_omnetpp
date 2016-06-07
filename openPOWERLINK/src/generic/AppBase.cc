@@ -43,23 +43,28 @@ void AppBase::handleOtherMessage(MessagePtr msg)
         auto ret = -1;
 
         // check message kind
-        switch (static_cast<AppCallType>(msg->getKind()))
+        switch (static_cast<AppBaseCallType>(msg->getKind()))
         {
-            case AppCallType::init:
+            case AppBaseCallType::init:
                 ret = this->initApp();
                 break;
-            case AppCallType::processSync:
+            case AppBaseCallType::processSync:
                 ret = this->processSync();
                 break;
-            case AppCallType::shutdown:
+            case AppBaseCallType::shutdown:
                 this->shutdownApp();
                 break;
             default:
-                error("unknown message kind %d", msg->getKind());
+                handleAppMessage(msg);
         }
 
         // check if return value was set
         if (ret != -1)
             mRet->sendReturnValue(ret, msg->getKind());
     }
+}
+
+void AppBase::handleAppMessage(MessagePtr msg)
+{
+    // Empty function stub within base class
 }

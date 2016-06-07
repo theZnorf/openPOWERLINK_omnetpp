@@ -24,10 +24,10 @@ class AppBase : public UseApiBase
 {
         // Definitions
     public:
-        enum class AppCallType
+        enum class AppBaseCallType
             : short
             {
-                init, shutdown, processSync
+                init = 0, shutdown, processSync
         };
 
         // C-Tor
@@ -42,6 +42,8 @@ class AppBase : public UseApiBase
         virtual interface::api::ErrorType initApp() = 0;
         virtual interface::api::ErrorType processSync() = 0;
         virtual void shutdownApp() = 0;
+
+        virtual void handleAppMessage(MessagePtr msg);
 
         // Member
     private:

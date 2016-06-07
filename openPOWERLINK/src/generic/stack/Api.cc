@@ -20,6 +20,8 @@
 #include "MsgPtr.h"
 #include "ApiMessages.h"
 #include "debugstr.h"
+#include "AppBase.h"
+#include "OplkException.h"
 
 using namespace std;
 USING_NAMESPACE
@@ -28,7 +30,7 @@ Define_Module(Api);
 constexpr const char* const Api::cApiCallNames[];
 
 Api::Api()
-:   SendAwaitedReturnBase("event", Api::setEventType, Api::getEventType)
+:   SendAwaitedReturnBase("event", Api::setEventType, Api::getEventType), mReturnGate(nullptr), mEventGate(nullptr)
 {
 }
 
@@ -36,18 +38,17 @@ void Api::initialize()
 {
     SendAwaitedReturnBase::initialize();
 
-    interface::api::ApiFunctions & functions = mApi;
-
     // resolve library info parameter
     std::string libName = par("libName");
     interface::OplkApi::Instance numberOfInstances = par("numberOfInstances");
 
     // init stub
     interface::OplkApi::setLibraryInfo(libName, numberOfInstances);
-    interface::OplkApi::getInstance().initModule(&functions);
+    interface::OplkApi::getInstance().initModule(this);
 
     // resolve return gates
     mEventGate = gate("event");
+    mAppGate = gate("app");
 
     for (auto i = 0; i < gateSize("functionCallReturn"); i++)
         mReturnGates.push_back(gate("functionCallReturn", i));
@@ -56,19 +57,20 @@ void Api::initialize()
     mInvokedApiFunctionSignal = registerSignal("invokedFunctionType");
 
     // init dispatcher
-    //mDispatcher.registerFunction(gate("functionCall"), std::bind(&Api::handleApiCall, this, std::placeholders::_1));
+    mDispatcher.registerFunction(gate("functionCall"), std::bind(&Api::handleApiCall, this, std::placeholders::_1));
+    mDispatcher.registerFunction(gate("appReturn"), std::bind(&Api::handleAppReturn, this, std::placeholders::_1));
 }
 
 void Api::handleOtherMessage(MessagePtr msg)
 {
     if (msg != nullptr)
     {
-        handleApiCall(msg);
-        //mDispatcher.dispatch(msg.get());
+        //handleApiCall(msg);
+        mDispatcher.dispatch(msg.get());
     }
 }
 
-void Api::handleApiCall(MessagePtr msg)
+void Api::handleApiCall(RawMessagePtr msg)
 {
     interface::api::ErrorType ret = interface::api::Error::kErrorInvalidOperation;
     cMessage* retPtr = nullptr;
@@ -84,17 +86,11 @@ void Api::handleApiCall(MessagePtr msg)
             break;
         case ApiCallType::create: {
             // cast message
-            auto initMsg = dynamic_cast<oplkMessages::InitMessage*>(msg.get());
+            auto initMsg = dynamic_cast<oplkMessages::InitMessage*>(msg);
 
             if (initMsg != nullptr)
             {
                 auto initParam = initMsg->getInitParam();
-
-                // set event callback to static method
-                initParam.pfnCbEvent = processEvent;
-                // set event callback user arg to this pointer
-                initParam.pEventUserArg = static_cast<void*>(this);
-
                 ret = mApi.create(&initParam);
             }
             break;
@@ -107,7 +103,7 @@ void Api::handleApiCall(MessagePtr msg)
             break;
         case ApiCallType::execNmtCommand: {
             // cast message
-            auto nmtMsg = dynamic_cast<oplkMessages::NmtMessage*>(msg.get());
+            auto nmtMsg = dynamic_cast<oplkMessages::NmtMessage*>(msg);
 
             if (nmtMsg != nullptr)
                 ret = mApi.execNmtCommand(nmtMsg->getNmtEvent());
@@ -115,7 +111,7 @@ void Api::handleApiCall(MessagePtr msg)
             break;
         case ApiCallType::cbGenericObdAccess: {
             // cast message
-            auto obdMessage = dynamic_cast<oplkMessages::ObdCbMessage*>(msg.get());
+            auto obdMessage = dynamic_cast<oplkMessages::ObdCbMessage*>(msg);
 
             if (obdMessage != nullptr)
                 ret = mApi.cbGenericObdAccess(&obdMessage->getObdCbParam());
@@ -123,7 +119,7 @@ void Api::handleApiCall(MessagePtr msg)
             break;
         case ApiCallType::linkObject: {
             // cast message
-            auto linkMsg = dynamic_cast<oplkMessages::LinkMessage*>(msg.get());
+            auto linkMsg = dynamic_cast<oplkMessages::LinkMessage*>(msg);
 
             if (linkMsg != nullptr)
             {
@@ -142,7 +138,7 @@ void Api::handleApiCall(MessagePtr msg)
             break;
         case ApiCallType::readObject: {
             // cast message
-            auto objMsg = dynamic_cast<oplkMessages::ObjectMessage*>(msg.get());
+            auto objMsg = dynamic_cast<oplkMessages::ObjectMessage*>(msg);
 
             if (objMsg != nullptr)
             {
@@ -174,7 +170,7 @@ void Api::handleApiCall(MessagePtr msg)
             break;
         case ApiCallType::writeObject: {
             // cast message
-            auto objMsg = dynamic_cast<oplkMessages::ObjectMessage*>(msg.get());
+            auto objMsg = dynamic_cast<oplkMessages::ObjectMessage*>(msg);
 
             if (objMsg != nullptr)
             {
@@ -204,7 +200,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::finishUserObdAccess: {
             // cast message
-            auto connMsg = dynamic_cast<oplkMessages::ObdAlConnectionMessage*>(msg.get());
+            auto connMsg = dynamic_cast<oplkMessages::ObdAlConnectionMessage*>(msg);
 
             if (connMsg != nullptr)
             {
@@ -236,7 +232,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::enableUserObdAccess: {
             // cast message
-            auto enableMsg = dynamic_cast<oplkMessages::BoolMessage*>(msg.get());
+            auto enableMsg = dynamic_cast<oplkMessages::BoolMessage*>(msg);
 
             if (enableMsg != nullptr)
             {
@@ -246,7 +242,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::freeSdoChannel: {
             // cast message
-            auto sdoMsg = dynamic_cast<oplkMessages::SdoMessage*>(msg.get());
+            auto sdoMsg = dynamic_cast<oplkMessages::SdoMessage*>(msg);
 
             if (sdoMsg != nullptr)
             {
@@ -256,7 +252,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::abortSdoChannel: {
             // cast message
-            auto sdoMsg = dynamic_cast<oplkMessages::SdoMessage*>(msg.get());
+            auto sdoMsg = dynamic_cast<oplkMessages::SdoMessage*>(msg);
 
             if (sdoMsg != nullptr)
             {
@@ -266,7 +262,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::readLocalObject: {
             // cast message
-            auto objMsg = dynamic_cast<oplkMessages::LocalObjectMessage*>(msg.get());
+            auto objMsg = dynamic_cast<oplkMessages::LocalObjectMessage*>(msg);
 
             if (objMsg != nullptr)
             {
@@ -291,7 +287,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::writeLocalObject: {
             // cast message
-            auto objMsg = dynamic_cast<oplkMessages::LocalObjectMessage*>(msg.get());
+            auto objMsg = dynamic_cast<oplkMessages::LocalObjectMessage*>(msg);
 
             if (objMsg != nullptr)
             {
@@ -319,7 +315,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::sendAsndFrame: {
             // cast message
-            auto framePkt = dynamic_cast<oplkMessages::SendAsndFramePacket*>(msg.get());
+            auto framePkt = dynamic_cast<oplkMessages::SendAsndFramePacket*>(msg);
 
             if (framePkt != nullptr)
             {
@@ -340,7 +336,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::sendEthFrame: {
             // cast message
-            auto plkPkt = dynamic_cast<oplkMessages::SendPlkPacket*>(msg.get());
+            auto plkPkt = dynamic_cast<oplkMessages::SendPlkPacket*>(msg);
 
             if (plkPkt != nullptr)
             {
@@ -374,7 +370,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::setAsndForward: {
             // cast message
-            auto filterMsg = dynamic_cast<oplkMessages::AsndFilterMessage*>(msg.get());
+            auto filterMsg = dynamic_cast<oplkMessages::AsndFilterMessage*>(msg);
 
             if (filterMsg != nullptr)
             {
@@ -384,7 +380,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::setNonPlkForward: {
             // cast message
-            auto fwdMsg = dynamic_cast<oplkMessages::BoolMessage*>(msg.get());
+            auto fwdMsg = dynamic_cast<oplkMessages::BoolMessage*>(msg);
 
             if (fwdMsg != nullptr)
             {
@@ -394,7 +390,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::postUserEvent: {
             // cast message
-            auto eventMsg = dynamic_cast<oplkMessages::PointerContMessage*>(msg.get());
+            auto eventMsg = dynamic_cast<oplkMessages::PointerContMessage*>(msg);
 
             if (eventMsg != nullptr)
             {
@@ -404,7 +400,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::triggerMnStateChange: {
             // cast message
-            auto nmtMsg = dynamic_cast<oplkMessages::NmtNodeMessage*>(msg.get());
+            auto nmtMsg = dynamic_cast<oplkMessages::NmtNodeMessage*>(msg);
 
             if (nmtMsg != nullptr)
             {
@@ -417,7 +413,7 @@ void Api::handleApiCall(MessagePtr msg)
             break;
         case ApiCallType::setOdArchivePath: {
             // cast message
-            auto archiveMsg = dynamic_cast<oplkMessages::StringMessage*>(msg.get());
+            auto archiveMsg = dynamic_cast<oplkMessages::StringMessage*>(msg);
 
             if (archiveMsg != nullptr)
             {
@@ -427,7 +423,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::setCdcFilename: {
             // cast message
-            auto cdcMsg = dynamic_cast<oplkMessages::PointerContMessage*>(msg.get());
+            auto cdcMsg = dynamic_cast<oplkMessages::PointerContMessage*>(msg);
 
             if (cdcMsg != nullptr)
             {
@@ -442,7 +438,7 @@ void Api::handleApiCall(MessagePtr msg)
             break;
         case ApiCallType::getIdentResponse: {
             // cast message
-            auto nodeMsg = dynamic_cast<oplkMessages::UintMessage*>(msg.get());
+            auto nodeMsg = dynamic_cast<oplkMessages::UintMessage*>(msg);
 
             if (nodeMsg != nullptr)
             {
@@ -516,7 +512,7 @@ void Api::handleApiCall(MessagePtr msg)
         }
         case ApiCallType::waitSyncEvent: {
             // cast message
-            auto timeoutMsg = dynamic_cast<oplkMessages::UlongMessage*>(msg.get());
+            auto timeoutMsg = dynamic_cast<oplkMessages::UlongMessage*>(msg);
 
             if (timeoutMsg != nullptr)
             {
@@ -582,7 +578,7 @@ void Api::handleApiCall(MessagePtr msg)
 
         case ApiCallType::allocProcessImage: {
             // cast message
-            auto sizeMsg = dynamic_cast<oplkMessages::ProcessImageSIzeMessage*>(msg.get());
+            auto sizeMsg = dynamic_cast<oplkMessages::ProcessImageSIzeMessage*>(msg);
 
             if (sizeMsg != nullptr)
             {
@@ -595,7 +591,7 @@ void Api::handleApiCall(MessagePtr msg)
             break;
         case ApiCallType::linkProcessImageObject: {
             // cast message
-            auto linkMsg = dynamic_cast<oplkMessages::LinkProcessImageMessage*>(msg.get());
+            auto linkMsg = dynamic_cast<oplkMessages::LinkProcessImageMessage*>(msg);
 
             if (linkMsg != nullptr)
             {
@@ -641,7 +637,7 @@ void Api::handleApiCall(MessagePtr msg)
 
         case ApiCallType::triggerPresForward: {
             // cast message
-            auto nodeMsg = dynamic_cast<oplkMessages::UintMessage*>(msg.get());
+            auto nodeMsg = dynamic_cast<oplkMessages::UintMessage*>(msg);
 
             if (nodeMsg != nullptr)
             {
@@ -683,56 +679,20 @@ void Api::handleApiCall(MessagePtr msg)
     sendReturnMessage(retPtr, msg->getArrivalGate()->getIndex());
 }
 
-interface::api::ErrorType Api::processEvent(interface::api::ApiEventType eventType_p,
-        interface::api::ApiEventArg* pEventArg_p)
+
+void Api::handleAppReturn(RawMessagePtr msg)
 {
-    // apply event filer
-    //if (eventType_p == interface::api::ApiEvent::kOplkApiEventObdAccess)
-    //    return interface::api::Error::kErrorOk;
-
-    if (eventType_p == interface::api::ApiEvent::kOplkApiEventCriticalError)
-        EV << "Critical error occured" << endl;
-
-    if (eventType_p == interface::api::ApiEvent::kOplkApiEventNmtStateChange)
-    {
-        EV << "State change occurred" << endl;
-    }
-
-    // create event message
-    auto eventMsg = new oplkMessages::EventMessage();
-    eventMsg->setName(("event - " + std::string(interface::debug::getApiEventStr(eventType_p))).c_str());
-    eventMsg->setEventArg(*pEventArg_p);
-
-    // send message with awaited return
-    sendAwaitedMessage(eventMsg, eventType_p);
-
-    // wait for the reception of the according return value
-    auto msg = waitForReturnMessage(eventType_p);
-
-    // cast message
-    auto retMsg = dynamic_cast<oplkMessages::EventReturnMessage*>(msg.get());
-
-    if (retMsg != nullptr)
-    {
-        return retMsg->getReturnValue();
-    }
-
-    return interface::api::Error::kErrorGeneralError;
-}
-
-interface::api::ErrorType Api::processEvent(interface::api::ApiEventType eventType_p,
-        interface::api::ApiEventArg* pEventArg_p, void* pUserArg_p)
-{
-    // cast user arg
-    auto api = reinterpret_cast<Api*>(pUserArg_p);
-
-    // call api method
-    return api->processEvent(eventType_p, pEventArg_p);
+    //TODO: implemten return value setting
 }
 
 void Api::sendReturnMessage(cMessage* msg, size_t gateIdx)
 {
     send(msg, mReturnGates.at(gateIdx));
+}
+
+interface::api::ApiFunctions* Api::getApiFunctions()
+{
+    return &mApi;
 }
 
 const char* Api::getApiCallString(ApiCallType type)
@@ -765,4 +725,56 @@ Api::Kind Api::getEventType(RawMessagePtr msg)
         return eventMsg->getEventType();
     }
     return -1;
+}
+
+void Api::processSyncCb()
+{
+    // create message for process sync
+    auto processSyncMsg = new cMessage("process sync", static_cast<short>(AppBase::AppBaseCallType::processSync));
+
+    // reset flag
+    mProcessSyncInfo.received = false;
+
+    // send message
+    send(processSyncMsg, mAppGate);
+
+    // wait for return message
+    while(!mProcessSyncInfo.received)
+        receiveMessage();
+
+    // reset flag
+    mProcessSyncInfo.received = false;
+
+    // throw exception when not ok
+    if (mProcessSyncInfo.returnValue != interface::api::Error::kErrorOk)
+        throw interface::OplkException("Process sync error", mProcessSyncInfo.returnValue);
+}
+
+void Api::eventCb(interface::api::ApiEventType eventType, interface::api::ApiEventArg* eventArg, void* userArg)
+{
+    if (eventType == interface::api::ApiEvent::kOplkApiEventCriticalError)
+        EV << "Critical error occured" << endl;
+
+    if (eventType == interface::api::ApiEvent::kOplkApiEventNmtStateChange)
+    {
+        EV << "State change occurred" << endl;
+    }
+
+    // create event message
+    auto eventMsg = new oplkMessages::EventMessage();
+    eventMsg->setName(("event - " + std::string(interface::debug::getApiEventStr(eventType))).c_str());
+    eventMsg->setEventArg(*eventArg);
+    //TODO: add user arg
+
+    // send message with awaited return
+    sendAwaitedMessage(eventMsg, eventType);
+
+    // wait for the reception of the according return value
+    auto msg = waitForReturnMessage(eventType);
+
+    // cast message
+    auto retMsg = dynamic_cast<oplkMessages::EventReturnMessage*>(msg.get());
+
+    if ((retMsg != nullptr) && (retMsg->getReturnValue() != interface::api::Error::kErrorOk))
+        throw interface::OplkException("EventCb return value", retMsg->getReturnValue());
 }

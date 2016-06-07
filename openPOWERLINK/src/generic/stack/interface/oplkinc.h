@@ -54,10 +54,10 @@ BEGIN_OPLK
 
     extern "C"
     {
-#include <sim.h>
 #include <oplk/oplkinc.h>
 #include <oplk/oplk.h>
 #include <oplk/sdo.h>
+#include <sim.h>
     }
 
     using ErrorType = tOplkError;

@@ -21,26 +21,6 @@ using namespace std;
 
 Define_Module(CnApp);
 
-/* structure for input process image */
-typedef struct
-{
-   BYTE    digitalIn;
-} PI_IN;
-
-/* structure for output process image */
-typedef struct
-{
-   BYTE    digitalOut;
-} PI_OUT;
-
-/* process image */
-static PI_IN*   pProcessImageIn_l;
-static PI_OUT*  pProcessImageOut_l;
-
-/* application variables */
-static BYTE    digitalIn_g;                 // 8 bit digital input
-static BYTE    digitalOut_g;                // 8 bit digital output
-
 interface::api::ErrorType CnApp::initApp()
 {
     try
@@ -51,21 +31,21 @@ interface::api::ErrorType CnApp::initApp()
 
         allocProcessImage(sizeof(PI_IN), sizeof(PI_OUT));
 
-        pProcessImageIn_l = (PI_IN*)getProcessImageIn();
-        pProcessImageOut_l = (PI_OUT*)getProcessImageOut();
+        mProcessImageIn = (PI_IN*) getProcessImageIn();
+        mProcessImageOut = (PI_OUT*) getProcessImageOut();
 
         /* link process variables used by CN to object dictionary */
-        EV <<  "Linking process image vars:" << endl;
+        EV << "Linking process image vars:" << endl;
 
-        auto obdSize = sizeof(pProcessImageIn_l->digitalIn);
+        auto obdSize = sizeof(mProcessImageIn->digitalIn);
         auto varEntries = 1u;
         linkProcessImageObject(0x6000, 0x01, offsetof(PI_IN, digitalIn),
-                                          FALSE, obdSize, &varEntries);
+        FALSE, obdSize, &varEntries);
 
-        obdSize = sizeof(pProcessImageOut_l->digitalOut);
+        obdSize = sizeof(mProcessImageOut->digitalOut);
         varEntries = 1u;
         linkProcessImageObject(0x6200, 0x01, offsetof(PI_OUT, digitalOut),
-                                          TRUE, obdSize, &varEntries);
+        TRUE, obdSize, &varEntries);
 
         EV << "Linking process vars... ok" << endl << endl;
 
@@ -86,13 +66,19 @@ interface::api::ErrorType CnApp::processSync()
         exchangeProcessImageOut();
 
         /* read input image - digital outputs */
-        digitalOut_g = pProcessImageOut_l->digitalOut;
+        mDigitalOut = mProcessImageOut->digitalOut;
 
         /* setup output image - digital inputs */
-        pProcessImageIn_l->digitalIn = digitalIn_g;
+        mProcessImageIn->digitalIn = mDigitalIn;
 
         exchangeProcessImageIn();
 
+        // create message with lower priority as defaul for achieving the execution after the response message
+        auto msg = new cMessage("refresh Cn App display", static_cast<short>(CnAppCallType::refreshDisplay));
+        msg->setSchedulingPriority(1);
+
+        // schedule self message for refreshing display
+        scheduleAt(simTime(), msg);
     }
     catch (interface::OplkException const & e)
     {
@@ -101,8 +87,30 @@ interface::api::ErrorType CnApp::processSync()
     return interface::api::Error::kErrorOk;
 }
 
+void CnApp::handleAppMessage(MessagePtr msg)
+{
+    if (msg != nullptr)
+    {
+        // check kind
+        switch (static_cast<CnAppCallType>(msg->getKind()))
+        {
+            case CnAppCallType::refreshDisplay:
+                refreshDisplay();
+                break;
+
+            default:
+                error("Invalid message type in CnApp: %d", msg->getKind());
+        }
+    }
+}
+
 void CnApp::shutdownApp()
 {
     freeProcessImage();
     EV << "Stack shutdown - free process image suceeded" << std::endl;
+}
+
+void CnApp::refreshDisplay()
+{
+    // TODO: implement display
 }

@@ -46,13 +46,11 @@ class DemoBase : public UseApiBase
         virtual void initPowerlink() = 0;
         virtual void shutdownPowerlink() = 0;
 
+        interface::api::ErrorType dispatchProcessSync();
+
     private:
         void processAppReturn(RawMessagePtr msg);
         void processStackShutdown(RawMessagePtr msg);
-
-        // Static Methods
-    public:
-        static void dispatchProcessSync();
 
         // Member
     protected:

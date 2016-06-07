@@ -78,6 +78,7 @@ void HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallb
     if (handle == nullptr)
     {
         EV << "HresTimer::modifyTimer invalid handle" << std::endl;
+        throw interface::OplkException("Invalid handle", OPLK::kErrorTimerInvalidHandle);
     }
 
     HresTimerInfo info;

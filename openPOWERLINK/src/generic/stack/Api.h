@@ -82,7 +82,6 @@ class Api : public SendAwaitedReturnBase<interface::api::ApiEventType>
             triggerPresForward
         };
 
-    private:
             using GateCont = std::vector<OPP::cGate*>;
 
         static const constexpr char* const cApiCallNames[] = { "undefined", "init", "create", "destroy", "exit",
@@ -98,31 +97,40 @@ class Api : public SendAwaitedReturnBase<interface::api::ApiEventType>
     private:
         using RawMessagePtr = MessageDispatcher::RawMessagePtr;
 
+        struct ProcessSyncInfo
+        {
+                bool received = false;
+                interface::api::ErrorType returnValue;
+        };
+
         // C-Tor
     public:
         Api();
 
+
         // Methods
     public:
-        static const char* getApiCallString(ApiCallType type);
+        void processSyncCb();
+        void eventCb(interface::api::ApiEventType eventType, interface::api::ApiEventArg* eventArg, void* userArg);
+
+        interface::api::ApiFunctions* getApiFunctions();
 
     protected:
         virtual void initialize();
         virtual void handleOtherMessage(MessagePtr msg) override;
 
     private:
-        void handleApiCall(MessagePtr msg);
-
-        interface::api::ErrorType processEvent(interface::api::ApiEventType eventType_p,
-                interface::api::ApiEventArg* pEventArg_p);
-
-        static interface::api::ErrorType processEvent(interface::api::ApiEventType eventType_p,
-                interface::api::ApiEventArg* pEventArg_p, void* pUserArg_p);
+        void handleApiCall(RawMessagePtr msg);
+        void handleAppReturn(RawMessagePtr msg);
 
         void sendReturnMessage(OPP::cMessage* msg, size_t gateIdx);
 
         static void setEventType(RawMessagePtr msg, Kind kind);
         static Kind getEventType(RawMessagePtr msg);
+
+        // Static Methods
+    public:
+        static const char* getApiCallString(ApiCallType type);
 
         // Member
     private:
@@ -130,8 +138,11 @@ class Api : public SendAwaitedReturnBase<interface::api::ApiEventType>
         interface::api::ApiFunctions mApi;
         OPP::cGate* mReturnGate;
         GateCont mReturnGates;
-        OPP::cGate* mEventGate;
         OPP::simsignal_t mInvokedApiFunctionSignal;
+        OPP::cGate* mEventGate;
+        OPP::cGate* mAppGate;
+
+        ProcessSyncInfo mProcessSyncInfo;
 };
 
 #endif

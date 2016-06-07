@@ -20,7 +20,6 @@ USING_NAMESPACE
 
 Define_Module(MnDemo);
 
-
 void MnDemo::initialize()
 {
     // call base method
@@ -81,14 +80,16 @@ void MnDemo::initPowerlink()
     initParam.syncNodeId = C_ADR_SYNC_ON_SOA;
     initParam.fSyncOnPrcNode = FALSE;
 
-    // set callback functions to null for seperation of modules
-    // (events will be transmmitted via messages)
+    // set callback function to null for seperation of modules
+    // (events will be transmmitted via messages to the EventBase module)
     initParam.pfnCbEvent = nullptr;
-    initParam.pfnCbSync = [&]() -> interface::api::ErrorType
-    {
 
-        return interface::api::Error::kErrorOk;
-    };
+    initParam.pfnCbSync = (unsigned int(*)(void))([]() -> interface::api::ErrorType
+            {
+                std::cout << "Process Sync MN called" << std::endl;
+
+                return 0;
+            });
 
     // initialize POWERLINK stack
     initStack();

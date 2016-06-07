@@ -85,9 +85,9 @@ namespace interface
             SharedLibraryHelper(SharedLibraryHelper &&) = default;
 
         private:
-            SharedLibraryHelper(std::string const & libname);
-            SharedLibraryHelper(std::string const & libname, InstanceType numberOfParallelInstances);
-            SharedLibraryHelper(std::string const & libname, InstanceType numberOfParallelInstances, InstanceType instanceId);
+            explicit SharedLibraryHelper(std::string const & libname);
+            explicit SharedLibraryHelper(std::string const & libname, InstanceType numberOfParallelInstances);
+            explicit SharedLibraryHelper(std::string const & libname, InstanceType numberOfParallelInstances, InstanceType instanceId);
 
         public:
             ~SharedLibraryHelper();

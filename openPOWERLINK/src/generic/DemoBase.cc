@@ -89,7 +89,7 @@ void DemoBase::handleSelfMessage(MessagePtr msg)
             initPowerlink();
 
             // create and send init message for app module
-            send(new cMessage("initialize app", static_cast<short>(AppBase::AppCallType::init)), mAppCallGate);
+            send(new cMessage("initialize app", static_cast<short>(AppBase::AppBaseCallType::init)), mAppCallGate);
 
             // advance to next init state
             mState = DemoState::initializeApp;
@@ -131,7 +131,7 @@ void DemoBase::handleSelfMessage(MessagePtr msg)
 
         case DemoState::shuttingDownApp:
             // shutdown app
-            send(new cMessage("shutdown app", static_cast<short>(AppBase::AppCallType::shutdown)), mAppCallGate);
+            send(new cMessage("shutdown app", static_cast<short>(AppBase::AppBaseCallType::shutdown)), mAppCallGate);
             break;
 
         default:
@@ -151,10 +151,10 @@ void DemoBase::processAppReturn(RawMessagePtr msg)
             throw interface::OplkException("Error in App call ocurred", ret);
 
         // check if initialization returned
-        auto kind = static_cast<AppBase::AppCallType>(retMsg->getKind());
+        auto kind = static_cast<AppBase::AppBaseCallType>(retMsg->getKind());
         switch (kind)
         {
-            case AppBase::AppCallType::init: {
+            case AppBase::AppBaseCallType::init: {
                 // advance to sw reset state
                 mState = DemoState::swReset;
 
@@ -162,9 +162,7 @@ void DemoBase::processAppReturn(RawMessagePtr msg)
                 scheduleAt(simTime(), new cMessage());
                 break;
             }
-            case AppBase::AppCallType::processSync:
-                break;
-            case AppBase::AppCallType::shutdown: {
+            case AppBase::AppBaseCallType::shutdown: {
                 // advance to shutdown state
                 mState = DemoState::shuttingDown;
 
@@ -182,10 +180,4 @@ void DemoBase::processStackShutdown(RawMessagePtr msg)
 {
     // advance to shutting down state
     mState = DemoState::shuttingDownApp;
-}
-
-void DemoBase::dispatchProcessSync()
-{
-    // send process sync message to app module
-
 }

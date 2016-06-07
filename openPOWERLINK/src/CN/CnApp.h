@@ -20,11 +20,46 @@
 
 class CnApp : public AppBase
 {
+        // Definitions
+    private:
+        // structure for input process image
+        struct PI_IN
+        {
+                BYTE digitalIn;
+        };
+
+        // structure for output process image
+        struct PI_OUT
+        {
+                BYTE digitalOut;
+        };
+
+        enum class CnAppCallType
+            : short
+            {
+                refreshDisplay = 10
+        };
+
         // Methods
     protected:
         virtual interface::api::ErrorType initApp();
         virtual interface::api::ErrorType processSync();
+        virtual void handleAppMessage(MessagePtr msg);
         virtual void shutdownApp();
+
+    private:
+        void refreshDisplay();
+
+        // Member
+    private:
+        // process image
+        PI_IN* mProcessImageIn;
+        PI_OUT* mProcessImageOut;
+
+        // application variables
+        BYTE mDigitalIn;   // 8 bit digital input
+        BYTE mDigitalOut;  // 8 bit digital output
+
 };
 
 #endif

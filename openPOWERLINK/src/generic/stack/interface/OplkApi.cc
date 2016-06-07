@@ -5,7 +5,8 @@
  *      Author: franz
  */
 
-#include <OplkApi.h>
+#include "OplkApi.h"
+#include "Api.h"
 
 namespace interface
 {
@@ -33,14 +34,29 @@ void interface::OplkApi::setFunctions(SharedLibraryHelper::HelperPtr helper, Ins
 {
     using namespace api;
 
+    // get setFunctions function
+    OPLK::tApiFunctions callbacks;
+    callbacks.pfnCbProcessSync = &OplkApi::processSyncCb;
+    callbacks.pfnCbEvent = &OplkApi::eventCb;
+
+    auto setFunctions = helper->getFunction<OPLK::BoolType, InstanceHandle, OPLK::tApiFunctions>("sim_setApiFunctions");
+
+    if (setFunctions == nullptr)
+        throw std::runtime_error("OplkApi::setFunctions - unable to resolve setFunctions function");
+
+    auto ret = setFunctions(handle, callbacks);
+
+    if (ret != TRUE)
+        throw std::runtime_error("OplkEdrv::setFunctions - unable to set function pointer");
+
     // set functions to api
-    auto functions = getModule(handle);
+    auto functions = getModule(handle)->getApiFunctions();
 
     // generic api functions
     functions->initialize = helper->getFunction < ErrorType > ("oplk_initialize");
     functions->create = helper->getFunction<ErrorType, ApiInitParam*>("oplk_create");
     functions->destroy = helper->getFunction < ErrorType > ("oplk_destroy");
-    functions->exit = helper->getFunction < void > ("oplk_exit");
+    functions->exit = helper->getFunction<void>("oplk_exit");
     functions->execNmtCommand = helper->getFunction<ErrorType, NmtEvent>("oplk_execNmtCommand");
     functions->cbGenericObdAccess = helper->getFunction<ErrorType, ObdCallbackParam*>("oplk_cbGenericObdAccess");
     functions->linkObject = helper->getFunction<ErrorType, UINT, void*, UINT*, ObdSize*, UINT>("oplk_linkObject");
@@ -89,4 +105,41 @@ void interface::OplkApi::setFunctions(SharedLibraryHelper::HelperPtr helper, Ins
     functions->setupProcessImage = helper->getFunction < ErrorType > ("oplk_setupProcessImage");
 
     functions->triggerPresForward = helper->getFunction<ErrorType, UINT >("oplk_triggerPresForward");
+}
+
+interface::OplkApi::ErrorType interface::OplkApi::processSyncCb(InstanceHandle handle)
+{
+    try
+    {
+        OplkApi::getInstance().getModule(handle)->processSyncCb();
+    }
+    catch (interface::OplkException const & e)
+    {
+        return e.errorNumber();
+    }
+    catch (std::exception const &)
+    {
+        return OPLK::kErrorGeneralError;
+    }
+
+    return OPLK::kErrorOk;
+}
+
+interface::OplkApi::ErrorType interface::OplkApi::eventCb(InstanceHandle handle, ApiEventType eventType, ApiEventArg* eventArg,
+        void* userArg)
+{
+    try
+    {
+        OplkApi::getInstance().getModule(handle)->eventCb(eventType, eventArg, userArg);
+    }
+    catch (interface::OplkException const & e)
+    {
+        return e.errorNumber();
+    }
+    catch (std::exception const &)
+    {
+        return OPLK::kErrorGeneralError;
+    }
+
+    return OPLK::kErrorOk;
 }
