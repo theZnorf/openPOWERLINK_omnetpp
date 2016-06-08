@@ -51,13 +51,15 @@ void Api::initialize()
     mAppGate = gate("app");
 
     for (auto i = 0; i < gateSize("functionCallReturn"); i++)
+    {
         mReturnGates.push_back(gate("functionCallReturn", i));
+        mDispatcher.registerFunction(gate("functionCall", i), std::bind(&Api::handleApiCall, this, std::placeholders::_1));
+    }
 
     // register signals
     mInvokedApiFunctionSignal = registerSignal("invokedFunctionType");
 
     // init dispatcher
-    mDispatcher.registerFunction(gate("functionCall"), std::bind(&Api::handleApiCall, this, std::placeholders::_1));
     mDispatcher.registerFunction(gate("appReturn"), std::bind(&Api::handleAppReturn, this, std::placeholders::_1));
 }
 
@@ -682,7 +684,30 @@ void Api::handleApiCall(RawMessagePtr msg)
 
 void Api::handleAppReturn(RawMessagePtr msg)
 {
-    //TODO: implemten return value setting
+    //TODO: implemtent return value setting
+    if (msg != nullptr)
+    {
+        // check type
+        switch (static_cast<AppBase::AppBaseCallType>(msg->getKind()))
+        {
+            case AppBase::AppBaseCallType::processSync: {
+                // cast message
+                auto retMsg = dynamic_cast<oplkMessages::ReturnMessage*>(msg);
+
+                if (retMsg != nullptr)
+                {
+                    // set recceiving info
+                    mProcessSyncInfo.returnValue = retMsg->getReturnValue();
+                    mProcessSyncInfo.received = true;
+                }
+
+                break;
+            }
+
+            default:
+                error("unexpected or invalid app return type: %d", msg->getKind());
+        }
+    }
 }
 
 void Api::sendReturnMessage(cMessage* msg, size_t gateIdx)
@@ -729,6 +754,13 @@ Api::Kind Api::getEventType(RawMessagePtr msg)
 
 void Api::processSyncCb()
 {
+    Enter_Method("processSyncCb");
+
+    // store old ctx
+    //auto oldCtx = simulation.getContext();
+    // set current ctx
+    //simulation.setContext(this);
+
     // create message for process sync
     auto processSyncMsg = new cMessage("process sync", static_cast<short>(AppBase::AppBaseCallType::processSync));
 
@@ -742,6 +774,9 @@ void Api::processSyncCb()
     while(!mProcessSyncInfo.received)
         receiveMessage();
 
+    // restore context
+    //simulation.setContext(oldCtx);
+
     // reset flag
     mProcessSyncInfo.received = false;
 
@@ -752,6 +787,8 @@ void Api::processSyncCb()
 
 void Api::eventCb(interface::api::ApiEventType eventType, interface::api::ApiEventArg* eventArg, void* userArg)
 {
+    //Enter_Method("eventCb");
+
     if (eventType == interface::api::ApiEvent::kOplkApiEventCriticalError)
         EV << "Critical error occured" << endl;
 

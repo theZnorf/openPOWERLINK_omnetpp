@@ -43,7 +43,6 @@ module GenericNode
             @display("p=138,151");
             libName = libName;
             numberOfInstances = numberOfInstances;
-            numberOfApiConnections = numberOfApiConnections;
         }
         event: <EventType> like IEvent {
             @display("p=217,51");
@@ -60,32 +59,32 @@ module GenericNode
         }
         status: Led {
             @display("p=197,151");
-            signalName="statusLed";
-            activeColor="green";
+            signalName = "statusLed";
+            activeColor = "green";
         }
         error: Led {
             @display("p=238,151");
-            signalName="errorLed";
-            activeColor="red";
+            signalName = "errorLed";
+            activeColor = "red";
         }
     connections:
-        // Demo Api connection
-        demo.apiCall --> stack.apiCall[0];
-        stack.apiReturn[0] --> demo.apiReturn;
-
-        // App Api connection
-        app.apiCall --> stack.apiCall[1];
-        stack.apiReturn[1] --> app.apiReturn;
-
-        // Event connection
-        stack.event --> event.event;
-        event.eventReturn --> stack.eventReturn;
         event.stackShutdown --> demo.stackShutdown;
 
-        // App - Demo connection
-        demo.appCall --> app.functionCall;
-        app.return --> demo.appReturn;
-
+        
+        demo.apiCall --> stack.apiCall++;
+        stack.apiReturn++ --> demo.apiReturn;
+        app.apiCall --> stack.apiCall++;
+        stack.apiReturn++ --> app.apiReturn;
+        
+        demo.appCall --> app.functionCall++;
+        app.functionReturn++ --> demo.appReturn;
+        stack.app --> app.functionCall++;
+        app.functionReturn++ --> stack.appReturn;
+        
+        stack.event --> event.event;
+        event.eventReturn --> stack.eventReturn;
+        
+        
         // Network connections
         ethernetIn --> stack.ethernetIn;
         stack.ethernetOut --> ethernetOut;

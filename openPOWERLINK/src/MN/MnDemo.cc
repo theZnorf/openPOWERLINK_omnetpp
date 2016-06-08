@@ -80,16 +80,9 @@ void MnDemo::initPowerlink()
     initParam.syncNodeId = C_ADR_SYNC_ON_SOA;
     initParam.fSyncOnPrcNode = FALSE;
 
-    // set callback function to null for seperation of modules
-    // (events will be transmmitted via messages to the EventBase module)
-    initParam.pfnCbEvent = nullptr;
-
-    initParam.pfnCbSync = (unsigned int(*)(void))([]() -> interface::api::ErrorType
-            {
-                std::cout << "Process Sync MN called" << std::endl;
-
-                return 0;
-            });
+    // set callback functions to null for seperation of modules
+    initParam.pfnCbEvent = nullptr; // events will be forwarded to the EventBase module
+    initParam.pfnCbSync = nullptr; // process sync calls will be forwarded to the AppBase module
 
     // initialize POWERLINK stack
     initStack();

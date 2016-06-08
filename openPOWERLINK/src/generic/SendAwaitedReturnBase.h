@@ -52,7 +52,7 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
         {
             mRunning = true;
 
-            while(mRunning)
+            while (mRunning)
             {
                 // receive message
                 receiveMessage();
@@ -67,7 +67,6 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
             if (rawMsg != nullptr)
             {
                 MessagePtr msg(rawMsg);
-
 
                 // get kind from message
                 auto kind = mGetKind(msg.get());
@@ -107,7 +106,7 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
                 return nullptr;
 
             // check if message for given kind was already received
-            while(mMsgCont[kind] == nullptr)
+            while (mMsgCont[kind] == nullptr)
                 // receive message
                 receiveMessage();
 
@@ -130,8 +129,8 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
         GetKind mGetKind;
 
     protected:
-        bool mRunning;
-        OPP::cGate* mSendGate;
+        bool mRunning;OPP
+        ::cGate* mSendGate;
         MessageCont mMsgCont;
 };
 

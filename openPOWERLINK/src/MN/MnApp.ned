@@ -20,8 +20,8 @@ import openpowerlink.generic.IApp;
 simple MnApp like IApp
 {
         gates:
-        input functionCall;
-        output return;
+        input functionCall[];
+        output functionReturn[];
         output apiCall;
         input apiReturn;
 }

@@ -17,6 +17,7 @@
 #define __OPENPOWERLINK_APPBASE_H_
 
 #include <omnetpp.h>
+#include <vector>
 #include "UseApiBase.h"
 #include "ReturnHandler.h"
 
@@ -30,6 +31,9 @@ class AppBase : public UseApiBase
                 init = 0, shutdown, processSync
         };
 
+    protected:
+        using GateCont = std::vector<OPP::cGate*>;
+        using HandlerCont = std::vector<HandlerPtr>;
         // C-Tor
     public:
             AppBase();
@@ -47,10 +51,10 @@ class AppBase : public UseApiBase
 
         // Member
     private:
-        OPP::cGate* mReturnGate;
+        GateCont mReturnGates;
 
     protected:
-        HandlerPtr mRet;
+        HandlerCont mReturns;
 };
 
 #endif

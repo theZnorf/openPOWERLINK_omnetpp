@@ -24,16 +24,14 @@ simple Api
         int numberOfInstances = default(1); // Number of Instances of Api modules, should be set by parent module/network
         string libName; // Filename of shared library, should be set by parent module/network
         
-        int numberOfFunctionalConnections = default(3); // Number of functional connections using the Api
-        
         @signal[invokedFunctionType](type="short");
         @statistic[apiFunctions](title="Invoked API functions";record=count,vector;source=invokedFunctionType);
     
     gates:
-        input functionCall[numberOfFunctionalConnections]; // Input vector for functional connections invoking the according API function
-        output functionCallReturn[numberOfFunctionalConnections]; // Return vector for return messages of invoked API functions
+        input functionCall[]; // Input vector for functional connections invoking the according API function
+        output functionCallReturn[]; // Return vector for return messages of invoked API functions
         output event; // Output gate for event messages forwarded to the event module IEvent
         input eventReturn; // Input gate for the return messages from the event module IEvent
         output app; // Output gate for process sync messaes forwarded to the app module IApp
-        input appReturn // Input gate for the return messages from the app module IApp
+        input appReturn; // Input gate for the return messages from the app module IApp
 }

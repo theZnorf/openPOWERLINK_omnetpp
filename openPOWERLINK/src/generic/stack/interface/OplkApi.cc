@@ -54,7 +54,7 @@ void interface::OplkApi::setFunctions(SharedLibraryHelper::HelperPtr helper, Ins
 
     // generic api functions
     functions->initialize = helper->getFunction < ErrorType > ("oplk_initialize");
-    functions->create = helper->getFunction<ErrorType, ApiInitParam*>("oplk_create");
+    functions->create = helper->getFunction<ErrorType, ApiInitParam*>("sim_oplkCreate");
     functions->destroy = helper->getFunction < ErrorType > ("oplk_destroy");
     functions->exit = helper->getFunction<void>("oplk_exit");
     functions->execNmtCommand = helper->getFunction<ErrorType, NmtEvent>("oplk_execNmtCommand");
