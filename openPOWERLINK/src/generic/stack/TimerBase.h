@@ -29,8 +29,25 @@ class TimerBase : public OPP::cSimpleModule
     protected:
         using TimerCont = std::map<THandle, TInfo>;
 
+    protected:
+        TimerBase()
+            : OPP::cSimpleModule(16000)
+        { }
+
         // Methods
     protected:
+        void activity()
+        {
+            while(mRunning)
+            {
+                // receive message
+                auto msg = receive();
+
+                // handle message
+                handleRawMessage(msg);
+            }
+        }
+
         void scheduleTimer(TInfo* info)
         {
             auto oldCtx = simulation.getContext();
@@ -83,12 +100,14 @@ class TimerBase : public OPP::cSimpleModule
         bool removeTimer(THandle handle)
         {
             auto info = getTimerInfo(handle);
-            if (info != nullptr)
+            if ((info != nullptr) && (info->scheduledMsg != nullptr) && (info->scheduledMsg->isSelfMessage()))
                 cancelAndDelete(info->scheduledMsg);
 
             auto ret = mTimers.erase(handle);
             return ret == 1;
         }
+
+        virtual void handleRawMessage(OPP::cMessage* msg) = 0;
 
     private:
         cMessage* createTimerMessage(THandle handle)
@@ -104,6 +123,7 @@ class TimerBase : public OPP::cSimpleModule
         TimerCont mTimers;
     private:
         THandle mNextHandle = 1234;
+        bool mRunning = false;
 };
 
 #endif /* TIMERBASE_H_ */

@@ -31,7 +31,7 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
         // C-Tor
     protected:
         SendAwaitedReturnBase(std::string const & sendGateName, ApplyKindFunc applyKind, GetKind getKind) :
-                cSimpleModule(16000), mSendGateName(sendGateName), mApplyKind(applyKind), mGetKind(getKind)
+                cSimpleModule(32000), mSendGateName(sendGateName), mApplyKind(applyKind), mGetKind(getKind)
         {
         }
 
@@ -66,19 +66,22 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
 
             if (rawMsg != nullptr)
             {
-                MessagePtr msg(rawMsg);
-
-                // get kind from message
-                auto kind = mGetKind(msg.get());
-
-                // check if kind is awaited
-                if (mMsgCont.find(kind) != mMsgCont.end())
+                if (rawMsg->getArrivalModule() == this)
                 {
-                    mMsgCont[kind] = msg;
+                    MessagePtr msg(rawMsg);
+
+                    // get kind from message
+                    auto kind = mGetKind(msg.get());
+
+                    // check if kind is awaited
+                    if (mMsgCont.find(kind) != mMsgCont.end())
+                    {
+                        mMsgCont[kind] = msg;
+                    }
+                    else
+                        // forward unexpected message
+                        handleOtherMessage(msg);
                 }
-                else
-                    // forward unexpected message
-                    handleOtherMessage(msg);
             }
         }
 

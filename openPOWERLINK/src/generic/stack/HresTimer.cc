@@ -53,6 +53,8 @@ void HresTimer::initialize()
 
 void HresTimer::initTimer()
 {
+    Enter_Method(__FUNCTION__);
+
     bubble("HresTimer initialized");
     getDisplayString().setTagArg("i", 1, "green");
     refreshDisplay();
@@ -60,6 +62,8 @@ void HresTimer::initTimer()
 
 void HresTimer::exitTimer()
 {
+    Enter_Method(__FUNCTION__);
+
     bubble("HresTimer exited");
     getDisplayString().setTagArg("i", 1, "red");
     getDisplayString().setTagArg("t", 0, "");
@@ -74,6 +78,8 @@ void HresTimer::exitTimer()
 void HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallback callback, ArgumentType arg,
         bool cont)
 {
+    Enter_Method(__FUNCTION__);
+
     // check handle
     if (handle == nullptr)
     {
@@ -116,6 +122,8 @@ void HresTimer::modifyTimer(HresTimerHandle* handle, TimeType timeNs, TimerCallb
 
 void HresTimer::deleteTimer(HresTimerHandle* handle)
 {
+    Enter_Method(__FUNCTION__);
+
     if (handle == nullptr)
     {
         EV << "HresTimer::deleteTimer invalid handle" << std::endl;
@@ -127,7 +135,8 @@ void HresTimer::deleteTimer(HresTimerHandle* handle)
     refreshDisplay();
 }
 
-void HresTimer::handleMessage(cMessage *rawMsg)
+void HresTimer::handleRawMessage(cMessage *rawMsg)
+//void HresTimer::handleMessage(cMessage *rawMsg)
 {
     MsgPtr msg(rawMsg);
 

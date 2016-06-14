@@ -684,7 +684,6 @@ void Api::handleApiCall(RawMessagePtr msg)
 
 void Api::handleAppReturn(RawMessagePtr msg)
 {
-    //TODO: implemtent return value setting
     if (msg != nullptr)
     {
         // check type
@@ -787,7 +786,7 @@ void Api::processSyncCb()
 
 void Api::eventCb(interface::api::ApiEventType eventType, interface::api::ApiEventArg* eventArg, void* userArg)
 {
-    //Enter_Method("eventCb");
+    Enter_Method("eventCb");
 
     if (eventType == interface::api::ApiEvent::kOplkApiEventCriticalError)
         EV << "Critical error occured" << endl;
