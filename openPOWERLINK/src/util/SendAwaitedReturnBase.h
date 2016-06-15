@@ -66,22 +66,19 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
 
             if (rawMsg != nullptr)
             {
-                if (rawMsg->getArrivalModule() == this)
+                MessagePtr msg(rawMsg);
+
+                // get kind from message
+                auto kind = mGetKind(msg.get());
+
+                // check if kind is awaited
+                if (mMsgCont.find(kind) != mMsgCont.end())
                 {
-                    MessagePtr msg(rawMsg);
-
-                    // get kind from message
-                    auto kind = mGetKind(msg.get());
-
-                    // check if kind is awaited
-                    if (mMsgCont.find(kind) != mMsgCont.end())
-                    {
-                        mMsgCont[kind] = msg;
-                    }
-                    else
-                        // forward unexpected message
-                        handleOtherMessage(msg);
+                    mMsgCont[kind] = msg;
                 }
+                else
+                    // forward unexpected message
+                    handleOtherMessage(msg);
             }
         }
 
