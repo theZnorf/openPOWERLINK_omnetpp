@@ -13,23 +13,15 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-cplusplus {{
-#include "stack/interface/ApiDef.h"
-#include "OplkPacking.h"
-}}
+package openpowerlink.generic.stack;
 
-class interface::api::ApiEventType extends void;
-class interface::api::ApiEventArg extends void;
-class oplkMessages::PointerCont extends void;
+simple ApiEvent
+{
+    parameters:
+        int numberOfInstances = default(1); // Number of Instances of ApiEvent modules, should be set by parent module/network
+        string libName; // Filename of shared library, should be set by parent module/network
 
-cplusplus {{
-USING_NAMESPACE
-}}
-
-namespace oplkMessages;
-
-message EventMessage {
-    interface::api::ApiEventType eventType;
-    interface::api::ApiEventArg eventArg;
-    PointerCont userArg;
+    gates:
+        output event; // Output gate for event messages forwarded to the event module IEvent
+        input eventReturn; // Input gate for the return messages from the event module IEvent
 }

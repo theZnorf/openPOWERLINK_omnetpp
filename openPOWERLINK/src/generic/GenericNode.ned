@@ -70,21 +70,24 @@ module GenericNode
     connections:
         event.stackShutdown --> demo.stackShutdown;
 
-        
+		// Api connections
         demo.apiCall --> stack.apiCall++;
         stack.apiReturn++ --> demo.apiReturn;
         app.apiCall --> stack.apiCall++;
         stack.apiReturn++ --> app.apiReturn;
         
-        demo.appCall --> app.functionCall++;
-        app.functionReturn++ --> demo.appReturn;
-        stack.app --> app.functionCall++;
-        app.functionReturn++ --> stack.appReturn;
+        // Process sync
+        stack.processSync --> app.functionCall++;
+        app.functionReturn++ --> stack.processSyncReturn;
         
+        // Event
         stack.event --> event.event;
         event.eventReturn --> stack.eventReturn;
-        
-        
+
+		// App call
+        demo.appCall --> app.functionCall++;
+        app.functionReturn++ --> demo.appReturn;
+
         // Network connections
         ethernetIn --> stack.ethernetIn;
         stack.ethernetOut --> ethernetOut;

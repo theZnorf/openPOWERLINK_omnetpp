@@ -13,9 +13,7 @@
 USING_NAMESPACE
 
 UseApiBase::UseApiBase(std::string const & sendGateName) :
-        SendAwaitedReturnBase(sendGateName, [](UseApiBase::RawMessagePtr msg, UseApiBase::Kind kind)
-        {   msg->setKind(static_cast<short>(kind));}, [](UseApiBase::RawMessagePtr msg)
-        {   return static_cast<UseApiBase::Kind>(msg->getKind());})
+        SendAwaitedReturnBase(sendGateName)
 {
 }
 

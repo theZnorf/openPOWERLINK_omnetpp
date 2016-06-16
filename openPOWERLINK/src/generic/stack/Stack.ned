@@ -25,18 +25,18 @@ module Stack
     gates:
         input apiCall[];
         output apiReturn[];
-        output app;
-        input appReturn;
+        output processSync;
+        input processSyncReturn;
         output event;
         input eventReturn;
-        
+
         input ethernetIn;
         output ethernetOut;
         input udpIn;
         output udpOut;
     submodules:
         api: Api {
-            @display("p=119,46");
+            @display("p=51,48");
             libName = libName;
             numberOfInstances = numberOfInstances;
         }
@@ -65,22 +65,35 @@ module Stack
             libName = libName;
             numberOfInstances = numberOfInstances;
         }
+        process: ProcessSync {
+            @display("p=123,48");
+            libName = libName;
+            numberOfInstances = numberOfInstances;
+        }
+        apiEvent: ApiEvent {
+            @display("p=201,48");
+            libName = libName;
+            numberOfInstances = numberOfInstances;
+        }
     connections:
-        
-        for i = 0..sizeof(apiCall)-1 {
+
+		// Api connections
+        for i=0..sizeof(apiCall)-1 {
             apiCall[i] --> api.functionCall++;
         }
-        
-        for i = 0..sizeof(apiReturn)-1 {
+
+        for i=0..sizeof(apiReturn)-1 {
             api.functionCallReturn++ --> apiReturn[i];
         }
-        
-        api.event --> event;
-        eventReturn --> api.eventReturn;
-        
-        api.app --> app;
-        appReturn --> api.appReturn;
-        
+
+		// Event
+        apiEvent.event --> event;
+        eventReturn --> apiEvent.eventReturn;
+
+		// Process sync (App)
+        process.processSync --> processSync;
+        processSyncReturn --> process.processSyncReturn;
+
         // Network
         edrv.ethernetOut --> ethernetOut;
         ethernetIn --> edrv.ethernetIn;

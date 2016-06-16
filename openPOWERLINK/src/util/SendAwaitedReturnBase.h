@@ -28,17 +28,20 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
         using ApplyKindFunc = std::function<void(RawMessagePtr, Kind)>;
         using GetKind = std::function<Kind(RawMessagePtr)>;
 
-        // C-Tor
+        // C-Tor / CC-Tor / D-Tor
     protected:
+        SendAwaitedReturnBase(std::string const & sendGateName) :
+            SendAwaitedReturnBase(sendGateName, SendAwaitedReturnBase::applyMsgKind, SendAwaitedReturnBase::getMsgKind)
+        { }
+
         SendAwaitedReturnBase(std::string const & sendGateName, ApplyKindFunc applyKind, GetKind getKind) :
                 cSimpleModule(32000), mSendGateName(sendGateName), mApplyKind(applyKind), mGetKind(getKind)
-        {
-        }
+        { }
+
+        SendAwaitedReturnBase(SendAwaitedReturnBase const &) = delete;
 
         virtual ~SendAwaitedReturnBase()
-        {
-
-        }
+        { }
 
         // Methods
     protected:
@@ -55,18 +58,19 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
             while (mRunning)
             {
                 // receive message
-                receiveMessage();
+                auto rawMsg = receive();
+
+                handleReceivedMessage(rawMsg);
             }
         }
 
-        void receiveMessage()
+        void handleReceivedMessage(RawMessagePtr rawMsg)
         {
-            // receive message
-            auto rawMsg = receive();
-
             if (rawMsg != nullptr)
             {
                 MessagePtr msg(rawMsg);
+
+                foo();
 
                 // get kind from message
                 auto kind = mGetKind(msg.get());
@@ -80,6 +84,11 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
                     // forward unexpected message
                     handleOtherMessage(msg);
             }
+        }
+
+        virtual void foo()
+        {
+
         }
 
         void sendAwaitedMessage(RawMessagePtr msg, Kind kind, OPP::cGate* sendGate)
@@ -107,8 +116,9 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
 
             // check if message for given kind was already received
             while (mMsgCont[kind] == nullptr)
-                // receive message
-                receiveMessage();
+            {
+                handleReceivedMessage(receive());
+            }
 
             // get received message
             MessagePtr msg = mMsgCont[kind];
@@ -121,6 +131,26 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
         }
 
         virtual void handleOtherMessage(MessagePtr msg) = 0;
+
+        // Static Methods
+    public:
+        static void applyMsgKind(RawMessagePtr msg, Kind kind)
+        {
+            if (msg != nullptr)
+            {
+                msg->setKind(static_cast<short>(kind));
+            }
+        }
+
+        static Kind getMsgKind(RawMessagePtr msg)
+        {
+            if (msg != nullptr)
+            {
+                return static_cast<Kind>(msg->getKind());
+            }
+
+            throw std::runtime_error("SendAwaitedReturnBase::getMsgKind - invalid message");
+        }
 
         // Member
     private:

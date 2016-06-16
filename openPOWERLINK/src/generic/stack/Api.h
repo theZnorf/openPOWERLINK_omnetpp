@@ -16,8 +16,6 @@
 #ifndef __OPENPOWERLINK_API_H_
 #define __OPENPOWERLINK_API_H_
 
-#include "SendAwaitedReturnBase.h"
-
 #include <string>
 #include <vector>
 #include <omnetpp.h>
@@ -25,7 +23,7 @@
 #include "interface/ApiDef.h"
 #include "MessageDispatcher.h"
 
-class Api : public SendAwaitedReturnBase<interface::api::ApiEventType>
+class Api : public OPP::cSimpleModule
 {
         // Definitions
     public:
@@ -107,26 +105,20 @@ class Api : public SendAwaitedReturnBase<interface::api::ApiEventType>
     public:
         Api();
 
-
         // Methods
     public:
-        void processSyncCb();
-        void eventCb(interface::api::ApiEventType eventType, interface::api::ApiEventArg* eventArg, void* userArg);
-
         interface::api::ApiFunctions* getApiFunctions();
 
     protected:
         virtual void initialize();
-        virtual void handleOtherMessage(MessagePtr msg) override;
+        virtual void activity();
+        virtual void handleRawMessage(RawMessagePtr rawMsg);
 
     private:
         void handleApiCall(RawMessagePtr msg);
         void handleAppReturn(RawMessagePtr msg);
 
         void sendReturnMessage(OPP::cMessage* msg, size_t gateIdx);
-
-        static void setEventType(RawMessagePtr msg, Kind kind);
-        static Kind getEventType(RawMessagePtr msg);
 
         // Static Methods
     public:

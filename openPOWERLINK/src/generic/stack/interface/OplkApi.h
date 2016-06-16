@@ -20,11 +20,6 @@ namespace interface
 {
     class OplkApi : public OplkBase<Api*>
     {
-            // Definitions
-        public:
-            using ApiEventType = api::ApiEventType;
-            using ApiEventArg = api::ApiEventArg;
-
             // C-Tor / D-Tor
         private:
             OplkApi();
@@ -39,8 +34,6 @@ namespace interface
         public:
             static OplkApi & getInstance();
 
-            static ErrorType processSyncCb(InstanceHandle handle);
-            static ErrorType eventCb(InstanceHandle handle, ApiEventType eventType, ApiEventArg* eventArg, void* userArg);
     };
 
 } /* namespace interface */

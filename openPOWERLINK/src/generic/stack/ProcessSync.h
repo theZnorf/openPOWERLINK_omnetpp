@@ -13,23 +13,26 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-cplusplus {{
-#include "stack/interface/ApiDef.h"
-#include "OplkPacking.h"
-}}
+#ifndef __OPENPOWERLINK_PROCESSSYNC_H_
+#define __OPENPOWERLINK_PROCESSSYNC_H_
 
-class interface::api::ApiEventType extends void;
-class interface::api::ApiEventArg extends void;
-class oplkMessages::PointerCont extends void;
+#include <omnetpp.h>
+#include <SendAwaitedReturnBase.h>
+#include "AppBase.h"
 
-cplusplus {{
-USING_NAMESPACE
-}}
+class ProcessSync : public SendAwaitedReturnBase<AppBase::AppBaseCallType>
+{
+        // C-Tor
+    public:
+        ProcessSync();
 
-namespace oplkMessages;
+        // Methods
+    public:
+        void processSyncCb();
 
-message EventMessage {
-    interface::api::ApiEventType eventType;
-    interface::api::ApiEventArg eventArg;
-    PointerCont userArg;
-}
+    protected:
+        virtual void initialize();
+        virtual void handleOtherMessage(MessagePtr msg) override;
+};
+
+#endif

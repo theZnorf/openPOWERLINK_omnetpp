@@ -13,23 +13,15 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-cplusplus {{
-#include "stack/interface/ApiDef.h"
-#include "OplkPacking.h"
-}}
+package openpowerlink.generic.stack;
 
-class interface::api::ApiEventType extends void;
-class interface::api::ApiEventArg extends void;
-class oplkMessages::PointerCont extends void;
+simple ProcessSync
+{
+    parameters:
+        int numberOfInstances = default(1); // Number of Instances of ProcessSync modules, should be set by parent module/network
+        string libName; // Filename of shared library, should be set by parent module/network
 
-cplusplus {{
-USING_NAMESPACE
-}}
-
-namespace oplkMessages;
-
-message EventMessage {
-    interface::api::ApiEventType eventType;
-    interface::api::ApiEventArg eventArg;
-    PointerCont userArg;
+    gates:
+        output processSync; // Output gate for process sync messaes forwarded to the app module IApp
+        input processSyncReturn; // Input gate for the return messages from the app module IApp
 }

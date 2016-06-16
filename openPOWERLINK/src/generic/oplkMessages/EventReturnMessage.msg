@@ -22,6 +22,7 @@ cplusplus {{
 class interface::api::ApiEventType extends void;
 class interface::api::ApiEventArg extends void;
 message oplkMessages::ReturnMessage;
+class oplkMessages::PointerCont extends void;
     
 cplusplus {{
     USING_NAMESPACE
@@ -32,4 +33,5 @@ namespace oplkMessages;
 message EventReturnMessage extends ReturnMessage {
     interface::api::ApiEventType eventType;
     interface::api::ApiEventArg eventArg;
+    PointerCont userArg;
 }

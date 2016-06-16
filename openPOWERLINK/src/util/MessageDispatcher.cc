@@ -11,12 +11,10 @@ USING_NAMESPACE
 
 MessageDispatcher::MessageDispatcher()
 {
-    // TODO Auto-generated constructor stub
 }
 
 MessageDispatcher::~MessageDispatcher()
 {
-    // TODO Auto-generated destructor stub
 }
 
 void MessageDispatcher::registerFunction(MessageDispatcher::Id id, MessageDispatcher::MessageFunc func)

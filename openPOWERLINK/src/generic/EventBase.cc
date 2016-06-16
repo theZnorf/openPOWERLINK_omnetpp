@@ -58,6 +58,7 @@ void EventBase::handleMessage(cMessage *rawMsg)
             retMsg->setReturnValue(ret);
             retMsg->setEventType(eventMsg->getEventType());
             retMsg->setEventArg(eventMsg->getEventArg());
+            retMsg->setUserArg(eventMsg->getUserArg());
 
             send(retMsg, mReturnGate);
         }

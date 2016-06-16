@@ -25,19 +25,18 @@
 
 using namespace std;
 USING_NAMESPACE
+
 Define_Module(Api);
 
 constexpr const char* const Api::cApiCallNames[];
 
-Api::Api()
-:   SendAwaitedReturnBase("event", Api::setEventType, Api::getEventType), mReturnGate(nullptr), mEventGate(nullptr)
+Api::Api() :
+        cSimpleModule(32000), mReturnGate(nullptr), mEventGate(nullptr)
 {
 }
 
 void Api::initialize()
 {
-    SendAwaitedReturnBase::initialize();
-
     // resolve library info parameter
     std::string libName = par("libName");
     interface::OplkApi::Instance numberOfInstances = par("numberOfInstances");
@@ -46,25 +45,33 @@ void Api::initialize()
     interface::OplkApi::setLibraryInfo(libName, numberOfInstances);
     interface::OplkApi::getInstance().initModule(this);
 
-    // resolve return gates
-    mEventGate = gate("event");
-    mAppGate = gate("app");
-
+    // resolve and register return gates
     for (auto i = 0; i < gateSize("functionCallReturn"); i++)
     {
         mReturnGates.push_back(gate("functionCallReturn", i));
-        mDispatcher.registerFunction(gate("functionCall", i), std::bind(&Api::handleApiCall, this, std::placeholders::_1));
+        mDispatcher.registerFunction(gate("functionCall", i),
+                std::bind(&Api::handleApiCall, this, std::placeholders::_1));
     }
 
     // register signals
     mInvokedApiFunctionSignal = registerSignal("invokedFunctionType");
-
-    // init dispatcher
-    mDispatcher.registerFunction(gate("appReturn"), std::bind(&Api::handleAppReturn, this, std::placeholders::_1));
 }
 
-void Api::handleOtherMessage(MessagePtr msg)
+void Api::activity()
 {
+    while (true)
+    {
+        auto msg = receive();
+
+        if (msg != nullptr)
+            handleRawMessage(msg);
+    }
+}
+
+void Api::handleRawMessage(cMessage* rawMsg)
+{
+    MsgPtr msg(rawMsg);
+
     if (msg != nullptr)
     {
         //handleApiCall(msg);
@@ -681,7 +688,6 @@ void Api::handleApiCall(RawMessagePtr msg)
     sendReturnMessage(retPtr, msg->getArrivalGate()->getIndex());
 }
 
-
 void Api::handleAppReturn(RawMessagePtr msg)
 {
     if (msg != nullptr)
@@ -722,95 +728,4 @@ interface::api::ApiFunctions* Api::getApiFunctions()
 const char* Api::getApiCallString(ApiCallType type)
 {
     return cApiCallNames[static_cast<size_t>(type)];
-}
-
-void Api::setEventType(RawMessagePtr msg, Kind kind)
-{
-    // cast message
-    auto eventMsg = dynamic_cast<oplkMessages::EventMessage*>(msg);
-
-    if (eventMsg != nullptr)
-    {
-        // set event type
-        eventMsg->setEventType(kind);
-    }
-    else
-        throw std::runtime_error("invalid message type");
-}
-
-Api::Kind Api::getEventType(RawMessagePtr msg)
-{
-    // cast message
-    auto eventMsg = dynamic_cast<oplkMessages::EventReturnMessage*>(msg);
-
-    if (eventMsg != nullptr)
-    {
-        // get event type
-        return eventMsg->getEventType();
-    }
-    return -1;
-}
-
-void Api::processSyncCb()
-{
-    Enter_Method("processSyncCb");
-
-    // store old ctx
-    //auto oldCtx = simulation.getContext();
-    // set current ctx
-    //simulation.setContext(this);
-
-    // create message for process sync
-    auto processSyncMsg = new cMessage("process sync", static_cast<short>(AppBase::AppBaseCallType::processSync));
-
-    // reset flag
-    mProcessSyncInfo.received = false;
-
-    // send message
-    send(processSyncMsg, mAppGate);
-
-    // wait for return message
-    while(!mProcessSyncInfo.received)
-        receiveMessage();
-
-    // restore context
-    //simulation.setContext(oldCtx);
-
-    // reset flag
-    mProcessSyncInfo.received = false;
-
-    // throw exception when not ok
-    if (mProcessSyncInfo.returnValue != interface::api::Error::kErrorOk)
-        throw interface::OplkException("Process sync error", mProcessSyncInfo.returnValue);
-}
-
-void Api::eventCb(interface::api::ApiEventType eventType, interface::api::ApiEventArg* eventArg, void* userArg)
-{
-    Enter_Method("eventCb");
-
-    if (eventType == interface::api::ApiEvent::kOplkApiEventCriticalError)
-        EV << "Critical error occured" << endl;
-
-    if (eventType == interface::api::ApiEvent::kOplkApiEventNmtStateChange)
-    {
-        EV << "State change occurred" << endl;
-    }
-
-    // create event message
-    auto eventMsg = new oplkMessages::EventMessage();
-    eventMsg->setName(("event - " + std::string(interface::debug::getApiEventStr(eventType))).c_str());
-    eventMsg->setEventArg(*eventArg);
-    //TODO: add user arg
-
-    // send message with awaited return
-    sendAwaitedMessage(eventMsg, eventType);
-
-    // wait for the reception of the according return value
-    auto msg = waitForReturnMessage(eventType);
-
-    // cast message
-    auto retMsg = dynamic_cast<oplkMessages::EventReturnMessage*>(msg.get());
-
-    if ((retMsg != nullptr) && (retMsg->getReturnValue() != interface::api::Error::kErrorOk))
-        throw interface::OplkException("EventCb return value", retMsg->getReturnValue());
 }

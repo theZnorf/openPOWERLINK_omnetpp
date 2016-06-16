@@ -30,8 +30,4 @@ simple Api
     gates:
         input functionCall[]; // Input vector for functional connections invoking the according API function
         output functionCallReturn[]; // Return vector for return messages of invoked API functions
-        output event; // Output gate for event messages forwarded to the event module IEvent
-        input eventReturn; // Input gate for the return messages from the event module IEvent
-        output app; // Output gate for process sync messaes forwarded to the app module IApp
-        input appReturn; // Input gate for the return messages from the app module IApp
 }
