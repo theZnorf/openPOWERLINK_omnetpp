@@ -18,7 +18,7 @@ package openpowerlink.generic.stack;
 simple HresTimer
 {
     parameters:
-        @display("i=device/clock,red;t=,r,black");
+        @display("i=device/clock,red;t=,t,black");
         int numberOfInstances = default(1);
         string libName;
 }

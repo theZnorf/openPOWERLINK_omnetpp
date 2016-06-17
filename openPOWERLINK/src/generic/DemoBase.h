@@ -1,17 +1,14 @@
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see http://www.gnu.org/licenses/.
-// 
+/**
+ ********************************************************************************
+ \file   DemoBase.h
+
+ \brief  Include file for Base class of Demo modules.
+
+ *******************************************************************************/
+
+/*------------------------------------------------------------------------------
+ Copyright (c) 2016, Franz Profelt (franz.profelt@gmail.com)
+ ------------------------------------------------------------------------------*/
 
 #ifndef __OPENPOWERLINK_DEMOBASE_H_
 #define __OPENPOWERLINK_DEMOBASE_H_
@@ -21,20 +18,38 @@
 #include "ReturnMessage_m.h"
 #include "MessageDispatcher.h"
 
+/**
+ * \brief Base class for Demo modules implementing basic functionalities.
+ *
+ * This class inherits from UseApiBase and represents a cSimpleModule which
+ * sends messages to the Api module and blocks the according method calls
+ * until reception of the return message.
+ * Additionally this class implements the handling of various states and the
+ * communication to IApp and IEvent modules.
+ */
 class DemoBase : public UseApiBase
 {
         // Definitions
     private:
         using RawMessagePtr = MessageDispatcher::RawMessagePtr;
 
-        enum class DemoState
-            : short
-            {
-                undefined, initializePowerlink, initializeApp, swReset, mainloop, shuttingDownApp, shuttingDown
+        enum class DemoState : short
+        {
+            undefined,
+            initializePowerlink,
+            initializeApp,
+            swReset,
+            mainloop,
+            shuttingDownApp,
+            shuttingDown
         };
 
         // C-Tor
     public:
+        /**
+         * \brief Default constructor initializing the base class with the
+         * name of the Api sending gate
+         */
         DemoBase();
 
         // Methods
@@ -43,10 +58,19 @@ class DemoBase : public UseApiBase
         virtual void handleOtherMessage(MessagePtr msg) override;
         virtual void handleSelfMessage(MessagePtr msg);
 
+        /**
+         * \brief Initialize the openPOWERLINK stack
+         *
+         * This pure virtual method is called during initialization state.
+         */
         virtual void initPowerlink() = 0;
-        virtual void shutdownPowerlink() = 0;
 
-        interface::api::ErrorType dispatchProcessSync();
+        /**
+         * \brief Shutdown the openPOWERLINK stack
+         *
+         * This pure virtual method is called during shutdown state.
+         */
+        virtual void shutdownPowerlink() = 0;
 
     private:
         void processAppReturn(RawMessagePtr msg);
@@ -54,8 +78,9 @@ class DemoBase : public UseApiBase
 
         // Member
     protected:
-        OPP::cGate* mApiCallGate;
-        OPP::cGate* mAppCallGate;
+        OPP
+        ::cGate* mApiCallGate;OPP
+        ::cGate* mAppCallGate;
 
         MessageDispatcher mDispatcher;
 

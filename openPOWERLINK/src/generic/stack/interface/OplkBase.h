@@ -1,9 +1,14 @@
-/*
- * OplkBase.h
- *
- *  Created on: Apr 28, 2016
- *      Author: franz
- */
+/**
+ ********************************************************************************
+ \file   OplkBase.h
+
+ \brief  Include file with template base class for all interface clases
+
+ *******************************************************************************/
+
+/*------------------------------------------------------------------------------
+ Copyright (c) 2016, Franz Profelt (franz.profelt@gmail.com)
+ ------------------------------------------------------------------------------*/
 
 #ifndef OPLKBASE_H_
 #define OPLKBASE_H_
@@ -16,12 +21,19 @@
 
 namespace interface
 {
+    /**
+     * Template base class for each interface module.
+     * This class provides handling and assiciation of shared library instances
+     * with the according module instances.
+     */
     template<typename TModule>
     class OplkBase
     {
             // Definitions
         public:
-
+            /**
+             * Structure with module instance and accroding shared library helper
+             */
             struct ModuleInfo
             {
                     TModule module;
@@ -35,14 +47,11 @@ namespace interface
 
             // C-Tor / D-Tor
         protected:
+            /**
+             * \brief Protected default constructor
+             */
             OplkBase()
             {
-                // check static member
-                if (mLibName.empty())
-                {
-                    mLibName = "../openPOWERLINK_V2/stack/lib/linux/x86_64/liboplkmn-sim_d";
-                    mNumberOfInstances = 2;
-                }
             }
 
         public:
@@ -52,18 +61,30 @@ namespace interface
 
             // Methods
         public:
+            /**
+             * \brief Initialize interface functionality with given module.
+             *
+             * Initializes the interface functionality saving the given module
+             * with a newly created shared library helper
+             *
+             * \param module    Instance of module which is saved in internal
+             * container
+             */
             void initModule(TModule module)
             {
                 if (module == nullptr)
-                    throw std::invalid_argument("OplkBase::initModule - invalid module pointer");
+                    throw std::invalid_argument(
+                            "OplkBase::initModule - invalid module pointer");
 
                 // create info object with correct helper instance
                 SharedLibraryHelper::HelperPtr helper;
 
                 if (mModuleInfos.empty())
-                    helper = SharedLibraryHelper::createInstance(mLibName, mNumberOfInstances);
+                    helper = SharedLibraryHelper::createInstance(mLibName,
+                            mNumberOfInstances);
                 else
-                    helper = mModuleInfos.back().helper->getNextLibrary(mLibName);
+                    helper = mModuleInfos.back().helper->getNextLibrary(
+                            mLibName);
 
                 // add info object
                 ModuleInfo info = { module, helper };
@@ -84,19 +105,39 @@ namespace interface
                 }
             }
 
+            /**
+             * \brief Getter for the saved module instance
+             *
+             * This getter returns the saved module instance identified by the
+             * passed handle.
+             *
+             * \param handle    Handle of requested module
+             * \return Returns the saved instance according to the given handle.
+             * \throws Throws a std::out_of_range exception when the handle is
+             * invalid
+             */
             TModule getModule(InstanceHandle handle)
             {
                 if (handle < mModuleInfos.size())
                     return mModuleInfos[handle].module;
                 else
-                    throw std::out_of_range("OplkBase::getModule - invalid instance handle");
+                    throw std::out_of_range(
+                            "OplkBase::getModule - invalid instance handle");
             }
 
-            virtual void setFunctions(SharedLibraryHelper::HelperPtr helper, InstanceHandle handle) = 0;
+            virtual void setFunctions(SharedLibraryHelper::HelperPtr helper,
+                    InstanceHandle handle) = 0;
 
             // static Methods
         public:
-            static void setLibraryInfo(std::string const & libName, Instance numberOfInstances)
+            /**
+             * \brief Static setter for libary information
+             *
+             * Setter for static library informations, which will be passed to
+             * the created shared library helper
+             */
+            static void setLibraryInfo(std::string const & libName,
+                    Instance numberOfInstances)
             {
                 mLibName = libName;
                 mNumberOfInstances = numberOfInstances;

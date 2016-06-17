@@ -29,7 +29,12 @@ void ProcessSync::initialize()
 {
     SendAwaitedReturnBase::initialize();
 
-    // init interface
+    // resolve library info parameter
+    std::string libName = par("libName");
+    interface::OplkProcessSync::Instance numberOfInstances = par("numberOfInstances");
+
+    // init stub
+    interface::OplkProcessSync::setLibraryInfo(libName, numberOfInstances);
     interface::OplkProcessSync::getInstance().initModule(this);
 }
 

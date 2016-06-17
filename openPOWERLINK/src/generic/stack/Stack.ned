@@ -18,7 +18,7 @@ package openpowerlink.generic.stack;
 module Stack
 {
     parameters:
-        @display("bgb=248,475,,,0;i=plk,,0;is=n");
+        @display("bgb=527,238,,,0;i=plk,,0;is=n");
         int numberOfInstances = default(1);
         string libName;
         string edrvType = default("DirectEdrv");
@@ -36,42 +36,42 @@ module Stack
         output udpOut;
     submodules:
         api: Api {
-            @display("p=51,48");
+            @display("p=187,49");
             libName = libName;
             numberOfInstances = numberOfInstances;
         }
         edrv: <edrvType> like IEdrv {
-            @display("p=38,144");
+            @display("p=90,191");
             libName = libName;
             numberOfInstances = numberOfInstances;
         }
         hresTimer: HresTimer {
-            @display("p=38,210");
+            @display("p=261,190");
             libName = libName;
             numberOfInstances = numberOfInstances;
         }
         sdoUdp: SdoUdp {
-            @display("p=38,268");
+            @display("p=171,191");
             libName = libName;
             numberOfInstances = numberOfInstances;
         }
         target: Target {
-            @display("p=38,331");
+            @display("p=422,197");
             libName = libName;
             numberOfInstances = numberOfInstances;
         }
         trace: Trace {
-            @display("p=38,389");
+            @display("p=343,191");
             libName = libName;
             numberOfInstances = numberOfInstances;
         }
         process: ProcessSync {
-            @display("p=123,48");
+            @display("p=259,49");
             libName = libName;
             numberOfInstances = numberOfInstances;
         }
         apiEvent: ApiEvent {
-            @display("p=201,48");
+            @display("p=330,49");
             libName = libName;
             numberOfInstances = numberOfInstances;
         }

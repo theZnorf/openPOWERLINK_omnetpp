@@ -1,17 +1,8 @@
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// @author Franz Profelt
 // 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see http://www.gnu.org/licenses/.
-// 
+// Copyright (c) 2016, Franz Profelt (franz.profelt@gmail.com)
+//
 
 package openpowerlink.generic;
 
@@ -20,9 +11,9 @@ package openpowerlink.generic;
 //
 moduleinterface IApp
 {
-        gates:
-        input functionCall[];
-        output functionReturn[];
-        output apiCall;
-        input apiReturn;
+    gates:
+        input functionCall[]; // Input vector for each connection using App functions
+        output functionReturn[]; // Output vector for return values of incomming app functions
+        output apiCall; // Output gate for Api calls
+        input apiReturn; // Input gate for Api return messages
 }

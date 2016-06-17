@@ -1,9 +1,15 @@
-/*
- * SharedLibraryHelper.cc
- *
- *  Created on: Apr 25, 2016
- *      Author: franz
- */
+/**
+ ********************************************************************************
+ \file   SharedLibrary.cc
+
+ \brief  Implementation of operating system specific calls for shared library
+ access
+
+ *******************************************************************************/
+
+/*------------------------------------------------------------------------------
+ Copyright (c) 2016, Franz Profelt (franz.profelt@gmail.com)
+ ------------------------------------------------------------------------------*/
 
 #include "SharedLibraryHelper.h"
 #include <cstdio>
@@ -12,29 +18,33 @@
 using namespace std;
 using namespace interface;
 
-
 #if defined(__linux__)
 // Linux types
-using UnknownStruct = struct unknown_struct {
-   void*  pointers[3];
-   struct unknown_struct* ptr;
+using UnknownStruct = struct unknown_struct
+{
+    void* pointers[3];
+    struct unknown_struct* ptr;
 };
 using LinkMap = struct link_map;
 #elif defined(_WIN32)
 // Windows types
 #endif
 
-SharedLibraryHelper::SharedLibraryHelper(const std::string& libname)
-    : SharedLibraryHelper(libname, 0)
-{}
+SharedLibraryHelper::SharedLibraryHelper(const std::string& libname) :
+        SharedLibraryHelper(libname, 0)
+{
+}
 
-SharedLibraryHelper::SharedLibraryHelper(const std::string& libname, InstanceType numberOfParallelInstances)
-    : SharedLibraryHelper(libname, numberOfParallelInstances, 0)
-{}
+SharedLibraryHelper::SharedLibraryHelper(const std::string& libname,
+        InstanceType numberOfParallelInstances) :
+        SharedLibraryHelper(libname, numberOfParallelInstances, 0)
+{
+}
 
-
-SharedLibraryHelper::SharedLibraryHelper(std::string const & libname, InstanceType numberOfParallelInstances, InstanceType instanceId)
-    : cLibName(libname), mInstanceId(instanceId), cMaxInstanceId(numberOfParallelInstances -1)
+SharedLibraryHelper::SharedLibraryHelper(std::string const & libname,
+        InstanceType numberOfParallelInstances, InstanceType instanceId) :
+        cLibName(libname), mInstanceId(instanceId), cMaxInstanceId(
+                numberOfParallelInstances - 1)
 {
     createLibraryInstance();
 
@@ -71,19 +81,24 @@ SharedLibraryHelper::HelperPtr SharedLibraryHelper::getNextLibrary()
     return getNextLibrary(cLibName);
 }
 
-SharedLibraryHelper::HelperPtr SharedLibraryHelper::getNextLibrary(std::string const & libname)
+SharedLibraryHelper::HelperPtr SharedLibraryHelper::getNextLibrary(
+        std::string const & libname)
 {
     if (mInstanceId + 1 <= cMaxInstanceId)
     {
-        HelperPtr helper(new SharedLibraryHelper(libname, cMaxInstanceId +1, mInstanceId + 1));
+        HelperPtr helper(
+                new SharedLibraryHelper(libname, cMaxInstanceId + 1,
+                        mInstanceId + 1));
         return helper;
     }
-    throw runtime_error("SharedLibraryHelper::getNextLibrary - maximum number of instances reached");
+    throw runtime_error(
+            "SharedLibraryHelper::getNextLibrary - maximum number of instances reached");
 }
 
 std::string SharedLibraryHelper::getLibraryName()
 {
-    return cLibName + ((cMaxInstanceId > 0)? to_string(mInstanceId) : "") + getExtension();
+    return cLibName + ((cMaxInstanceId > 0) ? to_string(mInstanceId) : "")
+            + getExtension();
 }
 
 void SharedLibraryHelper::createLibraryInstance()
@@ -93,7 +108,9 @@ void SharedLibraryHelper::createLibraryInstance()
     {
         ifstream in(cLibName + getExtension(), ios::binary);
         if (!in)
-            throw runtime_error("error copying library " + cLibName + getExtension() + " with errno " + to_string(errno));
+            throw runtime_error(
+                    "error copying library " + cLibName + getExtension()
+                            + " with errno " + to_string(errno));
 
         auto copyName = getLibraryName();
         // check if copy already exisist
@@ -110,15 +127,17 @@ void SharedLibraryHelper::createLibraryInstance()
     }
 }
 
-SharedLibraryHelper::HelperPtr SharedLibraryHelper::createInstance(const std::string& libname)
+SharedLibraryHelper::HelperPtr SharedLibraryHelper::createInstance(
+        const std::string& libname)
 {
     return SharedLibraryHelper::createInstance(libname, 0);
 }
 
-SharedLibraryHelper::HelperPtr SharedLibraryHelper::createInstance(const std::string& libname,
-        InstanceType numberOfParallelInstances)
+SharedLibraryHelper::HelperPtr SharedLibraryHelper::createInstance(
+        const std::string& libname, InstanceType numberOfParallelInstances)
 {
-    HelperPtr helper(new SharedLibraryHelper(libname, numberOfParallelInstances));
+    HelperPtr helper(
+            new SharedLibraryHelper(libname, numberOfParallelInstances));
     return helper;
 }
 
@@ -152,19 +171,23 @@ std::string interface::SharedLibraryHelper::getError()
 #endif
 }
 
-LibraryHandle SharedLibraryHelper::openSharedLibraryLinux(const std::string& libname)
+LibraryHandle SharedLibraryHelper::openSharedLibraryLinux(
+        const std::string& libname)
 {
 #if defined(__linux__)
     auto handle = dlopen(libname.c_str(), RTLD_NOW);
     if (handle == NULL)
-        throw runtime_error("SharedLibraryHelper::openSharedLibraryLinux - error loading library " + libname + " with error " + getError());
+        throw runtime_error(
+                "SharedLibraryHelper::openSharedLibraryLinux - error loading library "
+                        + libname + " with error " + getError());
     return handle;
 #else
     throw runtime_error("error linux function called under different OS");
 #endif
 }
 
-LibraryHandle SharedLibraryHelper::openSharedLibraryWindows(const std::string& libname)
+LibraryHandle SharedLibraryHelper::openSharedLibraryWindows(
+        const std::string& libname)
 {
 #if defined(_WIN32)
     //TODO implement Windows version
@@ -201,7 +224,6 @@ std::string interface::SharedLibraryHelper::getErrorLinux()
 #endif
 }
 
-
 std::string SharedLibraryHelper::getErrorWindows()
 {
 #if defined(_WIN32)
@@ -220,7 +242,8 @@ std::string SharedLibraryHelper::getExtension()
 #endif
 }
 
-bool interface::SharedLibraryHelper::isSharedLibraryLoaded(const std::string& libname)
+bool interface::SharedLibraryHelper::isSharedLibraryLoaded(
+        const std::string& libname)
 {
 #if defined(__linux__)
     return SharedLibraryHelper::isSharedLibraryLoadedLinux(libname);
@@ -229,7 +252,8 @@ bool interface::SharedLibraryHelper::isSharedLibraryLoaded(const std::string& li
 #endif
 }
 
-bool interface::SharedLibraryHelper::isSharedLibraryLoadedLinux(const std::string& libname)
+bool interface::SharedLibraryHelper::isSharedLibraryLoadedLinux(
+        const std::string& libname)
 {
 #if defined(__linux__)
     auto* handle = dlopen(NULL, RTLD_NOW);
@@ -249,7 +273,8 @@ bool interface::SharedLibraryHelper::isSharedLibraryLoadedLinux(const std::strin
 #endif
 }
 
-bool interface::SharedLibraryHelper::isSharedLibraryLoadedWindows(const std::string& libname)
+bool interface::SharedLibraryHelper::isSharedLibraryLoadedWindows(
+        const std::string& libname)
 {
 #if defined(_WIN32)
     //TODO implement Windows version

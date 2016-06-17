@@ -1,17 +1,14 @@
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see http://www.gnu.org/licenses/.
-// 
+/**
+ ********************************************************************************
+ \file   AppBase.h
+
+ \brief  Include file for Base class of App modules.
+
+ *******************************************************************************/
+
+/*------------------------------------------------------------------------------
+ Copyright (c) 2016, Franz Profelt (franz.profelt@gmail.com)
+ ------------------------------------------------------------------------------*/
 
 #ifndef __OPENPOWERLINK_APPBASE_H_
 #define __OPENPOWERLINK_APPBASE_H_
@@ -21,10 +18,22 @@
 #include "UseApiBase.h"
 #include "ReturnHandler.h"
 
+/**
+ * \brief Base class for App modules implementing basic functionalities.
+ *
+ * This class inherits from UseApiBase and represents a cSimpleModule which
+ * sends messages to the Api module and blocks the according method calls
+ * until reception of the return message.
+ * Addionally this class implements the message handling for communication with
+ * other Modules and the according function handling.
+ */
 class AppBase : public UseApiBase
 {
         // Definitions
     public:
+        /**
+         * \brief Types of functions available via messages
+         */
         enum class AppBaseCallType
             : short
             {
@@ -36,17 +45,43 @@ class AppBase : public UseApiBase
         using HandlerCont = std::vector<HandlerPtr>;
         // C-Tor
     public:
-            AppBase();
+        /**
+         * \brief Default constructor initializing base class
+         */
+        AppBase();
 
         // Methods
     protected:
         virtual void initialize();
         virtual void handleOtherMessage(MessagePtr msg);
 
+        /**
+         * \brief Initialize Application
+         *
+         * This pure virtual method is called after receiving a message with
+         * messageKind AppBaseCallType::init.
+         */
         virtual interface::api::ErrorType initApp() = 0;
+
+        /**
+         * \brief Execute synchronous operations
+         *
+         * This pure virtual method is called after receiving a message with
+         * messageKind AppBaseCallType::processSync.
+         */
         virtual interface::api::ErrorType processSync() = 0;
+
+        /**
+         * \brief Shutdown Application
+         *
+         * This pure virtual method is called after receiving a message with
+         * messageKind AppBaseCallType::init.
+         */
         virtual void shutdownApp() = 0;
 
+        /**
+         * \brief Handler for messages with different kinds than AppBaseCallType.
+         */
         virtual void handleAppMessage(MessagePtr msg);
 
         // Member

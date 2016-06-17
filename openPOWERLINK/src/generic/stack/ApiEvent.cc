@@ -32,13 +32,18 @@ void ApiEvent::initialize()
 {
     SendAwaitedReturnBase::initialize();
 
-    // init interface
+    // resolve library info parameter
+    std::string libName = par("libName");
+    interface::OplkApiEvent::Instance numberOfInstances = par("numberOfInstances");
+
+    // init stub
+    interface::OplkApiEvent::setLibraryInfo(libName, numberOfInstances);
     interface::OplkApiEvent::getInstance().initModule(this);
 }
 
 void ApiEvent::eventCb(ApiEventType eventType, ApiEventArg* eventArg, void* userArg)
 {
-    //Enter_Method("eventCb");
+    Enter_Method("eventCb");
 
     if (eventType == interface::api::ApiEvent::kOplkApiEventCriticalError)
         EV << "Critical error occured" << endl;
@@ -53,6 +58,8 @@ void ApiEvent::eventCb(ApiEventType eventType, ApiEventArg* eventArg, void* user
     eventMsg->setName(("event - " + std::string(interface::debug::getApiEventStr(eventType))).c_str());
     eventMsg->setEventArg(*eventArg);
     eventMsg->setUserArg((oplkMessages::PointerCont)userArg);
+
+    take(eventMsg);
 
     // send message with awaited return
     sendAwaitedMessage(eventMsg, eventType);

@@ -1,17 +1,14 @@
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see http://www.gnu.org/licenses/.
-// 
+/**
+ ********************************************************************************
+ \file   EventBase.h
+
+ \brief  Include file for Base class of Event modules.
+
+ *******************************************************************************/
+
+/*------------------------------------------------------------------------------
+ Copyright (c) 2016, Franz Profelt (franz.profelt@gmail.com)
+ ------------------------------------------------------------------------------*/
 
 #ifndef __OPENPOWERLINK_EVENTBASE_H_
 #define __OPENPOWERLINK_EVENTBASE_H_
@@ -19,6 +16,14 @@
 #include <omnetpp.h>
 #include "ApiDef.h"
 
+/**
+ * \brief Base class for Event modules providing basic functionalities
+ *
+ * This class inherits form cSimpleModule and is implemented event based.
+ * Dispatching to various virtual methods and output prints are implemented
+ * within this class, which can either be subclassed or used directly.
+ * A shutdown event results in an according message sent to the Demo module.
+ */
 class EventBase : public OPP::cSimpleModule
 {
         // Methods
@@ -26,15 +31,54 @@ class EventBase : public OPP::cSimpleModule
     virtual void initialize();
     virtual void handleMessage(OPP::cMessage *msg);
 
+    /**
+     * \brief General Method for processing a received event
+     *
+     * This method dispatches the events according to its type to the different
+     * methods.
+     * Additionally this method emits the received event type as signal.
+     */
     virtual interface::api::ErrorType processEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
 
+    /**
+     * \brief Virtual method for processing an Nmt state change event
+     */
     virtual interface::api::ErrorType processNmtStateChangeEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+
+    /**
+     * \brief Virtual method for processing an error event
+     */
     virtual interface::api::ErrorType processErrorEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+
+    /**
+     * \brief Virtual method for processing a warning event
+     *
+     */
     virtual interface::api::ErrorType processWarningEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+
+    /**
+     * \brief Virtual method for processing a history event
+     */
     virtual interface::api::ErrorType processHistoryEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+
+    /**
+     * \brief Virtual method for processing a node event
+     */
     virtual interface::api::ErrorType processNodeEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+
+    /**
+     * \brief Virtual method for processing a PDO change event
+     */
     virtual interface::api::ErrorType processPdoChangeEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+
+    /**
+     * \brief Virtual method for processing a Cfm progress event
+     */
     virtual interface::api::ErrorType processCfmProgressEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+
+    /**
+     * \brief Virtual method for processing a Cfm result event
+     */
     virtual interface::api::ErrorType processCfmResultEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
 
     // Member

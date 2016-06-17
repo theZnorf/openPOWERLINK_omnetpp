@@ -1,43 +1,36 @@
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// @author Franz Profelt
 // 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see http://www.gnu.org/licenses/.
-// 
+// Copyright (c) 2016, Franz Profelt (franz.profelt@gmail.com)
+//
 
 package openpowerlink.generic;
 
 import openpowerlink.generic.stack.Stack;
 
-
+//
+// Compound module representing a base class for every specialized openPOWERLINK
+// node. Connecting the interfaces IDemo, IApp, IEvent with the Stack module.
+//
 module GenericNode
 {
     parameters:
         @display("bgb=282,300");
-        int numberOfInstances = default(1);
-        string libName;
+        int numberOfInstances = default(1); // Number of instances
+        string libName; // Name of the used shared library
 
-        string DemoType;
-        string AppType;
-        string EventType;
+        string DemoType; // Typename of the demo instance implementing IDemo
+        string AppType; // Typename of the app instance implementing IApp
+        string EventType; // Typename of the event instance implementing IEvent
 
-        double mainLoopInterval @unit(ns) = default(1ms);
-
-        int numberOfApiConnections = default(2);
+        double mainLoopInterval @unit(ns) = default(1ms); // Interval of the main loop
 
     gates:
-        input ethernetIn;
-        output ethernetOut;
-        input udpIn;
-        output udpOut;
+        input ethernetIn; // Input gate for ethernet connection
+        output ethernetOut; // Output gate for ethernet connection
+        input udpIn; // Input gate for UDP connetion
+        output udpOut; // Output gate for UDP connection
+        
     submodules:
         stack: Stack {
             @display("p=138,151");
@@ -68,8 +61,6 @@ module GenericNode
             activeColor = "red";
         }
     connections:
-        event.stackShutdown --> demo.stackShutdown;
-
 		// Api connections
         demo.apiCall --> stack.apiCall++;
         stack.apiReturn++ --> demo.apiReturn;
@@ -83,8 +74,9 @@ module GenericNode
         // Event
         stack.event --> event.event;
         event.eventReturn --> stack.eventReturn;
+        event.stackShutdown --> demo.stackShutdown;
 
-		// App call
+        // App call
         demo.appCall --> app.functionCall++;
         app.functionReturn++ --> demo.appReturn;
 

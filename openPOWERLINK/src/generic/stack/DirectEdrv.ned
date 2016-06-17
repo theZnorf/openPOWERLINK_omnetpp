@@ -18,7 +18,7 @@ package openpowerlink.generic.stack;
 simple DirectEdrv like IEdrv
 {
     parameters:
-        @display("t=Uninitialized,r,black;i=block/network,red");
+        @display("t=Uninitialized,t,black;i=block/network,red");
         int numberOfInstances = default(1);
         string libName;
 

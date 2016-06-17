@@ -21,7 +21,7 @@ simple Target
     parameters:
         int numberOfInstances = default(1);
         string libName;
-        @display("i=device/device,green;t=,r,black");
+        @display("i=device/device,green;t=,t,black");
         bool printCurrentTick = default(false);
         bool changeParentsIcon = default(true);
         
