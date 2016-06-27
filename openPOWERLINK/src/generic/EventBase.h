@@ -38,48 +38,48 @@ class EventBase : public OPP::cSimpleModule
      * methods.
      * Additionally this method emits the received event type as signal.
      */
-    virtual interface::api::ErrorType processEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg, void* userArg);
 
     /**
      * \brief Virtual method for processing an Nmt state change event
      */
-    virtual interface::api::ErrorType processNmtStateChangeEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processNmtStateChangeEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg, void* userArg);
 
     /**
      * \brief Virtual method for processing an error event
      */
-    virtual interface::api::ErrorType processErrorEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processErrorEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg, void* userArg);
 
     /**
      * \brief Virtual method for processing a warning event
      *
      */
-    virtual interface::api::ErrorType processWarningEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processWarningEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg, void* userArg);
 
     /**
      * \brief Virtual method for processing a history event
      */
-    virtual interface::api::ErrorType processHistoryEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processHistoryEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg, void* userArg);
 
     /**
      * \brief Virtual method for processing a node event
      */
-    virtual interface::api::ErrorType processNodeEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processNodeEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg, void* userArg);
 
     /**
      * \brief Virtual method for processing a PDO change event
      */
-    virtual interface::api::ErrorType processPdoChangeEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processPdoChangeEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg, void* userArg);
 
     /**
      * \brief Virtual method for processing a Cfm progress event
      */
-    virtual interface::api::ErrorType processCfmProgressEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processCfmProgressEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg, void* userArg);
 
     /**
      * \brief Virtual method for processing a Cfm result event
      */
-    virtual interface::api::ErrorType processCfmResultEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg);
+    virtual interface::api::ErrorType processCfmResultEvent(interface::api::ApiEventType eventType, interface::api::ApiEventArg eventArg, void* userArg);
 
     // Member
   protected:

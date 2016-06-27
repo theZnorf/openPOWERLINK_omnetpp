@@ -15,20 +15,16 @@
 
 #include "ProcessSync.h"
 #include "OplkProcessSync.h"
+#include "MsgPtr.h"
+#include "OplkException.h"
+#include "AppBase.h"
 
 USING_NAMESPACE
 
 Define_Module(ProcessSync);
 
-ProcessSync::ProcessSync()
-    : SendAwaitedReturnBase("processSync")
-{
-}
-
 void ProcessSync::initialize()
 {
-    SendAwaitedReturnBase::initialize();
-
     // resolve library info parameter
     std::string libName = par("libName");
     interface::OplkProcessSync::Instance numberOfInstances = par("numberOfInstances");
@@ -36,32 +32,32 @@ void ProcessSync::initialize()
     // init stub
     interface::OplkProcessSync::setLibraryInfo(libName, numberOfInstances);
     interface::OplkProcessSync::getInstance().initModule(this);
+
+    // resolve parameter
+    mDefaultReturnValue = &par("defaultReturnValue");
+
+    // resolve gate
+    mSendGate = gate("processSync");
 }
 
 void ProcessSync::processSyncCb()
 {
     Enter_Method("processSyncCb");
 
-    std::cout << "PROCESS SYNC CALLED" << std::endl;
+    bubble("process sync called");
 
-    // send awaited message
-    sendAwaitedMessage(new cMessage("process sync"), AppBase::AppBaseCallType::processSync);
+    // send process sync message
+    send(new cMessage("process sync", static_cast<short>(AppBase::AppBaseCallType::processSync)), mSendGate);
 
-    auto msg = waitForReturnMessage(AppBase::AppBaseCallType::processSync);
-
-    // cast message
-    auto retMsg = dynamic_cast<oplkMessages::ReturnMessage*>(msg.get());
-
-    if (retMsg != nullptr)
-    {
-        // check return value and throw exception when not ok
-        auto ret = retMsg->getReturnValue();
-        if (ret != interface::api::Error::kErrorOk)
-            throw interface::OplkException("Process sync error", ret);
-    }
+    // check defined default return value
+    auto retVal = static_cast<interface::api::Error>(mDefaultReturnValue->longValue());
+    if (retVal != interface::api::Error::kErrorOk)
+        throw interface::OplkException("Default Process sync return", retVal);
 }
 
-void ProcessSync::handleOtherMessage(MessagePtr msg)
+void ProcessSync::handleMessage(cMessage* rawMsg)
 {
-    // Empty method
+    MsgPtr msg(rawMsg);
+
+    // empty method
 }

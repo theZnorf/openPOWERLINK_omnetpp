@@ -21,7 +21,8 @@ simple ApiEvent
         int numberOfInstances = default(1); // Number of Instances of ApiEvent modules, should be set by parent module/network
         string libName; // Filename of shared library, should be set by parent module/network
 
+        volatile xml returnValues = xml("<root><default>0</default></root>"); // Xml parameter describing all return values depending on the occuring events
+
     gates:
         output event; // Output gate for event messages forwarded to the event module IEvent
-        input eventReturn; // Input gate for the return messages from the event module IEvent
 }

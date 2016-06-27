@@ -67,18 +67,17 @@ module GenericNode
         app.apiCall --> stack.apiCall++;
         stack.apiReturn++ --> app.apiReturn;
         
-        // Process sync
-        stack.processSync --> app.functionCall++;
-        app.functionReturn++ --> stack.processSyncReturn;
-        
-        // Event
-        stack.event --> event.event;
-        event.eventReturn --> stack.eventReturn;
-        event.stackShutdown --> demo.stackShutdown;
-
         // App call
         demo.appCall --> app.functionCall++;
         app.functionReturn++ --> demo.appReturn;
+        
+        // Process sync
+        stack.processSync --> app.functionCall++;
+        
+        // Event
+        stack.event --> event.event;
+        event.stackShutdown --> demo.stackShutdown;
+
 
         // Network connections
         ethernetIn --> stack.ethernetIn;

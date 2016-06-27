@@ -23,15 +23,8 @@ USING_NAMESPACE
 
 Define_Module(ApiEvent);
 
-ApiEvent::ApiEvent():
-        SendAwaitedReturnBase("event", ApiEvent::setEventType, ApiEvent::getEventType)
-{
-}
-
 void ApiEvent::initialize()
 {
-    SendAwaitedReturnBase::initialize();
-
     // resolve library info parameter
     std::string libName = par("libName");
     interface::OplkApiEvent::Instance numberOfInstances = par("numberOfInstances");
@@ -39,11 +32,37 @@ void ApiEvent::initialize()
     // init stub
     interface::OplkApiEvent::setLibraryInfo(libName, numberOfInstances);
     interface::OplkApiEvent::getInstance().initModule(this);
+
+    // resolve parameter
+    mReturnValues = &par("returnValues");
+
+    // resolve gate
+    mSendGate = gate("event");
 }
 
 void ApiEvent::eventCb(ApiEventType eventType, ApiEventArg* eventArg, void* userArg)
 {
     Enter_Method("eventCb");
+
+    interface::api::ErrorType retVal;
+
+    // check if event type is defined in return values
+    auto child = mReturnValues->xmlValue()->getFirstChildWithAttribute(nullptr, "eventType", std::to_string(eventType).c_str());
+    if (child == nullptr)
+    {
+        auto childs = mReturnValues->xmlValue()->getChildrenByTagName("default");
+        if (!childs.empty())
+        {
+            auto nodeStr = childs.at(0)->getNodeValue();
+            auto nodeVal = std::atoi(nodeStr);
+            retVal = static_cast<interface::api::ErrorType>(nodeVal);
+        }
+    }
+    else
+    {
+        retVal = static_cast<interface::api::ErrorType>(std::atoi(child->getNodeValue()));
+    }
+
 
     if (eventType == interface::api::ApiEvent::kOplkApiEventCriticalError)
         EV << "Critical error occured" << endl;
@@ -56,57 +75,17 @@ void ApiEvent::eventCb(ApiEventType eventType, ApiEventArg* eventArg, void* user
     // create event message
     auto eventMsg = new oplkMessages::EventMessage();
     eventMsg->setName(("event - " + std::string(interface::debug::getApiEventStr(eventType))).c_str());
+    eventMsg->setEventType(eventType);
     eventMsg->setEventArg(*eventArg);
     eventMsg->setUserArg((oplkMessages::PointerCont)userArg);
 
-    take(eventMsg);
+    // send event message
+    send(eventMsg, mSendGate);
 
-    // send message with awaited return
-    sendAwaitedMessage(eventMsg, eventType);
-
-    // wait for the reception of the according return value
-    auto msg = waitForReturnMessage(eventType);
-
-    // cast message
-    auto retMsg = dynamic_cast<oplkMessages::EventReturnMessage*>(msg.get());
-
-    if ((retMsg != nullptr) && (retMsg->getReturnValue() != interface::api::Error::kErrorOk))
-        throw interface::OplkException("EventCb return value", retMsg->getReturnValue());
+    if (retVal != interface::api::Error::kErrorOk)
+        throw interface::OplkException("Event cb return", retVal);
 }
 
-void ApiEvent::handleOtherMessage(MessagePtr msg)
+void ApiEvent::handleMessage(cMessage* rawMsg)
 {
-}
-
-
-void ApiEvent::foo()
-{
-    EV << "Foo called" << std::endl;
-}
-
-void ApiEvent::setEventType(RawMessagePtr msg, Kind kind)
-{
-    // cast message
-    auto eventMsg = dynamic_cast<oplkMessages::EventMessage*>(msg);
-
-    if (eventMsg != nullptr)
-    {
-        // set event type
-        eventMsg->setEventType(kind);
-    }
-    else
-        throw std::runtime_error("invalid message type");
-}
-
-ApiEvent::Kind ApiEvent::getEventType(RawMessagePtr msg)
-{
-    // cast message
-    auto eventMsg = dynamic_cast<oplkMessages::EventReturnMessage*>(msg);
-
-    if (eventMsg != nullptr)
-    {
-        // get event type
-        return eventMsg->getEventType();
-    }
-    return -1;
 }

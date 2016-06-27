@@ -37,16 +37,20 @@ void SdoUdp::handleMessage(cMessage *msg)
 
 void SdoUdp::createSocket(ConnectionType* connection)
 {
+    Enter_Method(__FUNCTION__);
 }
 
 void SdoUdp::closeSocket()
 {
+    Enter_Method(__FUNCTION__);
 }
 
 void SdoUdp::sendToSocket(ConnectionType* connection, FrameType* data, SizeType size)
 {
+    Enter_Method(__FUNCTION__);
 }
 
 void SdoUdp::ciricalSection(OPLK::BoolType enable)
 {
+    Enter_Method(__FUNCTION__);
 }

@@ -90,6 +90,8 @@ void DirectEdrv::handleMessage(cMessage *rawMsg)
 
 void DirectEdrv::initEdrv(EdrvInitParamType* initParam)
 {
+    Enter_Method(__FUNCTION__);
+
     // check parameter
     if (initParam == nullptr)
         throw interface::OplkException("invalid init param", interface::api::Error::kErrorEdrvInvalidParam);
@@ -117,16 +119,19 @@ void DirectEdrv::initEdrv(EdrvInitParamType* initParam)
 
 void DirectEdrv::exitEdrv()
 {
+    Enter_Method(__FUNCTION__);
     setInitialized(false);
 }
 
 DirectEdrv::MacType DirectEdrv::getMacAddr()
 {
+    Enter_Method(__FUNCTION__);
     return mMac.data();
 }
 
 void DirectEdrv::sendTxBuffer(TxBufferType* txBuffer)
 {
+    Enter_Method(__FUNCTION__);
     // check parameter
     if (txBuffer == nullptr)
         throw interface::OplkException("invalid tx buffer", interface::api::Error::kErrorEdrvInvalidParam);
@@ -164,6 +169,7 @@ void DirectEdrv::sendTxBuffer(TxBufferType* txBuffer)
 
 void DirectEdrv::allocTxBuffer(TxBufferType* txBuffer)
 {
+    Enter_Method(__FUNCTION__);
     // check parameter
     if (txBuffer == nullptr)
         throw interface::OplkException("invalid tx buffer", interface::api::Error::kErrorEdrvInvalidParam);
@@ -178,6 +184,7 @@ void DirectEdrv::allocTxBuffer(TxBufferType* txBuffer)
 
 void DirectEdrv::freeTxBuffer(TxBufferType* txBuffer)
 {
+    Enter_Method(__FUNCTION__);
     if (txBuffer->pBuffer != nullptr)
     {
         delete[] txBuffer->pBuffer;
@@ -187,6 +194,7 @@ void DirectEdrv::freeTxBuffer(TxBufferType* txBuffer)
 
 void DirectEdrv::changeRxFilter(FilterType* filter, unsigned int count, unsigned int entryChanged, unsigned int changeFlags)
 {
+    Enter_Method(__FUNCTION__);
     // check parameter
     if (filter == nullptr)
         throw interface::OplkException("invalid filter", interface::api::Error::kErrorEdrvInvalidParam);
@@ -196,11 +204,13 @@ void DirectEdrv::changeRxFilter(FilterType* filter, unsigned int count, unsigned
 
 void DirectEdrv::clearRxMulticastMacAddr(MacType macAddr)
 {
+    Enter_Method(__FUNCTION__);
     bubble("clear rx multicast mac addr");
 }
 
 void DirectEdrv::setRxMulticastMacAddr(MacType macAddr)
 {
+    Enter_Method(__FUNCTION__);
     bubble("set rx multicast mac addr");
 }
 

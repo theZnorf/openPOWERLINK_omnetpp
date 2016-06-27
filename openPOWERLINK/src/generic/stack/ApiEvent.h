@@ -17,10 +17,9 @@
 #define __OPENPOWERLINK_APIEVENT_H_
 
 #include <omnetpp.h>
-#include <SendAwaitedReturnBase.h>
 #include "OplkApiEvent.h"
 
-class ApiEvent : public SendAwaitedReturnBase<interface::api::ApiEventType>
+class ApiEvent : public OPP::cSimpleModule
 {
         // Definitions
     public:
@@ -29,7 +28,6 @@ class ApiEvent : public SendAwaitedReturnBase<interface::api::ApiEventType>
 
         // C-Tor
     public:
-        ApiEvent();
 
         // Methods
     public:
@@ -37,14 +35,12 @@ class ApiEvent : public SendAwaitedReturnBase<interface::api::ApiEventType>
 
     protected:
         virtual void initialize();
-        virtual void handleOtherMessage(MessagePtr msg) override;
+        virtual void handleMessage(OPP::cMessage* rawMsg);
 
-        virtual void foo();
-
-        // Static methods
-    public:
-        static void setEventType(RawMessagePtr msg, Kind kind);
-        static Kind getEventType(RawMessagePtr msg);
+        // Member
+    private:
+        OPP::cGate* mSendGate;
+        OPP::cPar* mReturnValues = nullptr;
 };
 
 #endif

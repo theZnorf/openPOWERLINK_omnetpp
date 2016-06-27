@@ -53,21 +53,25 @@ void Target::handleMessage(cMessage *msg)
 
 void Target::msleep(MilliSecondsType milliseconds)
 {
+    Enter_Method(__FUNCTION__);
     bubble(("msleep called for waiting " + to_string(milliseconds) + " milliseconds").c_str());
 }
 
 void Target::setIpAddress(std::string interfaceName, AddressType ipAddress, AddressType subnetMask, MtuType mtu)
 {
+    Enter_Method(__FUNCTION__);
     bubble("setIpAddress called");
 }
 
 void Target::setDefaultGateway(AddressType defaultGateway)
 {
+    Enter_Method(__FUNCTION__);
     bubble("setDefaultGateway called");
 }
 
 Target::TickType Target::getTickCount()
 {
+    Enter_Method(__FUNCTION__);
     auto currTickTime = simTime().inUnit(SimTimeUnit::SIMTIME_MS);
 
     if (mPrintCurrentTick)
@@ -78,6 +82,7 @@ Target::TickType Target::getTickCount()
 
 void Target::setLed(LedType ledType, bool ledOn)
 {
+    Enter_Method(__FUNCTION__);
     bubble("setLed called");
 
     switch(ledType)

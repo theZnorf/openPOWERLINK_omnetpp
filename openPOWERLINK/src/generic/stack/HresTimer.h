@@ -45,8 +45,8 @@ class HresTimer : public TimerBase<HresTimerHandle, HresTimerInfo>
 
     protected:
         virtual void initialize();
-        virtual void handleRawMessage(cMessage *msg) override;
-        //virtual void handleMessage(cMessage *msg);
+        //virtual void handleRawMessage(cMessage *msg) override;
+        virtual void handleMessage(cMessage *msg);
 
     private:
         void refreshDisplay();

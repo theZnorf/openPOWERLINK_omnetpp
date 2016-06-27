@@ -30,29 +30,26 @@ class TimerBase : public OPP::cSimpleModule
         using TimerCont = std::map<THandle, TInfo>;
 
     protected:
-        TimerBase()
-            : OPP::cSimpleModule(16000)
-        { }
+//        TimerBase()
+//            : OPP::cSimpleModule(16000)
+//        { }
 
         // Methods
     protected:
-        void activity()
-        {
-            while(mRunning)
-            {
-                // receive message
-                auto msg = receive();
-
-                // handle message
-                handleRawMessage(msg);
-            }
-        }
+//        void activity()
+//        {
+//            while(mRunning)
+//            {
+//                // receive message
+//                auto msg = receive();
+//
+//                // handle message
+//                handleRawMessage(msg);
+//            }
+//        }
 
         void scheduleTimer(TInfo* info)
         {
-            auto oldCtx = simulation.getContext();
-            simulation.setContext(this);
-
             auto msg = createTimerMessage(info->handle);
 
             msg->setName(("Timer Message: " + std::to_string(info->time.inUnit(SimTimeUnit::SIMTIME_US)) + " us").c_str());
@@ -64,8 +61,6 @@ class TimerBase : public OPP::cSimpleModule
             info->scheduledMsg = msg;
 
             scheduleAt(simTime() + info->time, msg);
-
-            simulation.setContext(oldCtx);
         }
 
         THandle getNewHandle()
@@ -107,7 +102,7 @@ class TimerBase : public OPP::cSimpleModule
             return ret == 1;
         }
 
-        virtual void handleRawMessage(OPP::cMessage* msg) = 0;
+        //virtual void handleRawMessage(OPP::cMessage* msg) = 0;
 
     private:
         cMessage* createTimerMessage(THandle handle)

@@ -16,6 +16,8 @@
 #include "CnApp.h"
 #include "OplkException.h"
 
+#include <sstream>
+
 USING_NAMESPACE
 using namespace std;
 
@@ -27,7 +29,8 @@ interface::api::ErrorType CnApp::initApp()
     {
         /* Allocate process image */
         EV << "Initializing process image..." << endl;
-        EV << "Size of process image: Input = " << sizeof(PI_IN) << " Output = " << sizeof(PI_OUT) << endl;
+        EV << "Size of process image: Input = " << sizeof(PI_IN) << " Output = "
+                << sizeof(PI_OUT) << endl;
 
         allocProcessImage(sizeof(PI_IN), sizeof(PI_OUT));
 
@@ -61,8 +64,6 @@ interface::api::ErrorType CnApp::processSync()
 {
     try
     {
-        waitSyncEvent(100000);
-
         exchangeProcessImageOut();
 
         /* read input image - digital outputs */
@@ -73,8 +74,9 @@ interface::api::ErrorType CnApp::processSync()
 
         exchangeProcessImageIn();
 
-        // create message with lower priority as defaul for achieving the execution after the response message
-        auto msg = new cMessage("refresh Cn App display", static_cast<short>(CnAppCallType::refreshDisplay));
+        // create message with lower priority as default for achieving the execution after the response message
+        auto msg = new cMessage("refresh Cn App display",
+                static_cast<short>(CnAppCallType::refreshDisplay));
         msg->setSchedulingPriority(1);
 
         // schedule self message for refreshing display
@@ -112,5 +114,11 @@ void CnApp::shutdownApp()
 
 void CnApp::refreshDisplay()
 {
-    // TODO: implement display
+    std::stringstream strStream;
+
+    strStream << "IN:  " << std::ios::hex << mDigitalIn << std::endl;
+    strStream << "OUT: " << std::ios::hex << mDigitalOut << std::endl;
+
+    getDisplayString().setTagArg("t", 0, strStream.str().c_str());
+
 }

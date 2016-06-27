@@ -19,7 +19,9 @@ import openpowerlink.generic.IApp;
 
 simple MnApp like IApp
 {
-        gates:
+    parameters:
+        @display("t=,t,black");
+    gates:
         input functionCall[];
         output functionReturn[];
         output apiCall;

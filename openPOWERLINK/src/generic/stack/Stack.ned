@@ -26,9 +26,7 @@ module Stack
         input apiCall[];
         output apiReturn[];
         output processSync;
-        input processSyncReturn;
         output event;
-        input eventReturn;
 
         input ethernetIn;
         output ethernetOut;
@@ -88,11 +86,9 @@ module Stack
 
 		// Event
         apiEvent.event --> event;
-        eventReturn --> apiEvent.eventReturn;
 
 		// Process sync (App)
         process.processSync --> processSync;
-        processSyncReturn --> process.processSyncReturn;
 
         // Network
         edrv.ethernetOut --> ethernetOut;

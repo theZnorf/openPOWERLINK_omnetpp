@@ -20,8 +20,9 @@ simple ProcessSync
     parameters:
         int numberOfInstances = default(1); // Number of Instances of ProcessSync modules, should be set by parent module/network
         string libName; // Filename of shared library, should be set by parent module/network
+        
+        volatile int defaultReturnValue = default(0); // Default return value for the process sync cb
 
     gates:
         output processSync; // Output gate for process sync messaes forwarded to the app module IApp
-        input processSyncReturn; // Input gate for the return messages from the app module IApp
 }

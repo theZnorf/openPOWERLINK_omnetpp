@@ -57,8 +57,16 @@ void AppBase::handleOtherMessage(MessagePtr msg)
                 handleAppMessage(msg);
         }
 
-        // send return message
-        mReturns.at(msg->getArrivalGate()->getIndex())->sendReturnValue(ret, msg->getKind());
+        auto arrivalGate = msg->getArrivalGate();
+
+        if (arrivalGate != nullptr)
+        {
+            auto gateIdx = static_cast<size_t>(arrivalGate->getIndex());
+
+            // send return message
+            if (gateIdx < mReturns.size())
+                mReturns.at(gateIdx)->sendReturnValue(ret, msg->getKind());
+        }
     }
 }
 

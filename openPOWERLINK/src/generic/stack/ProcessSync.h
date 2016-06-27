@@ -17,14 +17,11 @@
 #define __OPENPOWERLINK_PROCESSSYNC_H_
 
 #include <omnetpp.h>
-#include <SendAwaitedReturnBase.h>
-#include "AppBase.h"
 
-class ProcessSync : public SendAwaitedReturnBase<AppBase::AppBaseCallType>
+class ProcessSync : public OPP::cSimpleModule
 {
         // C-Tor
     public:
-        ProcessSync();
 
         // Methods
     public:
@@ -32,7 +29,12 @@ class ProcessSync : public SendAwaitedReturnBase<AppBase::AppBaseCallType>
 
     protected:
         virtual void initialize();
-        virtual void handleOtherMessage(MessagePtr msg) override;
+        virtual void handleMessage(OPP::cMessage* rawMsg);
+
+        // Member
+    private:
+        OPP::cGate* mSendGate;
+        OPP::cPar* mDefaultReturnValue = nullptr;
 };
 
 #endif

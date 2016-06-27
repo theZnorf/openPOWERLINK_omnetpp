@@ -42,12 +42,13 @@ void Trace::handleMessage(cMessage *msg)
 
 void Trace::trace(std::string msg)
 {
+    Enter_Method(__FUNCTION__);
     msg.erase(std::remove_if(msg.begin(), msg.end(), [](char c)
     {   return !std::isprint(c);}), msg.end());
 
-    std::cout << "TRACE - " << getParentModule()->getParentModule()->getName() << " : " << msg << std::endl;
+    //std::cout << "TRACE - " << getParentModule()->getParentModule()->getName() << " : " << msg << std::endl;
 
-    //EV << getParentModule()->getParentModule()->getName() << " - " << msg.c_str() << "\n";
+    EV << getParentModule()->getParentModule()->getName() << " - " << msg.c_str() << "\n";
 
     bubble(msg.c_str());
 }

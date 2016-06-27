@@ -13,6 +13,5 @@ moduleinterface IEvent
 {
     gates:
         input event; // Input gate for occuring events
-        output eventReturn;  // Output gate for return values from event handling
         output stackShutdown; // Output gate for occuring shutdown event
 }

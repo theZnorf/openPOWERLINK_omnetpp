@@ -70,8 +70,6 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
             {
                 MessagePtr msg(rawMsg);
 
-                foo();
-
                 // get kind from message
                 auto kind = mGetKind(msg.get());
 
@@ -84,11 +82,6 @@ class SendAwaitedReturnBase : public OPP::cSimpleModule
                     // forward unexpected message
                     handleOtherMessage(msg);
             }
-        }
-
-        virtual void foo()
-        {
-
         }
 
         void sendAwaitedMessage(RawMessagePtr msg, Kind kind, OPP::cGate* sendGate)

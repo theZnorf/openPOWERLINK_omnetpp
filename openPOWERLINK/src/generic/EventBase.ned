@@ -28,6 +28,5 @@ simple EventBase like IEvent
         
     gates:
         input event;
-        output eventReturn;
         output stackShutdown;
 }

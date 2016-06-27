@@ -79,8 +79,6 @@ interface::api::ErrorType MnApp::processSync()
     interface::api::ErrorType ret = interface::api::Error::kErrorOk;
     try
     {
-        waitSyncEvent(100000);
-
         exchangeProcessImageOut();
 
         mCnt++;

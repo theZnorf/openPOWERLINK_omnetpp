@@ -135,8 +135,8 @@ void HresTimer::deleteTimer(HresTimerHandle* handle)
     refreshDisplay();
 }
 
-void HresTimer::handleRawMessage(cMessage *rawMsg)
-//void HresTimer::handleMessage(cMessage *rawMsg)
+//void HresTimer::handleRawMessage(cMessage *rawMsg)
+void HresTimer::handleMessage(cMessage *rawMsg)
 {
     MsgPtr msg(rawMsg);
 

@@ -73,9 +73,9 @@ void DemoBase::handleOtherMessage(MessagePtr msg)
 void DemoBase::handleSelfMessage(MessagePtr msg)
 {
     // check sim time
-    if (simTime() > mShutdownTime)
+    if ((simTime() > mShutdownTime) && (mState != DemoState::shuttingDown))
     {
-        mState = DemoState::shuttingDown;
+        mState = DemoState::shuttingDownApp;
     }
 
     // check current state
