@@ -71,6 +71,7 @@ namespace interface
         using NmtNodeEvent = OPLK::tNmtNodeEvent;
         using NmtBootEvent = OPLK::tNmtBootEvent;
         using SdoComConState = OPLK::tSdoComConState;
+        using MessageType = OPLK::eMsgType;
 
         struct ApiFunctions
         {

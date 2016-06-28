@@ -17,6 +17,7 @@
 #define __OPENPOWERLINK_API_H_
 
 #include <string>
+#include <memory>
 #include <vector>
 #include <omnetpp.h>
 #include "interface/OplkApi.h"
@@ -101,6 +102,9 @@ class Api : public OPP::cSimpleModule
                 interface::api::ErrorType returnValue;
         };
 
+        using BufferPtr = std::unique_ptr<BYTE[]>;
+        using BufferCont = std::vector<BufferPtr>;
+
         // C-Tor
     public:
         Api();
@@ -135,6 +139,8 @@ class Api : public OPP::cSimpleModule
         OPP::cGate* mAppGate;
 
         ProcessSyncInfo mProcessSyncInfo;
+
+        BufferCont mStoredBuffer; // Container for store buffer, is cleaned during destruction
 };
 
 #endif

@@ -14,17 +14,18 @@ namespace interface
 
     OplkSdoUdp::OplkSdoUdp()
     {
-        // TODO Auto-generated constructor stub
-
     }
 
     OplkSdoUdp::~OplkSdoUdp()
     {
-        // TODO Auto-generated destructor stub
     }
 
     void OplkSdoUdp::setFunctions(SharedLibraryHelper::HelperPtr helper, InstanceHandle handle)
     {
+        // resolve exported interface functions in module
+        auto interfaceFunctions = getModule(handle)->getInterfaceFunctions();
+        interfaceFunctions->receiveDataCb = helper->getFunction<OPLK::ErrorType, ConnectionType*, AsySdoSeq*, unsigned int>("sim_sdoudpReceiveData");
+
         OPLK::tSdoUdpFunctions functions;
         functions.pfnCreateSocket = OplkSdoUdp::createSocket;
         functions.pfnCloseSocket = OplkSdoUdp::closeSocket;

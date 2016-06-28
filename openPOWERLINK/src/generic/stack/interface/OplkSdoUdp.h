@@ -23,6 +23,7 @@ namespace interface
             using ConnectionType = OPLK::tSdoUdpCon;
             using FrameType = OPLK::tPlkFrame;
             using SizeType = UINT32;
+            using AsySdoSeq = OPLK::tAsySdoSeq;
 
             // C-Tor / D-Tor
         private:

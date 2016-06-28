@@ -11,10 +11,21 @@
 // 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
-// 
+//
 
-package openpowerlink.generic.stack;
+cplusplus {{
+    #include "BufferMessage_m.h"
+}}
 
-simple Timer
-{
+message oplkMessages::BufferMessage;
+    
+cplusplus {{
+    USING_NAMESPACE
+}}
+
+namespace oplkMessages;
+
+message OplkMessage extends BufferMessage {
+    unsigned int messageType;
+    string messageTypeStr;
 }

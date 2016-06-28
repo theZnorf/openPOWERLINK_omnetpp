@@ -108,7 +108,7 @@ void Target::refreshDisplay()
     std::stringstream strStream;
 
     strStream << " StatusLed: " << (mStatusLed? "On" : "Off") << std::endl;
-    strStream << " ErrorLed: " << (mErrorLed? "On" : "Off");
+    strStream << " ErrorLed: " << (mErrorLed? "On" : "Off") << std::endl;
 
     getDisplayString().setTagArg("t",0,strStream.str().c_str());
 

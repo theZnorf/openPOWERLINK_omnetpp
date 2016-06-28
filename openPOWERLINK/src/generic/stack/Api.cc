@@ -81,7 +81,8 @@ void Api::handleRawMessage(cMessage* rawMsg)
 
 void Api::handleApiCall(RawMessagePtr msg)
 {
-    interface::api::ErrorType ret = interface::api::Error::kErrorInvalidOperation;
+    interface::api::ErrorType ret =
+            interface::api::Error::kErrorInvalidOperation;
     cMessage* retPtr = nullptr;
 
     emit(mInvokedApiFunctionSignal, msg->getKind());
@@ -91,13 +92,14 @@ void Api::handleApiCall(RawMessagePtr msg)
     switch (callType)
     {
         case ApiCallType::init:
-            ret = mApi.initialize();
+            if (mApi.initialize != nullptr)
+                ret = mApi.initialize();
             break;
         case ApiCallType::create: {
             // cast message
             auto initMsg = dynamic_cast<oplkMessages::InitMessage*>(msg);
 
-            if (initMsg != nullptr)
+            if ((initMsg != nullptr) && (mApi.create != nullptr))
             {
                 auto initParam = initMsg->getInitParam();
                 ret = mApi.create(&initParam);
@@ -105,10 +107,12 @@ void Api::handleApiCall(RawMessagePtr msg)
             break;
         }
         case ApiCallType::destroy:
-            ret = mApi.destroy();
+            if (mApi.destroy != nullptr)
+                ret = mApi.destroy();
             break;
         case ApiCallType::exit:
-            mApi.exit();
+            if (mApi.exit != nullptr)
+                mApi.exit();
             break;
         case ApiCallType::execNmtCommand: {
             // cast message
@@ -122,7 +126,7 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto obdMessage = dynamic_cast<oplkMessages::ObdCbMessage*>(msg);
 
-            if (obdMessage != nullptr)
+            if ((obdMessage != nullptr) && (mApi.cbGenericObdAccess != nullptr))
                 ret = mApi.cbGenericObdAccess(&obdMessage->getObdCbParam());
         }
             break;
@@ -130,14 +134,15 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto linkMsg = dynamic_cast<oplkMessages::LinkMessage*>(msg);
 
-            if (linkMsg != nullptr)
+            if ((linkMsg != nullptr) && (mApi.linkObject != nullptr))
             {
                 UINT varEntries = linkMsg->getVarEntries();
                 interface::api::ObdSize entrySize = linkMsg->getEntrySize();
-
-                ret = mApi.linkObject(linkMsg->getObjIndex(), (void*) linkMsg->getVariable(), &varEntries, &entrySize,
+                ret = mApi.linkObject(linkMsg->getObjIndex(),
+                        (void*) linkMsg->getVariable(), &varEntries, &entrySize,
                         linkMsg->getFirstSubIndex());
-                auto retMsg = new oplkMessages::LinkReturnMessage("LinkObjectReturn", msg->getKind());
+                auto retMsg = new oplkMessages::LinkReturnMessage(
+                        "LinkObjectReturn", msg->getKind());
                 retMsg->setVarEntries(varEntries);
                 retMsg->setEntrySize(entrySize);
 
@@ -154,26 +159,31 @@ void Api::handleApiCall(RawMessagePtr msg)
                 UINT size = objMsg->getObjDataArraySize();
                 std::unique_ptr<BYTE[]> destData(new BYTE[size] { 0 });
 
-                ret = mApi.readObject(&objMsg->getSdoComConHdl(), objMsg->getNodeId(), objMsg->getIndex(),
-                        objMsg->getSubIndex(), destData.get(), &size, objMsg->getSdoType(),
-                        (void*) objMsg->getUserArg());
+                if (mApi.readObject != nullptr)
+                {
+                    ret = mApi.readObject(&objMsg->getSdoComConHdl(),
+                            objMsg->getNodeId(), objMsg->getIndex(),
+                            objMsg->getSubIndex(), destData.get(), &size,
+                            objMsg->getSdoType(), (void*) objMsg->getUserArg());
 
-                // create return message and copy data from recieved message
-                auto retMsg = new oplkMessages::ObjectReturnMessage("ReadObjectReturn", msg->getKind());
-                retMsg->setSdoComConHdl(objMsg->getSdoComConHdl());
-                retMsg->setNodeId(objMsg->getNodeId());
-                retMsg->setIndex(objMsg->getIndex());
-                retMsg->setSubIndex(objMsg->getSubIndex());
-                retMsg->setSdoType(objMsg->getSdoType());
-                retMsg->setUserArg(objMsg->getUserArg());
+                    // create return message and copy data from recieved message
+                    auto retMsg = new oplkMessages::ObjectReturnMessage(
+                            "ReadObjectReturn", msg->getKind());
+                    retMsg->setSdoComConHdl(objMsg->getSdoComConHdl());
+                    retMsg->setNodeId(objMsg->getNodeId());
+                    retMsg->setIndex(objMsg->getIndex());
+                    retMsg->setSubIndex(objMsg->getSubIndex());
+                    retMsg->setSdoType(objMsg->getSdoType());
+                    retMsg->setUserArg(objMsg->getUserArg());
 
-                // allocate array for read data
-                objMsg->setObjDataArraySize(size);
-                // write read data to array
-                for (auto i = 0u; i < size; i++)
-                    objMsg->setObjData(i, destData[i]);
+                    // allocate array for read data
+                    objMsg->setObjDataArraySize(size);
+                    // write read data to array
+                    for (auto i = 0u; i < size; i++)
+                        objMsg->setObjData(i, destData[i]);
 
-                retPtr = retMsg;
+                    retPtr = retMsg;
+                }
             }
         }
             break;
@@ -181,7 +191,7 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto objMsg = dynamic_cast<oplkMessages::ObjectMessage*>(msg);
 
-            if (objMsg != nullptr)
+            if ((objMsg != nullptr) && (mApi.writeObject != nullptr))
             {
                 UINT size = objMsg->getObjDataArraySize();
                 std::unique_ptr<BYTE[]> destData(new BYTE[size] { 0 });
@@ -190,12 +200,14 @@ void Api::handleApiCall(RawMessagePtr msg)
                 for (auto i = 0u; i < size; i++)
                     destData[i] = objMsg->getObjData(i);
 
-                ret = mApi.writeObject(&objMsg->getSdoComConHdl(), objMsg->getNodeId(), objMsg->getIndex(),
-                        objMsg->getSubIndex(), destData.get(), size, objMsg->getSdoType(),
-                        (void*) objMsg->getUserArg());
+                ret = mApi.writeObject(&objMsg->getSdoComConHdl(),
+                        objMsg->getNodeId(), objMsg->getIndex(),
+                        objMsg->getSubIndex(), destData.get(), size,
+                        objMsg->getSdoType(), (void*) objMsg->getUserArg());
 
                 // create return message and copy data from recieved message
-                auto retMsg = new oplkMessages::ObjectReturnMessage("WriteObjectReturn", msg->getKind());
+                auto retMsg = new oplkMessages::ObjectReturnMessage(
+                        "WriteObjectReturn", msg->getKind());
                 retMsg->setSdoComConHdl(objMsg->getSdoComConHdl());
                 retMsg->setNodeId(objMsg->getNodeId());
                 retMsg->setIndex(objMsg->getIndex());
@@ -209,9 +221,10 @@ void Api::handleApiCall(RawMessagePtr msg)
         }
         case ApiCallType::finishUserObdAccess: {
             // cast message
-            auto connMsg = dynamic_cast<oplkMessages::ObdAlConnectionMessage*>(msg);
+            auto connMsg =
+                    dynamic_cast<oplkMessages::ObdAlConnectionMessage*>(msg);
 
-            if (connMsg != nullptr)
+            if ((connMsg != nullptr) && (mApi.finishUserObdAccess != nullptr))
             {
                 UINT size = connMsg->getDataArraySize();
                 std::unique_ptr<BYTE[]> data(new BYTE[size] { 0 });
@@ -227,7 +240,8 @@ void Api::handleApiCall(RawMessagePtr msg)
                 ret = mApi.finishUserObdAccess(&connHdl);
 
                 // create return message
-                auto retMsg = new oplkMessages::ObdAlConnectionReturnMessage("ObdAlConnectionReturn", msg->getKind());
+                auto retMsg = new oplkMessages::ObdAlConnectionReturnMessage(
+                        "ObdAlConnectionReturn", msg->getKind());
                 retMsg->setDataArraySize(size);
                 // copy data
                 for (auto i = 0u; i < size; i++)
@@ -243,7 +257,7 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto enableMsg = dynamic_cast<oplkMessages::BoolMessage*>(msg);
 
-            if (enableMsg != nullptr)
+            if ((enableMsg != nullptr) && (mApi.enableUserObdAccess != nullptr))
             {
                 ret = mApi.enableUserObdAccess(enableMsg->getValue());
             }
@@ -253,7 +267,7 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto sdoMsg = dynamic_cast<oplkMessages::SdoMessage*>(msg);
 
-            if (sdoMsg != nullptr)
+            if ((sdoMsg != nullptr) && (mApi.freeSdoChannel != nullptr))
             {
                 ret = mApi.freeSdoChannel(sdoMsg->getComConHdl());
             }
@@ -263,9 +277,10 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto sdoMsg = dynamic_cast<oplkMessages::SdoMessage*>(msg);
 
-            if (sdoMsg != nullptr)
+            if ((sdoMsg != nullptr) && (mApi.abortSdoChannel != nullptr))
             {
-                ret = mApi.abortSdoChannel(sdoMsg->getComConHdl(), sdoMsg->getAbortCode());
+                ret = mApi.abortSdoChannel(sdoMsg->getComConHdl(),
+                        sdoMsg->getAbortCode());
             }
             break;
         }
@@ -273,15 +288,17 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto objMsg = dynamic_cast<oplkMessages::LocalObjectMessage*>(msg);
 
-            if (objMsg != nullptr)
+            if ((objMsg != nullptr) && (mApi.readLocalObject != nullptr))
             {
                 UINT size = objMsg->getDataArraySize();
                 std::unique_ptr<BYTE[]> data(new BYTE[size] { 0 });
 
-                ret = mApi.readLocalObject(objMsg->getIndex(), objMsg->getSubIndex(), data.get(), &size);
+                ret = mApi.readLocalObject(objMsg->getIndex(),
+                        objMsg->getSubIndex(), data.get(), &size);
 
                 // create return message
-                auto retMsg = new oplkMessages::LocalObjectReturnMessage("ReadLocalObjectReturn", msg->getKind());
+                auto retMsg = new oplkMessages::LocalObjectReturnMessage(
+                        "ReadLocalObjectReturn", msg->getKind());
 
                 retMsg->setDataArraySize(size);
                 // copy data
@@ -298,7 +315,7 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto objMsg = dynamic_cast<oplkMessages::LocalObjectMessage*>(msg);
 
-            if (objMsg != nullptr)
+            if ((objMsg != nullptr) && (mApi.writeLocalObject != nullptr))
             {
                 UINT size = objMsg->getDataArraySize();
                 std::unique_ptr<BYTE[]> data(new BYTE[size] { 0 });
@@ -306,10 +323,12 @@ void Api::handleApiCall(RawMessagePtr msg)
                 for (auto i = 0u; i < size; i++)
                     data[i] = objMsg->getData(i);
 
-                ret = mApi.writeLocalObject(objMsg->getIndex(), objMsg->getSubIndex(), data.get(), size);
+                ret = mApi.writeLocalObject(objMsg->getIndex(),
+                        objMsg->getSubIndex(), data.get(), size);
 
                 // create return message
-                auto retMsg = new oplkMessages::LocalObjectReturnMessage("WriteLocalObjectReturn", msg->getKind());
+                auto retMsg = new oplkMessages::LocalObjectReturnMessage(
+                        "WriteLocalObjectReturn", msg->getKind());
 
                 retMsg->setDataArraySize(size);
                 // copy data
@@ -324,11 +343,13 @@ void Api::handleApiCall(RawMessagePtr msg)
         }
         case ApiCallType::sendAsndFrame: {
             // cast message
-            auto framePkt = dynamic_cast<oplkMessages::SendAsndFramePacket*>(msg);
+            auto framePkt =
+                    dynamic_cast<oplkMessages::SendAsndFramePacket*>(msg);
 
-            if (framePkt != nullptr)
+            if ((framePkt != nullptr) && (mApi.sendAsndFrame != nullptr))
             {
-                auto frame = dynamic_cast<oplkMessages::AsndFramePacket*>(framePkt->getEncapsulatedPacket());
+                auto frame =
+                        dynamic_cast<oplkMessages::AsndFramePacket*>(framePkt->getEncapsulatedPacket());
 
                 if (frame != nullptr)
                 {
@@ -338,7 +359,8 @@ void Api::handleApiCall(RawMessagePtr msg)
                     for (auto i = 0u; i < frame->getPayLoadArraySize(); i++)
                         frameObj.payload.aPayload[i] = frame->getPayLoad(i);
 
-                    ret = mApi.sendAsndFrame(framePkt->getDestNodeId(), &frameObj, framePkt->getAsndSize());
+                    ret = mApi.sendAsndFrame(framePkt->getDestNodeId(),
+                            &frameObj, framePkt->getAsndSize());
                 }
             }
             break;
@@ -347,9 +369,10 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto plkPkt = dynamic_cast<oplkMessages::SendPlkPacket*>(msg);
 
-            if (plkPkt != nullptr)
+            if ((plkPkt != nullptr) && (mApi.sendEthFrame != nullptr))
             {
-                auto frame = dynamic_cast<oplkMessages::PlkPacket*>(plkPkt->getEncapsulatedPacket());
+                auto frame =
+                        dynamic_cast<oplkMessages::PlkPacket*>(plkPkt->getEncapsulatedPacket());
 
                 if (frame != nullptr)
                 {
@@ -381,9 +404,10 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto filterMsg = dynamic_cast<oplkMessages::AsndFilterMessage*>(msg);
 
-            if (filterMsg != nullptr)
+            if ((filterMsg != nullptr) && (mApi.setAsndForward != nullptr))
             {
-                ret = mApi.setAsndForward(filterMsg->getServiceId(), filterMsg->getFilterType());
+                ret = mApi.setAsndForward(filterMsg->getServiceId(),
+                        filterMsg->getFilterType());
             }
             break;
         }
@@ -391,7 +415,7 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto fwdMsg = dynamic_cast<oplkMessages::BoolMessage*>(msg);
 
-            if (fwdMsg != nullptr)
+            if ((fwdMsg != nullptr) && (mApi.setNonPlkForward != nullptr))
             {
                 ret = mApi.setNonPlkForward(fwdMsg->getValue());
             }
@@ -401,7 +425,7 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto eventMsg = dynamic_cast<oplkMessages::PointerContMessage*>(msg);
 
-            if (eventMsg != nullptr)
+            if ((eventMsg != nullptr) && (mApi.postUserEvent != nullptr))
             {
                 ret = mApi.postUserEvent((void*) eventMsg->getPointer());
             }
@@ -411,20 +435,37 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto nmtMsg = dynamic_cast<oplkMessages::NmtNodeMessage*>(msg);
 
-            if (nmtMsg != nullptr)
+            if ((nmtMsg != nullptr) && (mApi.triggerMnStateChange != nullptr))
             {
-                ret = mApi.triggerMnStateChange(nmtMsg->getNodeId(), nmtMsg->getNodeCommand());
+                ret = mApi.triggerMnStateChange(nmtMsg->getNodeId(),
+                        nmtMsg->getNodeCommand());
             }
             break;
         }
-        case ApiCallType::setCdcBuffer:
-            // TODO: check and implement
+        case ApiCallType::setCdcBuffer: {
+            // cast message
+            auto bufferMsg = dynamic_cast<oplkMessages::BufferMessage*>(msg);
+
+            if ((bufferMsg != nullptr) && (mApi.setCdcBuffer != nullptr))
+            {
+                // allocate new buffer with transmitted data
+                auto buffer = new BYTE[bufferMsg->getBufferArraySize()];
+                for (auto i = 0u; i < bufferMsg->getBufferArraySize(); i++)
+                    buffer[i] = bufferMsg->getBuffer(i);
+
+                // store buffer in internal container
+                mStoredBuffer.emplace_back(buffer);
+
+                ret = mApi.setCdcBuffer(buffer,
+                        bufferMsg->getBufferArraySize());
+            }
+        }
             break;
         case ApiCallType::setOdArchivePath: {
             // cast message
             auto archiveMsg = dynamic_cast<oplkMessages::StringMessage*>(msg);
 
-            if (archiveMsg != nullptr)
+            if ((archiveMsg != nullptr) && (mApi.setOdArchivePath != nullptr))
             {
                 ret = mApi.setOdArchivePath(archiveMsg->getString());
             }
@@ -434,7 +475,7 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto cdcMsg = dynamic_cast<oplkMessages::PointerContMessage*>(msg);
 
-            if (cdcMsg != nullptr)
+            if ((cdcMsg != nullptr) && (mApi.setCdcFilename != nullptr))
             {
                 const char* cdcFile = (const char*) cdcMsg->getPointer();
 
@@ -449,19 +490,22 @@ void Api::handleApiCall(RawMessagePtr msg)
             // cast message
             auto nodeMsg = dynamic_cast<oplkMessages::UintMessage*>(msg);
 
-            if (nodeMsg != nullptr)
+            if ((nodeMsg != nullptr) && (mApi.getIdentResponse != nullptr))
             {
                 interface::api::IdentResponse* identResponse;
 
-                ret = mApi.getIdentResponse(nodeMsg->getValue(), &identResponse);
+                ret = mApi.getIdentResponse(nodeMsg->getValue(),
+                        &identResponse);
 
                 // create returning packet with encapsulated identresponse
                 auto identPkt = new oplkMessages::IdentResponsePacket();
                 identPkt->setFlag1(identResponse->flag1);
                 identPkt->setFlag2(identResponse->flag2);
                 identPkt->setNmtStatus(identResponse->nmtStatus);
-                identPkt->setIdentResponseFlags(identResponse->identResponseFlags);
-                identPkt->setPowerlinkProfileVersion(identResponse->powerlinkProfileVersion);
+                identPkt->setIdentResponseFlags(
+                        identResponse->identResponseFlags);
+                identPkt->setPowerlinkProfileVersion(
+                        identResponse->powerlinkProfileVersion);
                 identPkt->setReserved1(identResponse->reserved1);
                 identPkt->setFeatureFlagsLe(identResponse->featureFlagsLe);
                 identPkt->setMtuLe(identResponse->mtuLe);
@@ -475,10 +519,14 @@ void Api::handleApiCall(RawMessagePtr msg)
                 identPkt->setRevisionNumberLe(identResponse->revisionNumberLe);
                 identPkt->setSerialNumberLe(identResponse->serialNumberLe);
                 identPkt->setVendorIdLe(identResponse->vendorSpecificExt1Le);
-                identPkt->setVerifyConfigurationDateLe(identResponse->verifyConfigurationDateLe);
-                identPkt->setVerifyConfigurationTimeLe(identResponse->verifyConfigurationTimeLe);
-                identPkt->setApplicationSwDateLe(identResponse->applicationSwDateLe);
-                identPkt->setApplicationSwTimeLe(identResponse->applicationSwTimeLe);
+                identPkt->setVerifyConfigurationDateLe(
+                        identResponse->verifyConfigurationDateLe);
+                identPkt->setVerifyConfigurationTimeLe(
+                        identResponse->verifyConfigurationTimeLe);
+                identPkt->setApplicationSwDateLe(
+                        identResponse->applicationSwDateLe);
+                identPkt->setApplicationSwTimeLe(
+                        identResponse->applicationSwTimeLe);
                 identPkt->setIpAddressLe(identResponse->ipAddressLe);
                 identPkt->setSubnetMaskLe(identResponse->subnetMaskLe);
                 identPkt->setDefaultGatewayLe(identResponse->defaultGatewayLe);
@@ -488,10 +536,13 @@ void Api::handleApiCall(RawMessagePtr msg)
                     identPkt->setHostName(i, identResponse->sHostName[i]);
 
                 // vendor specific ext 2
-                for (auto i = 0u; i < sizeof(identResponse->aVendorSpecificExt2); i++)
-                    identPkt->setVendorSpecificExt2(i, identResponse->aVendorSpecificExt2[i]);
+                for (auto i = 0u;
+                        i < sizeof(identResponse->aVendorSpecificExt2); i++)
+                    identPkt->setVendorSpecificExt2(i,
+                            identResponse->aVendorSpecificExt2[i]);
 
-                auto retPkt = new oplkMessages::ReturnPacket("GetIdentResponseReturn", msg->getKind());
+                auto retPkt = new oplkMessages::ReturnPacket(
+                        "GetIdentResponseReturn", msg->getKind());
                 retPkt->encapsulate(identPkt);
 
                 retPtr = retPkt;
@@ -499,117 +550,152 @@ void Api::handleApiCall(RawMessagePtr msg)
             break;
         }
         case ApiCallType::getEthMacAddr: {
-            BYTE mac[6];
-            ret = mApi.getEthMacAddr(mac);
+            if (mApi.getEthMacAddr != nullptr)
+            {
+                BYTE mac[6];
+                ret = mApi.getEthMacAddr(mac);
 
-            auto macMsg = new oplkMessages::MacReturnMessage("GetMacReturn", msg->getKind());
+                auto macMsg = new oplkMessages::MacReturnMessage("GetMacReturn",
+                        msg->getKind());
 
-            for (auto i = 0u; i < sizeof(mac); i++)
-                macMsg->setMac(i, mac[i]);
+                for (auto i = 0u; i < sizeof(mac); i++)
+                    macMsg->setMac(i, mac[i]);
 
-            retPtr = macMsg;
+                retPtr = macMsg;
+            }
             break;
         }
         case ApiCallType::checkKernelStack: {
-            auto valid = mApi.checkKernelStack();
+            if (mApi.checkKernelStack != nullptr)
+            {
+                auto valid = mApi.checkKernelStack();
 
-            auto checkMsg = new oplkMessages::BoolMessage("CheckKernelStackReturn", msg->getKind());
-            checkMsg->setValue(valid);
+                auto checkMsg = new oplkMessages::BoolMessage(
+                        "CheckKernelStackReturn", msg->getKind());
+                checkMsg->setValue(valid);
 
-            retPtr = checkMsg;
+                retPtr = checkMsg;
+            }
             break;
         }
         case ApiCallType::waitSyncEvent: {
             // cast message
             auto timeoutMsg = dynamic_cast<oplkMessages::UlongMessage*>(msg);
 
-            if (timeoutMsg != nullptr)
+            if ((timeoutMsg != nullptr) && (mApi.waitSyncEvent != nullptr))
             {
                 ret = mApi.waitSyncEvent(timeoutMsg->getValue());
             }
             break;
         }
         case ApiCallType::getVersion: {
-            auto version = mApi.getVersion();
+            if (mApi.getVersion != nullptr)
+            {
+                auto version = mApi.getVersion();
 
-            auto versionMsg = new oplkMessages::UintMessage("GetVersionReturn", msg->getKind());
+                auto versionMsg = new oplkMessages::UintMessage(
+                        "GetVersionReturn", msg->getKind());
 
-            versionMsg->setValue(version);
+                versionMsg->setValue(version);
 
-            retPtr = versionMsg;
+                retPtr = versionMsg;
+            }
             break;
         }
         case ApiCallType::getVersionString: {
-            auto str = mApi.getVersionString();
+            if (mApi.getVersionString != nullptr)
+            {
+                auto str = mApi.getVersionString();
 
-            auto versionMsg = new oplkMessages::StringMessage("GetVersionStringReturn", msg->getKind());
+                auto versionMsg = new oplkMessages::StringMessage(
+                        "GetVersionStringReturn", msg->getKind());
 
-            versionMsg->setString(str);
+                versionMsg->setString(str);
 
-            retPtr = versionMsg;
+                retPtr = versionMsg;
+            }
             break;
         }
         case ApiCallType::getStackConfiguration: {
-            auto conf = mApi.getStackConfiguration();
+            if (mApi.getStackConfiguration != nullptr)
+            {
+                auto conf = mApi.getStackConfiguration();
 
-            auto confMsg = new oplkMessages::UintMessage("GetStackConfigurationReturn", msg->getKind());
+                auto confMsg = new oplkMessages::UintMessage(
+                        "GetStackConfigurationReturn", msg->getKind());
 
-            confMsg->setValue(conf);
+                confMsg->setValue(conf);
 
-            retPtr = confMsg;
+                retPtr = confMsg;
+            }
             break;
         }
         case ApiCallType::getStackInfo: {
-            interface::api::ApiStackInfo info;
+            if (mApi.getStackInfo != nullptr)
+            {
+                interface::api::ApiStackInfo info;
 
-            ret = mApi.getStackInfo(&info);
+                ret = mApi.getStackInfo(&info);
 
-            auto infoMsg = new oplkMessages::StackInfoReturnMessage("GetStackInfoReturn", msg->getKind());
+                auto infoMsg = new oplkMessages::StackInfoReturnMessage(
+                        "GetStackInfoReturn", msg->getKind());
 
-            infoMsg->setInfo(info);
+                infoMsg->setInfo(info);
 
-            retPtr = infoMsg;
+                retPtr = infoMsg;
+            }
             break;
         }
         case ApiCallType::getSocTime: {
-            interface::api::SocTimeInfo info;
+            if (mApi.getSocTime != nullptr)
+            {
+                interface::api::SocTimeInfo info;
 
-            ret = mApi.getSocTime(&info);
+                ret = mApi.getSocTime(&info);
 
-            auto infoMsg = new oplkMessages::SocTimeReturnMessage("GetSocTimeReturn", msg->getKind());
+                auto infoMsg = new oplkMessages::SocTimeReturnMessage(
+                        "GetSocTimeReturn", msg->getKind());
 
-            infoMsg->setInfo(info);
+                infoMsg->setInfo(info);
 
-            retPtr = infoMsg;
-
+                retPtr = infoMsg;
+            }
             break;
         }
 
         case ApiCallType::allocProcessImage: {
             // cast message
-            auto sizeMsg = dynamic_cast<oplkMessages::ProcessImageSIzeMessage*>(msg);
+            auto sizeMsg =
+                    dynamic_cast<oplkMessages::ProcessImageSIzeMessage*>(msg);
 
-            if (sizeMsg != nullptr)
+            if ((sizeMsg != nullptr) && (mApi.allocProcessImage != nullptr))
             {
-                ret = mApi.allocProcessImage(sizeMsg->getSizeIn(), sizeMsg->getSizeOut());
+                ret = mApi.allocProcessImage(sizeMsg->getSizeIn(),
+                        sizeMsg->getSizeOut());
             }
             break;
         }
         case ApiCallType::freeProcessImage:
-            ret = mApi.freeProcessImage();
+            if (mApi.freeProcessImage != nullptr)
+                ret = mApi.freeProcessImage();
             break;
         case ApiCallType::linkProcessImageObject: {
             // cast message
-            auto linkMsg = dynamic_cast<oplkMessages::LinkProcessImageMessage*>(msg);
+            auto linkMsg =
+                    dynamic_cast<oplkMessages::LinkProcessImageMessage*>(msg);
 
-            if (linkMsg != nullptr)
+            if ((linkMsg != nullptr)
+                    && (mApi.linkProcessImageObject != nullptr))
             {
                 UINT varEntries = linkMsg->getVarEntries();
-                ret = mApi.linkProcessImageObject(linkMsg->getObjIndex(), linkMsg->getFirstSubIndex(),
-                        linkMsg->getOffset(), linkMsg->getOutputPi(), linkMsg->getEntrySize(), &varEntries);
+                ret = mApi.linkProcessImageObject(linkMsg->getObjIndex(),
+                        linkMsg->getFirstSubIndex(), linkMsg->getOffset(),
+                        linkMsg->getOutputPi(), linkMsg->getEntrySize(),
+                        &varEntries);
 
                 // create return message
-                auto retMsg = new oplkMessages::LinkProcessImageReturnMessage("LinkProcessImageReturn", msg->getKind());
+                auto retMsg = new oplkMessages::LinkProcessImageReturnMessage(
+                        "LinkProcessImageReturn", msg->getKind());
                 retMsg->setVarEntries(varEntries);
 
                 retPtr = retMsg;
@@ -617,45 +703,57 @@ void Api::handleApiCall(RawMessagePtr msg)
             break;
         }
         case ApiCallType::exchangeProcessImageIn:
-            ret = mApi.exchangeProcessImageIn();
+            if (mApi.exchangeProcessImageIn != nullptr)
+                ret = mApi.exchangeProcessImageIn();
             break;
         case ApiCallType::exchangeProcessImageOut:
-            ret = mApi.exchangeProcessImageOut();
+            if (mApi.exchangeProcessImageOut != nullptr)
+                ret = mApi.exchangeProcessImageOut();
             break;
         case ApiCallType::getProcessImageIn: {
-            auto img = mApi.getProcessImageIn();
+            if (mApi.getProcessImageIn != nullptr)
+            {
+                auto img = mApi.getProcessImageIn();
 
-            auto retMsg = new oplkMessages::PointerContMessage("GetProcessImageInReturn", msg->getKind());
-            retMsg->setPointer((oplkMessages::PointerCont) img);
+                auto retMsg = new oplkMessages::PointerContMessage(
+                        "GetProcessImageInReturn", msg->getKind());
+                retMsg->setPointer((oplkMessages::PointerCont) img);
 
-            retPtr = retMsg;
+                retPtr = retMsg;
+            }
             break;
         }
         case ApiCallType::getProcessImageOut: {
-            auto img = mApi.getProcessImageOut();
+            if (mApi.getProcessImageOut != nullptr)
+            {
+                auto img = mApi.getProcessImageOut();
 
-            auto retMsg = new oplkMessages::PointerContMessage("GetProcessImageOutReturn", msg->getKind());
-            retMsg->setPointer((oplkMessages::PointerCont) img);
+                auto retMsg = new oplkMessages::PointerContMessage(
+                        "GetProcessImageOutReturn", msg->getKind());
+                retMsg->setPointer((oplkMessages::PointerCont) img);
 
-            retPtr = retMsg;
+                retPtr = retMsg;
+            }
             break;
         }
         case ApiCallType::setupProcessImage:
-            ret = mApi.setupProcessImage();
+            if (mApi.setupProcessImage != nullptr)
+                ret = mApi.setupProcessImage();
             break;
 
         case ApiCallType::triggerPresForward: {
             // cast message
             auto nodeMsg = dynamic_cast<oplkMessages::UintMessage*>(msg);
 
-            if (nodeMsg != nullptr)
+            if ((nodeMsg != nullptr) && (mApi.triggerPresForward != nullptr))
             {
                 ret = mApi.triggerPresForward(nodeMsg->getValue());
             }
             break;
         }
         default:
-            error("%s - unknown message kind received %d", __PRETTY_FUNCTION__, msg->getKind());
+            error("%s - unknown message kind received %d", __PRETTY_FUNCTION__,
+                    msg->getKind());
     }
 
     EV << "Executed " << getApiCallString(callType) << std::endl;
@@ -710,7 +808,8 @@ void Api::handleAppReturn(RawMessagePtr msg)
             }
 
             default:
-                error("unexpected or invalid app return type: %d", msg->getKind());
+                error("unexpected or invalid app return type: %d",
+                        msg->getKind());
         }
     }
 }

@@ -11,17 +11,21 @@
 // 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
-// 
+//
 
-package openpowerlink.generic.stack;
+cplusplus {{
+    #include "BufferMessage_m.h"
+}}
 
-simple SdoUdp
-{
-    parameters:
-        @display("i=block/transport,green;t=,t,black");
-        int numberOfInstances = default(1);
-        string libName;
-    gates:
-        input udpIn;
-        output udpOut;
+message oplkMessages::BufferMessage;
+    
+cplusplus {{
+    USING_NAMESPACE
+}}
+
+namespace oplkMessages;
+
+message UdpMessage extends BufferMessage {
+    unsigned int ipAddr;
+    unsigned int udpPort;
 }

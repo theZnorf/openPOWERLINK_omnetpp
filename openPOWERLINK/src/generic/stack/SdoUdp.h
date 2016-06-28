@@ -16,8 +16,10 @@
 #ifndef __OPENPOWERLINK_SDOUDP_H_
 #define __OPENPOWERLINK_SDOUDP_H_
 
+#include <functional>
 #include <omnetpp.h>
 #include "interface/OplkSdoUdp.h"
+#include "ApiDef.h"
 
 class SdoUdp : public OPP::cSimpleModule
 {
@@ -26,6 +28,14 @@ class SdoUdp : public OPP::cSimpleModule
         using ConnectionType = interface::OplkSdoUdp::ConnectionType;
         using FrameType = interface::OplkSdoUdp::FrameType;
         using SizeType = interface::OplkSdoUdp::SizeType;
+        using AsySdoSeq = interface::OplkSdoUdp::AsySdoSeq;
+
+        using ReceiveDataCb = std::function<interface::api::ErrorType(ConnectionType*, AsySdoSeq*, unsigned int)>;
+
+        struct InterfaceFunctions
+        {
+                ReceiveDataCb receiveDataCb;
+        };
 
         // Methods
     protected:
@@ -38,6 +48,13 @@ class SdoUdp : public OPP::cSimpleModule
         void sendToSocket(ConnectionType * connection, FrameType * data,
                 SizeType size);
         void ciricalSection(OPLK::BoolType enable);
+
+        InterfaceFunctions* getInterfaceFunctions();
+
+        // Member
+    private:
+        InterfaceFunctions mInterfaceFunctions;
+        OPP::cGate* mSendGate;
 };
 
 #endif

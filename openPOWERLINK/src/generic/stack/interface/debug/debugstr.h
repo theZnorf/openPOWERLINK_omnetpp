@@ -73,6 +73,7 @@ namespace interface
         const char* getRetValStr(interface::api::ErrorType OplkError);
         const char* getEmergErrCodeStr(UINT16 EmergErrCode_p);
         const char* getAbortCodeStr(UINT32 abortCode_p);
+        const char* getMessageTypeStr(UINT8 messageType);
     }
 }
 

@@ -18,8 +18,10 @@
 #include "interface/OplkException.h"
 #include "interface/OplkEdrv.h"
 #include "BufferMessage_m.h"
+#include "OplkMessage_m.h"
 #include "MsgPtr.h"
 #include "ApiDef.h"
+#include "debugstr.h"
 
 using namespace std;
 USING_NAMESPACE
@@ -142,19 +144,38 @@ void DirectEdrv::sendTxBuffer(TxBufferType* txBuffer)
     auto oldCtx = simulation.getContext();
     simulation.setContext(this);
 
-    // create buffer message
-    auto msg = new oplkMessages::BufferMessage();
+    oplkMessages::BufferMessage* msg = nullptr;
+
+    // check ethertype and emit signals
+    auto etherType = *((unsigned short*)(&txBuffer->pBuffer[cEtherTypePos]));
+    emit(mSentEtherTypeSignal, etherType);
+
+    if (etherType == cOplKEtherType)
+    {
+        auto msgType = txBuffer->pBuffer[cOplkTypePos];
+
+        emit(mSentOplkTypeSignal, msgType);
+
+        // create oplk message
+        auto oplkMsg = new oplkMessages::OplkMessage();
+
+        // set message type
+        oplkMsg->setMessageType(msgType);
+        // set message type string
+        oplkMsg->setMessageTypeStr(interface::debug::getMessageTypeStr(msgType));
+        oplkMsg->setName(interface::debug::getMessageTypeStr(msgType));
+
+        msg = oplkMsg;
+    }
+    else
+        // create buffer message
+        msg = new oplkMessages::BufferMessage();
 
     // fill message
     msg->setBufferArraySize(txBuffer->txFrameSize);
     for (auto i = 0u; i < txBuffer->txFrameSize; i++)
         msg->setBuffer(i, txBuffer->pBuffer[i]);
 
-    // emit signals
-    auto etherType = *((unsigned short*)(&txBuffer->pBuffer[cEtherTypePos]));
-    emit(mSentEtherTypeSignal, etherType);
-    if (etherType == cOplKEtherType)
-        emit(mSentOplkTypeSignal, txBuffer->pBuffer[cOplkTypePos]);
 
     // send message
     send(msg, mEthernetOutGate);
