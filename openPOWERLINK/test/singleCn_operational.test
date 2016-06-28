@@ -16,23 +16,10 @@ cmdenv-express-mode = true
 singleCn.libraryPath = "../../../../openPOWERLINK_V2/stack/lib/linux/x86_64/"
 singleCn.mn.demo.cdcFilename = "../../../mnobd.cdc"
 
-record-eventlog = true
-singleCn.mn.event.module-eventlog-recording = true
-singleCn.cn.event.module-eventlog-recording = true
-singleCn.mn.stack.edrv.module-eventlog-recording = true
-singleCn.mn.stack.hresTimer.module-eventlog-recording = true
-singleCn.cn.stack.hresTimer.module-eventlog-recording = true
-singleCn.mn.stack.trace.module-eventlog-recording = true
-singleCn.cn.stack.trace.module-eventlog-recording = true
-singleCn.cn.stack.edrv.module-eventlog-recording = true
-#singleCn.mn.api.module-eventlog-recording = true
-#singleCn.cn.api.module-eventlog-recording = true
-**.module-eventlog-recording = false
-#**.event.module-eventlog-recording = true
-
+singleCn.mn.demo.startUpDelay = 0s
 singleCn.cn.demo.startUpDelay = 3s
-singleCn.cn.demo.shutdownTime = 14s
-singleCn.mn.demo.shutdownTime = 15s
+singleCn.cn.demo.shutdownTime = 15s
+singleCn.mn.demo.shutdownTime = 16s
 
 %postrun-command: scavetool v -p "module(**cn**) AND name(**nmtStates**)" -O cnNmtStates results/General-0.vec
 %postrun-command: scavetool v -p "module(**mn**) AND name(**nmtStates**)" -O mnNmtStates results/General-0.vec
